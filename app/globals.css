@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --color-violet: #402fff;
+  --color-violet-light: #8f85ff;
+  --color-violet-50: #f1efff;
+  --color-violet-100: #e3e0ff;
+  --color-violet-700: #2f20d6;
+  --color-red: #ec1d35;
+  --color-red-700: #b8122a;
+  --color-graphite: #1b1c21;
+  --color-light: #ededed;
+  --color-gray: #c8c9ca;
+  --color-muted: #5b5d66;
+  --color-ok: #0f7b4b;
+  --color-warn: #8a5a00;
+
+  --font-sans: var(--font-golos), "Golos Text", system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+
+  --radius-blank: 1.25rem;
+}
+
+@layer base {
+  html {
+    color: var(--color-graphite);
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply font-sans;
+    min-height: 100dvh;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-violet);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: var(--color-violet-100);
+  }
+}
+
+@layer components {
+  .label-mono {
+    @apply font-mono text-[11px] tracking-[0.12em] text-violet uppercase;
+  }
+  .blank {
+    @apply rounded-[var(--radius-blank)] border border-violet/60 bg-white;
+  }
+  .h-display {
+    @apply font-sans font-medium tracking-tight text-violet;
+  }
+  .input {
+    @apply w-full rounded-xl border border-gray bg-white px-3.5 py-2.5 text-[15px] text-graphite placeholder:text-muted/70 transition-colors hover:border-violet/50 focus:border-violet focus:outline-none;
+  }
+  .input[aria-invalid="true"] {
+    @apply border-red;
+  }
+  .link {
+    @apply text-violet underline decoration-violet/30 underline-offset-4 hover:decoration-violet;
+  }
+}
