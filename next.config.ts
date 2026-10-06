@@ -15,7 +15,7 @@ const isolation = [
 const nextConfig: NextConfig = {
   output: process.env.STANDALONE === "1" ? "standalone" : undefined,
   serverExternalPackages: ["@node-rs/argon2", "postgres", "unpdf", "@react-pdf/renderer", "sql.js"],
-  outputFileTracingIncludes: { "/**": ["./node_modules/sql.js/dist/sql-wasm.wasm"] },
+  outputFileTracingIncludes: { "/**": ["./node_modules/sql.js/dist/sql-wasm.wasm", "./server/pdf/fonts/**"] },
   typedRoutes: false,
   async headers() {
     return [

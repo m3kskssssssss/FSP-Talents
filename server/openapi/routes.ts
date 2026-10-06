@@ -1,6 +1,7 @@
 import type { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import { baseSearchSchema, needCreateSchema, needParseSchema, rephraseSchema, searchFiltersSchema } from "../schemas/needs";
+import { consentSchema, contactsSchema, deleteAccountSchema, fspLinkSchema, profileUpdateSchema, selfAchievementSchema, skillsSchema, visibilitySchema } from "../schemas/candidate";
 import { invitationCreateSchema, invitationDecisionSchema } from "../schemas/invitations";
 import { answerSchema, attemptEventsSchema, startAttemptSchema } from "../schemas/testing";
 
@@ -50,7 +51,24 @@ export function apiRoutes(): ApiRoute[] {
     { method: "get", path: "/api/v1/notifications", tags: I, summary: "Уведомления пользователя", responses: { 200: ok } },
     { method: "post", path: "/api/v1/notifications/read", tags: I, summary: "Отметить уведомления прочитанными", responses: { 200: ok } },
   ];
+  const C = ["Кандидат"];
+  const me: ApiRoute[] = [
+    { method: "get", path: "/api/v1/me/profile", tags: C, summary: "Собственный профиль кандидата (чужих профилей кандидату не отдаёт ни один эндпоинт)", responses: { 200: ok } },
+    { method: "put", path: "/api/v1/me/profile", tags: C, summary: "Обновить профиль и опрос", request: body(profileUpdateSchema), responses: { 200: ok } },
+    { method: "put", path: "/api/v1/me/contacts", tags: C, summary: "Контакты (хранятся отдельно, работодатель видит их только после принятия приглашения)", request: body(contactsSchema), responses: { 200: ok } },
+    { method: "put", path: "/api/v1/me/skills", tags: C, summary: "Заявленные навыки", request: body(skillsSchema), responses: { 200: ok } },
+    { method: "put", path: "/api/v1/me/visibility", tags: C, summary: "Скрыть/показать профиль", request: body(visibilitySchema), responses: { 200: ok } },
+    { method: "post", path: "/api/v1/me/consents", tags: C, summary: "Дать или отозвать согласие (152-ФЗ)", request: body(consentSchema), responses: { 200: ok } },
+    { method: "get", path: "/api/v1/me/access-log", tags: C, summary: "Журнал доступа к контактам", responses: { 200: ok } },
+    { method: "post", path: "/api/v1/me/resume", tags: C, summary: "Загрузить PDF-резюме (multipart, поле file, ≤ 4 МБ): разбор ИИ или правилами", responses: { 200: ok, 422: ok } },
+    { method: "get", path: "/api/v1/me/resume.pdf", tags: C, summary: "Сгенерированное PDF-резюме из профиля", responses: { 200: { description: "application/pdf" } } },
+    { method: "post", path: "/api/v1/me/fsp", tags: C, summary: "Привязать ФСП ID и импортировать достижения из реестра (мок). 404 — нет в реестре, 503 — реестр недоступен", request: body(fspLinkSchema), responses: { 200: ok, 404: ok, 503: ok } },
+    { method: "post", path: "/api/v1/me/achievements", tags: C, summary: "Добавить заявленное достижение (доверие low)", request: body(selfAchievementSchema), responses: { 200: ok } },
+    { method: "delete", path: "/api/v1/me/achievements/{id}", tags: C, summary: "Удалить заявленное достижение", request: { params: idParams }, responses: { 200: ok } },
+    { method: "delete", path: "/api/v1/me", tags: C, summary: "Удалить аккаунт с анонимизацией", request: body(deleteAccountSchema), responses: { 200: ok } },
+  ];
   return [
+    ...me,
     ...matching,
     ...inv,
     { method: "get", path: "/api/v1/tests", tags: T, summary: "Доступные тесты, правила пересдачи и история попыток", responses: { 200: ok } },

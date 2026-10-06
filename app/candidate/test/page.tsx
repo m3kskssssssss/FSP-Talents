@@ -13,7 +13,8 @@ export const dynamic = "force-dynamic";
 
 const resultBadge = { passed_confident: ["Уверенно сдан", "ok"], passed: ["Сдан", "ok"], failed: ["Не сдан", "gray"] } as const;
 
-export default async function TestsPage() {
+export default async function TestsPage({ searchParams }: { searchParams: Promise<{ spec?: string; grade?: string }> }) {
+  const { spec, grade } = await searchParams;
   const me = await requireCandidate();
   const specs = await availability(me.profileId);
   return (
@@ -26,6 +27,7 @@ export default async function TestsPage() {
         {specs.map((s) => (
           <Blank
             key={s.specialization}
+            className={spec === s.specialization ? "border-violet ring-2 ring-violet/20" : undefined}
             label={specTitle(s.specialization)}
             aside={s.category ? <Badge tone="solid">{categoryTitle(s.category.specialization, s.category.grade)}</Badge> : null}
           >
@@ -34,7 +36,7 @@ export default async function TestsPage() {
                 Продолжить начатую попытку
               </a>
             ) : (
-              <StartTest specialization={s.specialization} grades={s.grades} />
+              <StartTest specialization={s.specialization} grades={s.grades} preferred={spec === s.specialization ? grade : undefined} />
             )}
             {s.attempts.length > 0 && (
               <div className="mt-5 border-t border-violet/15 pt-4">

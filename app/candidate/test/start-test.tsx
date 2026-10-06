@@ -10,8 +10,8 @@ import { api, ApiError } from "@/lib/api-client";
 type Grade = "junior" | "middle" | "senior";
 type Elig = { ok: true } | { ok: false; code: string; message: string };
 
-export function StartTest({ specialization, grades }: { specialization: string; grades: { grade: Grade; eligibility: Elig }[] }) {
-  const firstOk = grades.find((g) => g.eligibility.ok)?.grade ?? null;
+export function StartTest({ specialization, grades, preferred }: { specialization: string; grades: { grade: Grade; eligibility: Elig }[]; preferred?: string }) {
+  const firstOk = grades.find((g) => g.grade === preferred && g.eligibility.ok)?.grade ?? grades.find((g) => g.eligibility.ok)?.grade ?? null;
   const [grade, setGrade] = useState<Grade | null>(firstOk);
   const [ack, setAck] = useState(false);
   const [error, setError] = useState<string | null>(null);
