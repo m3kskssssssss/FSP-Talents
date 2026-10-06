@@ -28,7 +28,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
       <PageTitle kicker="Модерация" title="Попытки тестов">
         Сначала — попытки с самым низким индексом доверия. Решение принимает человек: автоматических блокировок нет.
       </PageTitle>
-      <div className="mb-5 grid grid-cols-3 gap-3 sm:max-w-xl">
+      <div className="mb-5 grid grid-cols-1 gap-3 sm:max-w-xl sm:grid-cols-3">
         {(["low", "medium", "high"] as const).map((l) => {
           const c = counts.find((x) => x.level === l);
           return (

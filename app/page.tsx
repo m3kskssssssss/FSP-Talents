@@ -37,7 +37,7 @@ export default function Home() {
             </ButtonLink>
           </div>
         </div>
-        <Track className="pointer-events-none absolute right-0 bottom-0 hidden w-[46%] text-violet/70 md:block" />
+        <Track className="pointer-events-none absolute right-6 bottom-6 hidden w-[34%] text-violet/60 lg:block" />
         <Image
           src="/brand/logo_02w.svg"
           alt=""

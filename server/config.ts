@@ -37,9 +37,9 @@ export const TEST_CONFIG = {
   minItems: 10,
   maxItems: 18,
   /** Stop when the standard error of theta drops below this value. */
-  seStop: 0.32,
+  seStop: 0.42,
   /** Early stop when the pass/fail decision is this many SE away from the cut. */
-  decisionZ: 2.5,
+  decisionZ: 2.0,
   quizMaxShare: 0.3,
   /** Conceptual questions are easier to leak, so they count less. */
   quizWeight: 0.6,

@@ -220,7 +220,8 @@ export function scoreCandidate(need: NeedInput, c: CandidateInput, now = new Dat
     const valid: Partial<Record<Component, boolean>> = {
       test: c.score < TEST_CONFIG.confidentScore,
       stack: levels.length > 0 && components.stack < 0.9,
-      fsp: components.fsp < 0.3,
+      // Only mention FSP as a weakness for candidates who do have some history but no podium.
+      fsp: c.achievements.length > 0 && !c.achievements.some((x) => x.place !== null && x.place <= 3) && components.fsp < 0.3,
       salary: sal.position === "unknown",
       formatCity: components.formatCity < 1,
       freshness: components.freshness < 0.9,
@@ -228,7 +229,7 @@ export function scoreCandidate(need: NeedInput, c: CandidateInput, now = new Dat
     const phrase: Record<Component, string> = {
       test: "Результат теста ближе к порогу, чем у лидеров подборки",
       stack: "Часть стека не подтверждена тестом",
-      fsp: "Достижений ФСП немного",
+      fsp: "Подтверждённых призовых мест в ФСП нет",
       salary: "Ожидания по зарплате не указаны",
       formatCity: "Формат работы совпадает не полностью",
       freshness: "Профиль давно не обновлялся",
