@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/server/db";
-import { candidateProfiles, candidateSkills, consents, searches, users } from "@/server/db/schema";
+import { candidateProfiles, candidateSkills, consents, searches, testAttempts, users } from "@/server/db/schema";
 import { addToShortlist, listShortlist, searchBase, searchForNeed, searchResults } from "@/server/services/matching";
 import { createNeed } from "@/server/services/needs";
 import { needCreateSchema } from "@/server/schemas/needs";
@@ -77,6 +77,52 @@ describe("matching service", () => {
     expect(reset.total).toBe(3);
     const [after] = await db().select().from(searches).where(eq(searches.id, searchId));
     expect(after!.baseSnapshot).toEqual(before!.baseSnapshot);
+  });
+
+  it("unconfirmed grade: shown last with a status, not hidden (Q&A)", async () => {
+    const emp = await makeEmployer();
+    const need = await createNeed(emp.employerId, needInput);
+    const confirmed = await makeCategorized({ score: 19 });
+    const failedAt = (profileId: string, opts: { grade?: "junior" | "middle" | "senior"; answered?: number; trust?: "high" | "low"; score?: number } = {}) =>
+      db().insert(testAttempts).values({
+        profileId,
+        specialization: "backend",
+        targetGrade: opts.grade ?? "middle",
+        status: "finished",
+        deadlineAt: new Date(),
+        finishedAt: new Date(),
+        score: opts.score ?? 16,
+        theta: 0,
+        se: 0.4,
+        result: "failed",
+        trustLevel: opts.trust ?? "high",
+        trustSignals: { answered: opts.answered ?? 14 },
+        seed: "s",
+        marker: "m",
+      });
+    const unconf = await makeCandidate({ fullName: "Пётр Петров" });
+    await failedAt(unconf.profileId, { score: 17 });
+    const lowTrust = await makeCandidate();
+    await failedAt(lowTrust.profileId, { trust: "low" });
+    const abandoned = await makeCandidate();
+    await failedAt(abandoned.profileId, { answered: 2 });
+    const otherGrade = await makeCandidate();
+    await failedAt(otherGrade.profileId, { grade: "senior" });
+    // Has a confirmed junior category: shown as junior (near), not as unconfirmed middle.
+    const juniorCat = await makeCategorized({ grade: "junior", score: 26 });
+    await failedAt(juniorCat.profileId);
+
+    const { searchId } = await searchForNeed(emp.employerId, need.id);
+    const res = await searchResults(emp.employerId, searchId, {});
+    expect(res.items.map((c) => c.profileId)).toEqual([confirmed.profileId, juniorCat.profileId, unconf.profileId]);
+    const last = res.items[2]!;
+    expect(last.confirmed).toBe(false);
+    expect(last.category.score).toBe(17);
+    expect(last.cons[0]).toMatch(/не подтверждён/);
+    expect(res.items[1]!.confirmed).toBe(true);
+    expect((await searchResults(emp.employerId, searchId, { includeUnconfirmed: false })).total).toBe(2);
+    // Can still be shortlisted and opened.
+    await addToShortlist(emp.employerId, unconf.profileId);
   });
 
   it("other employers cannot open someone else's search or need", async () => {

@@ -74,7 +74,7 @@ export async function createInvitation(employerId: string, actorUserId: string, 
   if (!Number.isInteger(input.salaryFrom) || !Number.isInteger(input.salaryTo) || input.salaryFrom <= 0 || input.salaryFrom > input.salaryTo) {
     throw unprocessable("Вилка зарплаты обязательна: целые «от» и «до», 0 < от ≤ до");
   }
-  const [cand] = await loadPool({ profileIds: [input.profileId] });
+  const [cand] = await loadPool({ profileIds: [input.profileId], unconfirmed: true });
   if (!cand) throw notFound("Кандидат не найден или скрыл профиль");
   if (input.needId) {
     const [n] = await db().select({ e: needs.employerId }).from(needs).where(eq(needs.id, input.needId));
@@ -266,7 +266,7 @@ export async function hasContactAccess(employerId: string, profileId: string) {
 
 /** Candidate profile as seen by an employer. Contacts are attached only with access, and each read is audited. */
 export async function candidateForEmployer(employerId: string, actorUserId: string, profileId: string) {
-  const [pool] = await loadPool({ profileIds: [profileId] });
+  const [pool] = await loadPool({ profileIds: [profileId], unconfirmed: true });
   const related = await db()
     .select({ id: invitations.id, status: invitations.status, title: invitations.title, createdAt: invitations.createdAt })
     .from(invitations)
@@ -296,6 +296,8 @@ export async function candidateForEmployer(employerId: string, actorUserId: stri
     salaryExpect: { from: p.salaryExpectFrom, to: p.salaryExpectTo },
     workFormat: p.workFormat,
     categories: cats.map((c) => ({ specialization: c.specialization, grade: c.grade, score: c.score, trustLevel: c.trustLevel, assignedAt: c.assignedAt })),
+    /** Claimed grade the test did not confirm (only when there is no active category). */
+    unconfirmed: pool && pool.confirmed === false ? { specialization: pool.specialization, grade: pool.grade, score: pool.score } : null,
     skills: skills.map((s) => ({ skill: s.skill, title: skillTitle(s.skill), source: s.source })),
     achievements: achs.map((a) => ({ competition: a.competition, discipline: a.discipline, stage: a.stage, year: a.year, place: a.place, source: a.source, trustLevel: a.trustLevel })),
     invitations: related.map((r) => ({ ...r, statusTitle: STATUS_TITLES[r.status] })),

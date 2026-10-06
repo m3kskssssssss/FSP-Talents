@@ -359,7 +359,7 @@ export const needs = pgTable(
   (t) => [index("needs_employer_idx").on(t.employerId, t.createdAt)],
 );
 
-export type SnapshotEntry = { profileId: string; match: number; near?: boolean };
+export type SnapshotEntry = { profileId: string; match: number; near?: boolean; unconfirmed?: boolean };
 
 export const searches = pgTable(
   "searches",

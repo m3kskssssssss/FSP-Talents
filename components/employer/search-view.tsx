@@ -18,6 +18,7 @@ type Filters = {
   city?: string;
   format?: string;
   includeNear?: boolean;
+  includeUnconfirmed?: boolean;
 };
 
 type Result = {
@@ -41,6 +42,7 @@ function toQuery(f: Filters, page: number) {
   if (f.city) q.set("city", f.city);
   if (f.format) q.set("format", f.format);
   if (f.includeNear === false) q.set("includeNear", "0");
+  if (f.includeUnconfirmed === false) q.set("includeUnconfirmed", "0");
   if (page > 1) q.set("page", String(page));
   return q.toString();
 }
@@ -82,6 +84,7 @@ export function SearchView({ searchId, initial }: { searchId: string; initial: R
         city: q.get("city") ?? undefined,
         format: q.get("format") ?? undefined,
         includeNear: q.get("includeNear") === "0" ? false : undefined,
+        includeUnconfirmed: q.get("includeUnconfirmed") === "0" ? false : undefined,
       };
       setFilters(f);
       void load(f, Number(q.get("page") ?? 1));
@@ -118,8 +121,9 @@ export function SearchView({ searchId, initial }: { searchId: string; initial: R
   }
 
   const pages = Math.max(1, Math.ceil(data.total / data.pageSize));
-  const main = data.items.filter((c) => !c.near);
-  const near = data.items.filter((c) => c.near);
+  const main = data.items.filter((c) => c.confirmed && !c.near);
+  const near = data.items.filter((c) => c.confirmed && c.near);
+  const unconfirmed = data.items.filter((c) => !c.confirmed);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
@@ -196,6 +200,10 @@ export function SearchView({ searchId, initial }: { searchId: string; initial: R
               Показывать соседний грейд
             </label>
           )}
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" className="accent-violet" checked={filters.includeUnconfirmed !== false} onChange={(e) => update({ includeUnconfirmed: e.target.checked ? undefined : false })} />
+            Показывать неподтверждённый грейд
+          </label>
         </div>
         <p className="px-1 text-xs text-muted">Фильтры применяются поверх сохранённой подборки — исходный список не теряется.</p>
       </aside>
@@ -221,6 +229,15 @@ export function SearchView({ searchId, initial }: { searchId: string; initial: R
           <>
             <h2 className="h-display mt-4 text-xl">Близкие кандидаты — соседний грейд</h2>
             {near.map((c) => (
+              <CandidateCard key={c.profileId} c={c} needId={data.search.needId} rephrased={rephrased[c.profileId]} />
+            ))}
+          </>
+        )}
+        {unconfirmed.length > 0 && (
+          <>
+            <h2 className="h-display mt-4 text-xl">Грейд не подтверждён</h2>
+            <p className="-mt-2 text-sm text-muted">Кандидаты прошли тест на этот грейд, но не набрали порог. Они всегда ниже подтверждённых, но могут подойти.</p>
+            {unconfirmed.map((c) => (
               <CandidateCard key={c.profileId} c={c} needId={data.search.needId} rephrased={rephrased[c.profileId]} />
             ))}
           </>

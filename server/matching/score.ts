@@ -33,6 +33,12 @@ export interface CandidateInput {
   city: string | null;
   lastActiveAt: Date;
   achievements: FspAchievementInput[];
+  /**
+   * false = the candidate took the test for this grade but did not reach the
+   * pass score. They stay visible (Q&A: "show with a status and rank lower,
+   * do not hide"), but always below confirmed candidates.
+   */
+  confirmed?: boolean;
 }
 
 export type Component = keyof typeof MATCH_WEIGHTS;
@@ -169,7 +175,8 @@ export function scoreCandidate(need: NeedInput, c: CandidateInput, now = new Dat
   const pros: { t: string; w: number }[] = [];
   const cons: { t: string; w: number }[] = [];
   const g = GRADE_TITLES[c.grade];
-  if (c.score >= TEST_CONFIG.confidentScore) pros.push({ t: `Уверенно сдал тест ${g}: ${c.score.toFixed(1)}/30`, w: MATCH_WEIGHTS.test * test + 0.05 });
+  if (c.confirmed === false) cons.push({ t: `Грейд ${g} не подтверждён: ${c.score.toFixed(1)}/30 при пороге ${TEST_CONFIG.passScore}`, w: 1 });
+  else if (c.score >= TEST_CONFIG.confidentScore) pros.push({ t: `Уверенно сдал тест ${g}: ${c.score.toFixed(1)}/30`, w: MATCH_WEIGHTS.test * test + 0.05 });
   else pros.push({ t: `Тест ${g} сдан: ${c.score.toFixed(1)}/30`, w: MATCH_WEIGHTS.test * test * 0.6 });
 
   const byLevel = (lv: string) => levels.filter((l) => l.level === lv).map((l) => l.title);
@@ -214,7 +221,7 @@ export function scoreCandidate(need: NeedInput, c: CandidateInput, now = new Dat
   if (fr.activeDays > 90) cons.push({ t: `Не заходил на платформу ${Math.round(fr.activeDays)} дн.`, w: MATCH_WEIGHTS.freshness * 0.4 });
 
   // Always give at least two arguments "for" and one "against", derived from components.
-  if (pros.length < 2) pros.push({ t: `Категория ${g} присвоена по результату теста, а не по резюме`, w: 0 });
+  if (pros.length < 2 && c.confirmed !== false) pros.push({ t: `Категория ${g} присвоена по результату теста, а не по резюме`, w: 0 });
   if (!cons.length) {
     // Weakest component that is genuinely weak; otherwise an honest "no notable minuses".
     const valid: Partial<Record<Component, boolean>> = {

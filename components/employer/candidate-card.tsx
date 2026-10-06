@@ -69,7 +69,13 @@ export function CandidateCard({ c, needId, rephrased }: { c: Card; needId?: stri
             {[c.city, c.experienceYears !== null ? `опыт ${c.experienceYears} г.` : null, formatTitle(c.workFormat)].filter(Boolean).join(" · ")}
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            <Badge tone="solid">{categoryTitle(c.category.specialization, c.category.grade)}</Badge>
+            {c.confirmed ? (
+              <Badge tone="solid">{categoryTitle(c.category.specialization, c.category.grade)}</Badge>
+            ) : (
+              <Badge tone="warn" title="Кандидат прошёл тест на этот грейд, но не набрал порог">
+                {categoryTitle(c.category.specialization, c.category.grade)} · не подтверждён
+              </Badge>
+            )}
             <Badge tone="violet" title="Балл теста на эталонном бланке из 30 заданий">
               тест {c.category.score.toFixed(1)}/30
             </Badge>

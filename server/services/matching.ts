@@ -11,6 +11,7 @@ import {
   needs,
   searches,
   shortlist,
+  testAttempts,
   users,
   type SnapshotEntry,
 } from "../db/schema";
@@ -29,25 +30,90 @@ export interface PoolCandidate extends CandidateInput {
   theta: number;
 }
 
+const profileColumns = {
+  profileId: candidateProfiles.id,
+  fullName: candidateProfiles.fullName,
+  city: candidateProfiles.city,
+  about: candidateProfiles.about,
+  experienceYears: candidateProfiles.experienceYears,
+  salaryFrom: candidateProfiles.salaryExpectFrom,
+  salaryTo: candidateProfiles.salaryExpectTo,
+  format: candidateProfiles.workFormat,
+  lastActiveAt: candidateProfiles.lastActiveAt,
+};
+
+const visibleAndConsented = () => [
+  eq(candidateProfiles.visibility, "visible"),
+  isNull(users.deletedAt),
+  sql`EXISTS (SELECT 1 FROM ${consents} c WHERE c.user_id = ${users.id} AND c.kind = 'pd_processing' AND c.revoked_at IS NULL)`,
+];
+
 /**
- * Hard rule #5: the pool is built from test categories only. A candidate is
+ * Candidates whose claimed grade the test did NOT confirm: the latest finished
+ * attempt in the specialization failed (with enough answers and without a low
+ * trust level) and there is no active category there. They come from a test,
+ * not from self-description, and are always ranked below confirmed ones.
+ */
+async function loadUnconfirmed(where: { spec?: Specialization; grades?: Grade[]; profileIds?: string[] }) {
+  const conds = [
+    inArray(testAttempts.status, ["finished", "expired"]),
+    eq(testAttempts.result, "failed"),
+    sql`coalesce(${testAttempts.trustLevel}::text, 'high') <> 'low'`,
+    sql`coalesce((${testAttempts.trustSignals}->>'answered')::int, 0) >= 5`,
+    sql`NOT EXISTS (SELECT 1 FROM ${categories} k WHERE k.profile_id = ${testAttempts.profileId} AND k.specialization = ${testAttempts.specialization} AND k.status = 'active')`,
+    ...visibleAndConsented(),
+  ];
+  if (where.spec) conds.push(eq(testAttempts.specialization, where.spec));
+  if (where.profileIds) conds.push(inArray(candidateProfiles.id, where.profileIds));
+  const rows = await db()
+    .select({
+      ...profileColumns,
+      specialization: testAttempts.specialization,
+      grade: testAttempts.targetGrade,
+      score: testAttempts.score,
+      theta: testAttempts.theta,
+      trustLevel: testAttempts.trustLevel,
+      assignedAt: testAttempts.finishedAt,
+    })
+    .from(testAttempts)
+    .innerJoin(candidateProfiles, eq(candidateProfiles.id, testAttempts.profileId))
+    .innerJoin(users, eq(users.id, candidateProfiles.userId))
+    .where(and(...conds))
+    .orderBy(desc(testAttempts.finishedAt));
+  // The latest attempt per candidate and specialization is the claimed grade.
+  const seen = new Set<string>();
+  const latest = rows.filter((r) => {
+    const k = `${r.profileId}:${r.specialization}`;
+    return seen.has(k) ? false : (seen.add(k), true);
+  });
+  return latest
+    .filter((r) => !where.grades?.length || where.grades.includes(r.grade))
+    .map((r) => ({
+      ...r,
+      score: r.score ?? 0,
+      theta: r.theta ?? 0,
+      trustLevel: r.trustLevel ?? ("high" as const),
+      assignedAt: r.assignedAt ?? new Date(0),
+      confirmed: false,
+    }));
+}
+
+/**
+ * Hard rule #5: the pool is built from test results only. A candidate is
  * eligible if they have an ACTIVE category, are visible, are not deleted and
  * have a valid personal-data consent. Self-description never adds anyone.
+ * With `unconfirmed`, candidates whose test did not confirm the claimed grade
+ * are added too, flagged `confirmed: false`.
  */
-async function loadPool(where: { spec?: Specialization; grades?: Grade[]; profileIds?: string[] }): Promise<PoolCandidate[]> {
-  const conds = [
-    eq(categories.status, "active"),
-    eq(candidateProfiles.visibility, "visible"),
-    isNull(users.deletedAt),
-    sql`EXISTS (SELECT 1 FROM ${consents} c WHERE c.user_id = ${users.id} AND c.kind = 'pd_processing' AND c.revoked_at IS NULL)`,
-  ];
+async function loadPool(where: { spec?: Specialization; grades?: Grade[]; profileIds?: string[]; unconfirmed?: boolean }): Promise<PoolCandidate[]> {
+  const conds = [eq(categories.status, "active"), ...visibleAndConsented()];
   if (where.spec) conds.push(eq(categories.specialization, where.spec));
   if (where.grades?.length) conds.push(inArray(categories.grade, where.grades));
   if (where.profileIds) {
     if (!where.profileIds.length) return [];
     conds.push(inArray(candidateProfiles.id, where.profileIds));
   }
-  const rows = await db()
+  const confirmedRows = await db()
     .select({
       profileId: candidateProfiles.id,
       fullName: candidateProfiles.fullName,
@@ -69,6 +135,7 @@ async function loadPool(where: { spec?: Specialization; grades?: Grade[]; profil
     .innerJoin(candidateProfiles, eq(candidateProfiles.id, categories.profileId))
     .innerJoin(users, eq(users.id, candidateProfiles.userId))
     .where(and(...conds));
+  const rows = [...confirmedRows.map((r) => ({ ...r, confirmed: true })), ...(where.unconfirmed ? await loadUnconfirmed(where) : [])];
   if (!rows.length) return [];
   const ids = [...new Set(rows.map((r) => r.profileId))];
   // Two batched queries instead of N+1.
@@ -81,7 +148,9 @@ async function loadPool(where: { spec?: Specialization; grades?: Grade[]; profil
   // Without a specialization filter keep one (strongest) category per candidate.
   const unique = where.spec
     ? rows
-    : [...groupBy(rows, (r) => r.profileId).values()].map((rs) => rs.sort((a, b) => gradeIndex(b.grade) - gradeIndex(a.grade) || b.score - a.score)[0]!);
+    : [...groupBy(rows, (r) => r.profileId).values()].map(
+        (rs) => rs.sort((a, b) => Number(b.confirmed) - Number(a.confirmed) || gradeIndex(b.grade) - gradeIndex(a.grade) || b.score - a.score)[0]!,
+      );
   return unique.map((r) => ({
     ...r,
     skills: (skillsBy.get(r.profileId) ?? []).map((s) => ({ skill: s.skill, source: s.source })),
@@ -123,13 +192,18 @@ export function adjacentGrades(g: Grade): Grade[] {
   return GRADES.filter((_, k) => Math.abs(k - i) === 1);
 }
 
+/** Confirmed candidates of the grade, then the adjacent grade, then those whose grade the test did not confirm. */
 function rank(pool: PoolCandidate[], need: NeedInput, nearGrades: Set<Grade>, now: Date): SnapshotEntry[] {
   const scored = pool.map((c) => ({ c, r: scoreCandidate(need, c, now) }));
-  const main = scored.filter((x) => !nearGrades.has(x.c.grade)).sort((a, b) => b.r.match - a.r.match || b.c.score - a.c.score);
-  const near = scored.filter((x) => nearGrades.has(x.c.grade)).sort((a, b) => b.r.match - a.r.match || b.c.score - a.c.score);
+  const byMatch = (a: (typeof scored)[number], b: (typeof scored)[number]) => b.r.match - a.r.match || b.c.score - a.c.score;
+  const confirmed = scored.filter((x) => x.c.confirmed !== false);
+  const main = confirmed.filter((x) => !nearGrades.has(x.c.grade)).sort(byMatch);
+  const near = confirmed.filter((x) => nearGrades.has(x.c.grade)).sort(byMatch);
+  const unconfirmed = scored.filter((x) => x.c.confirmed === false).sort(byMatch);
   return [
     ...main.map((x) => ({ profileId: x.c.profileId, match: x.r.match })),
     ...near.map((x) => ({ profileId: x.c.profileId, match: x.r.match, near: true })),
+    ...unconfirmed.map((x) => ({ profileId: x.c.profileId, match: x.r.match, unconfirmed: true })),
   ];
 }
 
@@ -138,7 +212,10 @@ export async function searchForNeed(employerId: string, needId: string, now = ne
   const [need] = await db().select().from(needs).where(eq(needs.id, needId));
   if (!need || need.employerId !== employerId) throw notFound("Потребность не найдена");
   const near = adjacentGrades(need.grade);
-  const pool = await loadPool({ spec: need.specialization, grades: [need.grade, ...near] });
+  // Unconfirmed: only those who claimed exactly the needed grade.
+  const pool = (await loadPool({ spec: need.specialization, grades: [need.grade, ...near], unconfirmed: true })).filter(
+    (c) => c.confirmed !== false || c.grade === need.grade,
+  );
   const snapshot = rank(pool, toNeedInput(need), new Set(near), now);
   const [s] = await db()
     .insert(searches)
@@ -149,7 +226,7 @@ export async function searchForNeed(employerId: string, needId: string, now = ne
 
 /** "Поиск по базе": the same ranking without a saved need. */
 export async function searchBase(employerId: string, q: SearchQuery, now = new Date()) {
-  const pool = await loadPool({ spec: q.specialization, grades: q.grades?.length ? q.grades : undefined });
+  const pool = await loadPool({ spec: q.specialization, grades: q.grades?.length ? q.grades : undefined, unconfirmed: true });
   const need: NeedInput = {
     grade: q.grades?.length === 1 ? q.grades[0]! : null,
     stack: q.stack,
@@ -181,6 +258,7 @@ export interface SearchFilters {
   city?: string;
   format?: WorkFormat;
   includeNear?: boolean;
+  includeUnconfirmed?: boolean;
 }
 
 /** Employer-facing card. Contains NO contacts (hard rule #2) and a masked name. */
@@ -196,6 +274,8 @@ export interface CandidateCard {
   fsp: { count: number; confirmed: number; bestPlace: number | null };
   match: number;
   near: boolean;
+  /** false = the test did not confirm the claimed grade (shown last, with a status). */
+  confirmed: boolean;
   pros: string[];
   cons: string[];
   components: MatchResult["components"];
@@ -236,6 +316,7 @@ export function toCard(c: PoolCandidate, r: MatchResult, extra: { match: number;
     },
     match: extra.match,
     near: extra.near,
+    confirmed: c.confirmed !== false,
     pros: r.pros,
     cons: r.cons,
     components: r.components,
@@ -247,6 +328,7 @@ export function toCard(c: PoolCandidate, r: MatchResult, extra: { match: number;
 
 function passes(card: CandidateCard, f: SearchFilters, c: PoolCandidate) {
   if (f.includeNear === false && card.near) return false;
+  if (f.includeUnconfirmed === false && !card.confirmed) return false;
   if (f.grades?.length && !f.grades.includes(card.category.grade)) return false;
   if (f.onlyFsp && card.fsp.confirmed === 0) return false;
   if (f.minScore !== undefined && card.category.score < f.minScore) return false;
@@ -291,7 +373,7 @@ export async function searchResults(employerId: string, searchId: string, filter
     : { grade: q.grades?.length === 1 ? q.grades[0]! : null, stack: q.stack ?? [], salaryFrom: q.salaryFrom ?? null, salaryTo: q.salaryTo ?? null, format: q.format ?? null, city: q.city ?? null };
 
   const snap = s.baseSnapshot;
-  const pool = await loadPool({ profileIds: snap.map((e) => e.profileId), spec: (need?.specialization ?? q.specialization) as Specialization });
+  const pool = await loadPool({ profileIds: snap.map((e) => e.profileId), spec: (need?.specialization ?? q.specialization) as Specialization, unconfirmed: true });
   const byId = new Map(pool.map((c) => [c.profileId, c]));
   const rel = await relations(employerId, pool.map((c) => c.profileId));
   const all: CandidateCard[] = [];
@@ -332,7 +414,7 @@ export async function listSearches(employerId: string, limit = 20) {
 // ---------------------------------------------------------------- shortlist
 
 export async function addToShortlist(employerId: string, profileId: string, note?: string) {
-  const pool = await loadPool({ profileIds: [profileId] });
+  const pool = await loadPool({ profileIds: [profileId], unconfirmed: true });
   if (!pool.length) throw notFound("Кандидат не найден");
   await db().insert(shortlist).values({ employerId, profileId, note: note ?? null }).onConflictDoNothing();
   return { ok: true };
@@ -345,7 +427,7 @@ export async function removeFromShortlist(employerId: string, profileId: string)
 
 export async function listShortlist(employerId: string, now = new Date()) {
   const rows = await db().select().from(shortlist).where(eq(shortlist.employerId, employerId)).orderBy(desc(shortlist.createdAt));
-  const pool = await loadPool({ profileIds: rows.map((r) => r.profileId) });
+  const pool = await loadPool({ profileIds: rows.map((r) => r.profileId), unconfirmed: true });
   const byId = new Map(pool.map((c) => [c.profileId, c]));
   const rel = await relations(employerId, pool.map((c) => c.profileId));
   return rows

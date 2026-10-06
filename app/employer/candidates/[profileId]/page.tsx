@@ -28,6 +28,11 @@ export default async function CandidateForEmployer({ params }: { params: Promise
             {categoryTitle(k.specialization, k.grade)} · тест {k.score.toFixed(1)}/30 · {date(k.assignedAt)}
           </Badge>
         ))}
+        {c.unconfirmed && (
+          <Badge tone="warn" title="Кандидат прошёл тест на этот грейд, но не набрал порог">
+            {categoryTitle(c.unconfirmed.specialization, c.unconfirmed.grade)} · не подтверждён · тест {c.unconfirmed.score.toFixed(1)}/30
+          </Badge>
+        )}
       </div>
       <div className="grid gap-6 md:grid-cols-2">
         <Blank label="О себе">

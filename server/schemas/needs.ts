@@ -45,6 +45,7 @@ export const searchFiltersSchema = z.object({
   city: z.string().max(80).optional(),
   format: workFormatSchema.optional(),
   includeNear: z.preprocess((v) => (v === undefined ? undefined : v === "1" || v === "true"), z.boolean().optional()),
+  includeUnconfirmed: z.preprocess((v) => (v === undefined ? undefined : v === "1" || v === "true"), z.boolean().optional()),
   page: z.coerce.number().int().min(1).max(100).default(1),
 });
 
