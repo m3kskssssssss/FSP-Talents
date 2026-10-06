@@ -1,6 +1,7 @@
 import type { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import { baseSearchSchema, needCreateSchema, needParseSchema, rephraseSchema, searchFiltersSchema } from "../schemas/needs";
+import { invitationCreateSchema, invitationDecisionSchema } from "../schemas/invitations";
 import { answerSchema, attemptEventsSchema, startAttemptSchema } from "../schemas/testing";
 
 export type ApiRoute = Omit<RouteConfig, "responses"> & {
@@ -38,8 +39,20 @@ export function apiRoutes(): ApiRoute[] {
     { method: "put", path: "/api/v1/shortlist/{profileId}", tags: M, summary: "Добавить в избранное", request: { params: z.object({ profileId: z.uuid() }) }, responses: { 200: ok } },
     { method: "delete", path: "/api/v1/shortlist/{profileId}", tags: M, summary: "Убрать из избранного", request: { params: z.object({ profileId: z.uuid() }) }, responses: { 200: ok } },
   ];
+  const I = ["Приглашения"];
+  const inv: ApiRoute[] = [
+    { method: "post", path: "/api/v1/invitations", tags: I, summary: "Пригласить кандидата. Вилка обязательна (иначе 422); дубль открытого приглашения — 409; лимит в сутки — 429", request: body(invitationCreateSchema), responses: { 200: ok, 409: ok, 429: ok } },
+    { method: "get", path: "/api/v1/invitations", tags: I, summary: "Приглашения: кандидат видит свои, работодатель — отправленные", responses: { 200: ok } },
+    { method: "get", path: "/api/v1/invitations/{id}", tags: I, summary: "Приглашение и история статусов (кандидат: открытие переводит sent → viewed)", request: { params: idParams }, responses: { 200: ok, 404: ok } },
+    { method: "post", path: "/api/v1/invitations/{id}/decision", tags: I, summary: "Кандидат принимает или отклоняет. Недопустимый переход — 409", request: { params: idParams, ...body(invitationDecisionSchema) }, responses: { 200: ok, 409: ok } },
+    { method: "post", path: "/api/v1/invitations/{id}/withdraw", tags: I, summary: "Работодатель отзывает приглашение", request: { params: idParams }, responses: { 200: ok, 409: ok } },
+    { method: "get", path: "/api/v1/candidates/{profileId}", tags: I, summary: "Профиль кандидата для работодателя; contacts = null до принятия приглашения", request: { params: z.object({ profileId: z.uuid() }) }, responses: { 200: ok, 404: ok } },
+    { method: "get", path: "/api/v1/notifications", tags: I, summary: "Уведомления пользователя", responses: { 200: ok } },
+    { method: "post", path: "/api/v1/notifications/read", tags: I, summary: "Отметить уведомления прочитанными", responses: { 200: ok } },
+  ];
   return [
     ...matching,
+    ...inv,
     { method: "get", path: "/api/v1/tests", tags: T, summary: "Доступные тесты, правила пересдачи и история попыток", responses: { 200: ok } },
     {
       method: "post",
