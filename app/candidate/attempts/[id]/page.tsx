@@ -78,8 +78,17 @@ export default async function AttemptResult({ params }: { params: Promise<{ id: 
             </Notice>
           )}
           <ul className="mt-4 flex list-disc flex-col gap-1.5 pl-5 text-sm">
-            {r.result === "passed_confident" && nextGrade && <li>Можно сразу попробовать {gradeTitle(nextGrade)}.</li>}
-            {r.result === "passed" && nextGrade && <li>Для перехода на {gradeTitle(nextGrade)} нужен результат от 25/30 — пересдать этот грейд можно через 14 дней.</li>}
+            {r.result === "passed_confident" && nextGrade && (
+              <li>
+                Можно попробовать {gradeTitle(nextGrade)}: в первые {TEST_CONFIG.calibrationDays} дней после первого теста — сразу, позже — не чаще раза в{" "}
+                {TEST_CONFIG.gradeChangeCooldownDays} дней.
+              </li>
+            )}
+            {r.result === "passed" && nextGrade && (
+              <li>
+                Для перехода на {gradeTitle(nextGrade)} нужен результат от {TEST_CONFIG.confidentScore}/30 — пересдать этот грейд можно через {TEST_CONFIG.retrySameGradeDays} дней.
+              </li>
+            )}
             {r.result === "failed" && GRADES.indexOf(a.grade) > 0 && <li>Грейд ниже можно пройти сразу — понижение не принудительное.</li>}
             {r.result === "failed" && <li>Пересдать {gradeTitle(a.grade)} можно через {TEST_CONFIG.retrySameGradeDays} дней.</li>}
           </ul>

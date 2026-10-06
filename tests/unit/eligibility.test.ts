@@ -37,6 +37,32 @@ describe("retake rules (hard rule #7)", () => {
     expect(checkEligibility([att("senior", 5, 0), att("junior", 10, 0)], "middle", now).ok).toBe(true);
   });
 
+  it("climbing is free during the calibration week after the first attempt", () => {
+    const h = [att("junior", 27, 3)];
+    expect(checkEligibility(h, "middle", now, { grade: "junior", assignedAt: daysAgo(3) }).ok).toBe(true);
+  });
+
+  it("after calibration a higher grade opens 90 days after the category was assigned", () => {
+    const h = [att("junior", 27, 30)];
+    const cat = { grade: "junior" as const, assignedAt: daysAgo(30) };
+    expect(checkEligibility(h, "middle", now, cat)).toMatchObject({ ok: false, code: "grade_change_cooldown" });
+    const later = [att("junior", 27, 90)];
+    expect(checkEligibility(later, "middle", now, { grade: "junior", assignedAt: daysAgo(90) }).ok).toBe(true);
+  });
+
+  it("cannot jump junior -> senior via middle in one day after calibration", () => {
+    // Calibrated a month ago at junior, then confident middle is impossible before day 90.
+    const h = [att("junior", 27, 40), att("middle", 26, 39)];
+    expect(checkEligibility(h, "senior", now, { grade: "middle", assignedAt: daysAgo(39) })).toMatchObject({ ok: false, code: "grade_change_cooldown" });
+  });
+
+  it("grade change cooldown does not block tests at or below the active category", () => {
+    const h = [att("middle", 22, 30)];
+    const cat = { grade: "middle" as const, assignedAt: daysAgo(30) };
+    expect(checkEligibility(h, "junior", now, cat).ok).toBe(true);
+    expect(checkEligibility(h, "middle", now, cat).ok).toBe(true);
+  });
+
   it("blocks while an attempt is in progress", () => {
     const h: PastAttempt[] = [{ grade: "junior", status: "in_progress", startedAt: now, finishedAt: null, score: null }];
     expect(checkEligibility(h, "junior", now)).toMatchObject({ ok: false, code: "in_progress" });

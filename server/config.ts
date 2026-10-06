@@ -59,6 +59,10 @@ export const TEST_CONFIG = {
   confidentScore: 25,
   /** Cooldown before retrying the same specialization + grade. */
   retrySameGradeDays: 14,
+  /** After the first finished attempt the candidate may climb grades freely for this long. */
+  calibrationDays: 7,
+  /** Afterwards, a test above the active category opens this long after it was assigned. */
+  gradeChangeCooldownDays: 90,
   /** Seconds allowed for in-browser execution of hidden tests. */
   hiddenRunTimeoutMs: 8000,
   /** Window between issuing hidden inputs and receiving outputs. */

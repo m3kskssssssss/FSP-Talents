@@ -9,9 +9,15 @@ export interface PastAttempt {
   score: number | null;
 }
 
+/** The active category of the specialization, if any. */
+export interface CurrentCategory {
+  grade: Grade;
+  assignedAt: Date;
+}
+
 export type Eligibility =
   | { ok: true }
-  | { ok: false; code: "in_progress" | "cooldown" | "needs_confident_lower"; message: string; availableAt?: Date };
+  | { ok: false; code: "in_progress" | "cooldown" | "needs_confident_lower" | "grade_change_cooldown"; message: string; availableAt?: Date };
 
 /**
  * Retake rules (confirmed with the product owner):
@@ -20,9 +26,13 @@ export type Eligibility =
  *  - a higher grade than any attempted before requires a confident result
  *    (>= 25/30) on the grade right below it;
  *  - the very first attempt in a specialization: any grade.
+ * Grade change is limited in time (case requirement): during the first
+ * `calibrationDays` after the first finished attempt the candidate may climb
+ * freely (finding their level); after that, a test above the active category
+ * opens `gradeChangeCooldownDays` after that category was assigned.
  * Downgrades are never forced: failing does not remove an existing category.
  */
-export function checkEligibility(history: PastAttempt[], grade: Grade, now = new Date()): Eligibility {
+export function checkEligibility(history: PastAttempt[], grade: Grade, now = new Date(), current?: CurrentCategory | null): Eligibility {
   if (history.some((a) => a.status === "in_progress")) {
     return { ok: false, code: "in_progress", message: "У вас есть незавершённая попытка — продолжите её." };
   }
@@ -45,8 +55,22 @@ export function checkEligibility(history: PastAttempt[], grade: Grade, now = new
     }
   }
 
-  const maxAttempted = Math.max(...done.map((a) => gradeIndex(a.grade)));
   const idx = gradeIndex(grade);
+  if (current && idx > gradeIndex(current.grade)) {
+    const firstDone = Math.min(...done.map((a) => (a.finishedAt ?? a.startedAt).getTime()));
+    const calibrating = now.getTime() < firstDone + TEST_CONFIG.calibrationDays * DAY_MS;
+    const availableAt = new Date(current.assignedAt.getTime() + TEST_CONFIG.gradeChangeCooldownDays * DAY_MS);
+    if (!calibrating && availableAt > now) {
+      return {
+        ok: false,
+        code: "grade_change_cooldown",
+        availableAt,
+        message: `Грейд меняется не чаще раза в ${TEST_CONFIG.gradeChangeCooldownDays} дней. Тест на ${GRADE_TITLES[grade]} будет доступен ${availableAt.toLocaleDateString("ru-RU")}.`,
+      };
+    }
+  }
+
+  const maxAttempted = Math.max(...done.map((a) => gradeIndex(a.grade)));
   if (idx > maxAttempted) {
     const lower = GRADES[idx - 1]!;
     const best = Math.max(-1, ...done.filter((a) => a.grade === lower).map((a) => a.score ?? 0));

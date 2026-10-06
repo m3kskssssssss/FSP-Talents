@@ -104,11 +104,12 @@ export async function availability(profileId: string) {
   const now = new Date();
   return TESTABLE_SPECIALIZATIONS.map((spec) => {
     const h = history.filter((a) => a.specialization === spec);
+    const category = cats.find((c) => c.specialization === spec) ?? null;
     return {
       specialization: spec,
-      category: cats.find((c) => c.specialization === spec) ?? null,
+      category,
       inProgress: h.find((a) => a.status === "in_progress")?.id ?? null,
-      grades: GRADES.map((grade) => ({ grade, eligibility: checkEligibility(toPast(h), grade, now) as Eligibility })),
+      grades: GRADES.map((grade) => ({ grade, eligibility: checkEligibility(toPast(h), grade, now, category) as Eligibility })),
       attempts: h.map((a) => ({
         id: a.id,
         grade: a.targetGrade,
@@ -143,7 +144,11 @@ export async function startAttempt(userId: string, profileId: string, spec: Spec
       .select()
       .from(testAttempts)
       .where(and(eq(testAttempts.profileId, profileId), eq(testAttempts.specialization, spec)));
-    const elig = checkEligibility(toPast(history), grade);
+    const [category] = await tx
+      .select({ grade: categories.grade, assignedAt: categories.assignedAt })
+      .from(categories)
+      .where(and(eq(categories.profileId, profileId), eq(categories.specialization, spec), eq(categories.status, "active")));
+    const elig = checkEligibility(toPast(history), grade, new Date(), category);
     if (!elig.ok) throw conflict(elig.message, { code: elig.code, availableAt: elig.availableAt });
     const seed = randomToken(24);
     const rng = new Rng(seed);
