@@ -29,6 +29,7 @@ type Result = {
   pageSize: number;
   items: Card[];
   facets: { cities: string[]; skills: { skill: string; title: string }[] };
+  hints?: { kind: string; text: string; newInTop: number }[];
   search: { needId: string | null };
 };
 
@@ -220,6 +221,20 @@ export function SearchView({ searchId, initial }: { searchId: string; initial: R
         </div>
         {rephraseState === "llm" && <Notice>Доводы переформулированы ИИ без добавления новых фактов; исходные формулировки — детерминированные.</Notice>}
         {rephraseState === "templates" && <Notice>ИИ недоступен — показаны исходные формулировки.</Notice>}
+        {data.hints && data.hints.length > 0 && (
+          <div className="rounded-xl border border-violet/30 bg-violet-50/60 p-4">
+            <p className="label-mono mb-2">Что, если изменить потребность</p>
+            <ul className="flex list-disc flex-col gap-1 pl-5 text-sm">
+              {data.hints.map((h) => (
+                <li key={h.kind}>
+                  {h.text}
+                  {h.newInTop > 0 && <span className="text-muted"> · в верх подборки поднимутся ещё {h.newInTop}</span>}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs text-muted">Пересчёт той же формулы подбора по этой подборке. Чтобы применить, измените потребность и запустите подбор заново.</p>
+          </div>
+        )}
         {data.dropped > 0 && <p className="text-xs text-muted">{data.dropped} кандидат(ов) скрыли профиль после поиска и не показываются.</p>}
         {!data.items.length && <Notice>Никого не нашлось. Ослабьте фильтры или нажмите «Сбросить».</Notice>}
         {main.map((c) => (

@@ -34,6 +34,7 @@ export default async function InvitePage({ searchParams }: { searchParams: Promi
       </PageTitle>
       <InviteForm
         profileId={profile}
+        inviteFloor={cand.inviteFloor}
         needId={need?.id ?? null}
         defaults={{
           title: need?.title ?? "",

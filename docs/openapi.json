@@ -1283,6 +1283,14 @@
                     "minimum": 1,
                     "maximum": 10000000
                   },
+                  "inviteFloor": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 1,
+                    "maximum": 10000000
+                  },
                   "workFormat": {
                     "type": [
                       "string",

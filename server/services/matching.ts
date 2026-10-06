@@ -16,6 +16,7 @@ import {
   type SnapshotEntry,
 } from "../db/schema";
 import { notFound } from "../lib/errors";
+import { counterfactualHints } from "../matching/counterfactual";
 import { scoreCandidate, type CandidateInput, type MatchResult, type NeedInput } from "../matching/score";
 import { skillTitle } from "../matching/skills";
 
@@ -40,6 +41,7 @@ const profileColumns = {
   experienceYears: candidateProfiles.experienceYears,
   salaryFrom: candidateProfiles.salaryExpectFrom,
   salaryTo: candidateProfiles.salaryExpectTo,
+  inviteFloor: candidateProfiles.inviteFloor,
   format: candidateProfiles.workFormat,
   lastActiveAt: candidateProfiles.lastActiveAt,
 };
@@ -269,6 +271,8 @@ export interface CandidateCard {
   experienceYears: number | null;
   category: { specialization: Specialization; grade: Grade; score: number; trustLevel: "high" | "medium" | "low"; assignedAt: Date; express: boolean };
   salaryExpect: { from: number | null; to: number | null };
+  /** Invitations with an upper bound below this are not delivered. */
+  inviteFloor: number | null;
   workFormat: WorkFormat | null;
   skills: { skill: string; title: string; source: "declared" | "resume" | "test_confirmed" }[];
   fsp: { count: number; confirmed: number; bestPlace: number | null };
@@ -307,6 +311,7 @@ export function toCard(c: PoolCandidate, r: MatchResult, extra: { match: number;
     experienceYears: c.experienceYears,
     category: { specialization: c.specialization, grade: c.grade, score: c.score, trustLevel: c.trustLevel, assignedAt: c.assignedAt, express: c.express },
     salaryExpect: { from: c.salaryFrom, to: c.salaryTo },
+    inviteFloor: c.inviteFloor ?? null,
     workFormat: c.format,
     skills,
     fsp: {
@@ -389,7 +394,11 @@ export async function searchResults(employerId: string, searchId: string, filter
     cities: [...new Set(pool.map((c) => c.city).filter((x): x is string => Boolean(x)))].sort(),
     skills: [...new Set(pool.flatMap((c) => c.skills.map((x) => x.skill)))].sort().map((k) => ({ skill: k, title: skillTitle(k) })),
   };
+  // "What if" hints: only for a saved need, over the main block of the snapshot (confirmed, exact grade).
+  const nearIds = new Set(snap.filter((e) => e.near || e.unconfirmed).map((e) => e.profileId));
+  const hints = need ? counterfactualHints(needInput, pool.filter((c) => c.confirmed !== false && !nearIds.has(c.profileId)), now) : [];
   return {
+    hints,
     search: { id: s.id, needId: s.needId, createdAt: s.createdAt, query: s.query, need: need ? { id: need.id, title: need.title, specialization: need.specialization, grade: need.grade, stack: need.stack, salaryFrom: need.salaryFrom, salaryTo: need.salaryTo, format: need.format, city: need.city } : null },
     baseTotal: snap.length,
     dropped: snap.length - pool.length,

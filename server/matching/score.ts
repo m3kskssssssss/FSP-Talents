@@ -29,6 +29,8 @@ export interface CandidateInput {
   skills: { skill: string; source: SkillSource }[];
   salaryFrom: number | null;
   salaryTo: number | null;
+  /** Invitation floor set by the candidate (₽): invitations below it are not delivered. */
+  inviteFloor?: number | null;
   format: WorkFormat | null;
   city: string | null;
   lastActiveAt: Date;
@@ -109,6 +111,8 @@ export function stackLevels(needStack: string[], skills: CandidateInput["skills"
 }
 
 export function salaryFit(need: NeedInput, c: CandidateInput) {
+  // An invitation below the candidate's floor is not delivered at all.
+  if (need.salaryTo && c.inviteFloor && c.inviteFloor > need.salaryTo) return { score: 0, position: "floor" as const };
   if (!need.salaryTo || !c.salaryFrom) return { score: 0.75, position: "unknown" as const };
   const top = need.salaryTo;
   const bottom = need.salaryFrom ?? top;
@@ -206,6 +210,10 @@ export function scoreCandidate(need: NeedInput, c: CandidateInput, now = new Dat
   if (sal.position === "inside") pros.push({ t: `Ожидания ${rub(c.salaryFrom!)} — в пределах вилки`, w: MATCH_WEIGHTS.salary * 0.7 });
   if (sal.position === "upper") cons.push({ t: `Ожидания ${rub(c.salaryFrom!)} — на верхней границе вилки`, w: 0.03 });
   if (sal.position === "above") cons.push({ t: `Ожидания ${rub(c.salaryFrom!)} — выше вилки на ${Math.round((sal.over ?? 0) * 100)}%`, w: MATCH_WEIGHTS.salary * (1 - sal.score) + 0.04 });
+
+  if (c.inviteFloor && need.salaryTo && c.inviteFloor > need.salaryTo) {
+    cons.push({ t: `Порог приглашений — от ${rub(c.inviteFloor)}: с текущей вилкой приглашение не дойдёт`, w: 0.5 });
+  }
 
   if (need.format && c.format && need.format !== c.format) {
     cons.push({ t: `Предпочитает формат «${WORK_FORMAT_TITLES[c.format]}»`, w: MATCH_WEIGHTS.formatCity * (1 - fc) });

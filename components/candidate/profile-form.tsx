@@ -13,6 +13,7 @@ export interface ProfileValues {
   about: string;
   salaryExpectFrom: string;
   salaryExpectTo: string;
+  inviteFloor: string;
   workFormat: string;
   email: string;
   phone: string;
@@ -77,6 +78,7 @@ export function ProfileForm({ initial, submitLabel, onSaved }: { initial: Profil
           experienceYears: num(v.experienceYears),
           salaryExpectFrom: num(v.salaryExpectFrom),
           salaryExpectTo: num(v.salaryExpectTo),
+          inviteFloor: num(v.inviteFloor),
           workFormat: v.workFormat || null,
         },
       });
@@ -130,6 +132,14 @@ export function ProfileForm({ initial, submitLabel, onSaved }: { initial: Profil
         </Field>
         <Field label="Ожидания до, ₽" htmlFor="st" error={errors.salaryExpectTo}>
           <input id="st" className="input font-mono" inputMode="numeric" value={v.salaryExpectTo} onChange={(e) => set({ salaryExpectTo: e.target.value })} />
+        </Field>
+        <Field
+          label="Порог приглашений, ₽"
+          htmlFor="floor"
+          error={errors.inviteFloor}
+          hint="Приглашения, где верх вилки ниже порога, до вас не дойдут. Работодатель видит порог заранее и не тратит ваше время. Пусто — без порога."
+        >
+          <input id="floor" className="input font-mono" inputMode="numeric" value={v.inviteFloor} onChange={(e) => set({ inviteFloor: e.target.value })} />
         </Field>
       </div>
       <Field label="О себе" htmlFor="about">

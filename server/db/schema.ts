@@ -129,6 +129,11 @@ export const candidateProfiles = pgTable(
     experienceYears: real("experience_years"),
     salaryExpectFrom: integer("salary_expect_from"),
     salaryExpectTo: integer("salary_expect_to"),
+    /**
+     * Invitation floor, ₽/month: invitations whose upper bound is below it are
+     * not delivered. Shown to employers openly, so both sides save time.
+     */
+    inviteFloor: integer("invite_floor"),
     workFormat: workFormatEnum("work_format"),
     visibility: visibilityEnum("visibility").notNull().default("visible"),
     fspId: text("fsp_id"),

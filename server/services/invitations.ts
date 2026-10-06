@@ -76,6 +76,9 @@ export async function createInvitation(employerId: string, actorUserId: string, 
   }
   const [cand] = await loadPool({ profileIds: [input.profileId], unconfirmed: true });
   if (!cand) throw notFound("Кандидат не найден или скрыл профиль");
+  if (cand.inviteFloor && input.salaryTo < cand.inviteFloor) {
+    throw unprocessable(`Кандидат принимает приглашения с верхом вилки от ${cand.inviteFloor.toLocaleString("ru-RU")} ₽ — поднимите вилку или выберите другого кандидата`, { code: "below_invite_floor", inviteFloor: cand.inviteFloor });
+  }
   if (input.needId) {
     const [n] = await db().select({ e: needs.employerId }).from(needs).where(eq(needs.id, input.needId));
     if (!n || n.e !== employerId) throw notFound("Потребность не найдена");
@@ -294,6 +297,7 @@ export async function candidateForEmployer(employerId: string, actorUserId: stri
     about: p.about,
     experienceYears: p.experienceYears,
     salaryExpect: { from: p.salaryExpectFrom, to: p.salaryExpectTo },
+    inviteFloor: p.inviteFloor,
     workFormat: p.workFormat,
     categories: cats.map((c) => ({ specialization: c.specialization, grade: c.grade, score: c.score, trustLevel: c.trustLevel, assignedAt: c.assignedAt })),
     /** Claimed grade the test did not confirm (only when there is no active category). */

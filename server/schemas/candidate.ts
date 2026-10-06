@@ -13,6 +13,7 @@ export const profileUpdateSchema = z
     experienceYears: opt(z.number().min(0).max(60)),
     salaryExpectFrom: opt(salaryRangeShape.salaryFrom),
     salaryExpectTo: opt(salaryRangeShape.salaryTo),
+    inviteFloor: opt(salaryRangeShape.salaryTo),
     workFormat: opt(workFormatSchema),
     survey: opt(
       z.object({

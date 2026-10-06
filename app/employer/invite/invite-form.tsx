@@ -8,7 +8,7 @@ import { api, ApiError, fieldErrors } from "@/lib/api-client";
 
 type Defaults = { title: string; description: string; salaryFrom: string; salaryTo: string; format: string };
 
-export function InviteForm({ profileId, needId, defaults }: { profileId: string; needId: string | null; defaults: Defaults }) {
+export function InviteForm({ profileId, needId, defaults, inviteFloor = null }: { profileId: string; needId: string | null; defaults: Defaults; inviteFloor?: number | null }) {
   const router = useRouter();
   const [v, setV] = useState(defaults);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -16,6 +16,8 @@ export function InviteForm({ profileId, needId, defaults }: { profileId: string;
   const [pending, setPending] = useState(false);
   const set = (p: Partial<Defaults>) => setV((x) => ({ ...x, ...p }));
   const num = (s: string) => (s.trim() ? Number(s.replace(/\s/g, "")) : undefined);
+  const top = num(v.salaryTo);
+  const belowFloor = Boolean(inviteFloor && top && top < inviteFloor);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,6 +53,12 @@ export function InviteForm({ profileId, needId, defaults }: { profileId: string;
           <input id="st" className="input font-mono" inputMode="numeric" value={v.salaryTo} onChange={(e) => set({ salaryTo: e.target.value })} required aria-invalid={!!errors.salaryTo} />
         </Field>
       </fieldset>
+      {inviteFloor && (
+        <Notice tone={belowFloor ? "error" : "info"}>
+          Порог приглашений кандидата — от {inviteFloor.toLocaleString("ru-RU")} ₽ по верху вилки.{" "}
+          {belowFloor ? "С такой вилкой приглашение не дойдёт: поднимите верхнюю границу." : "Ваша вилка проходит порог."}
+        </Notice>
+      )}
       <Field label="Формат" htmlFor="format">
         <select id="format" className="input" value={v.format} onChange={(e) => set({ format: e.target.value })}>
           <option value="">Не указан</option>
@@ -61,7 +69,7 @@ export function InviteForm({ profileId, needId, defaults }: { profileId: string;
       </Field>
       <Notice>Кандидат увидит компанию, суть задачи и вилку. Его контакты откроются вам, только если он примет приглашение.</Notice>
       {error && <Notice tone="error">{error}</Notice>}
-      <Button type="submit" size="lg" disabled={pending}>
+      <Button type="submit" size="lg" disabled={pending || belowFloor}>
         {pending ? "Отправляем…" : "Отправить приглашение"}
       </Button>
     </form>

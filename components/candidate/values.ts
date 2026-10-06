@@ -12,6 +12,7 @@ export function toProfileValues(me: My): ProfileValues {
     about: p.about ?? "",
     salaryExpectFrom: p.salaryExpectFrom ? String(p.salaryExpectFrom) : "",
     salaryExpectTo: p.salaryExpectTo ? String(p.salaryExpectTo) : "",
+    inviteFloor: p.inviteFloor ? String(p.inviteFloor) : "",
     workFormat: p.workFormat ?? "",
     email: me.contacts.email ?? "",
     phone: me.contacts.phone ?? "",

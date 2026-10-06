@@ -87,6 +87,8 @@ async function insertCandidate(c: SynthCandidate, email: string, passwordHash: s
         experienceYears: c.experienceYears,
         salaryExpectFrom: c.salaryFrom,
         salaryExpectTo: c.salaryTo,
+        // Every fifth candidate sets an invitation floor at their minimum expectation (deterministic).
+        inviteFloor: Number(c.key.replace(/\D/g, "")) % 5 === 0 ? c.salaryFrom : null,
         workFormat: c.format,
         visibility: c.visible ? "visible" : "hidden",
         fspId: c.achievements.some((a) => a.source === "fsp_registry") ? `FSP-${c.key.slice(4)}` : null,

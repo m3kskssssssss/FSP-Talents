@@ -96,6 +96,7 @@ export function CandidateCard({ c, needId, rephrased }: { c: Card; needId?: stri
         <div className="text-right text-sm">
           <p className="label-mono">ожидания</p>
           <p className="font-mono">{salaryRange(c.salaryExpect.from, c.salaryExpect.to)}</p>
+          {c.inviteFloor && <p className="text-xs text-muted">порог приглашений от {c.inviteFloor.toLocaleString("ru-RU")} ₽</p>}
         </div>
       </header>
 

@@ -2,7 +2,8 @@ import { and, eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { INVITATION_CONFIG } from "@/server/config";
 import { db } from "@/server/db";
-import { auditLog, invitationEvents, invitations, notifications } from "@/server/db/schema";
+import { auditLog, candidateProfiles, invitationEvents, invitations, notifications } from "@/server/db/schema";
+import { scoreCandidate } from "@/server/matching/score";
 import { invitationCreateSchema } from "@/server/schemas/invitations";
 import {
   candidateForEmployer,
@@ -30,6 +31,23 @@ describe("invitations", () => {
     await expect(
       createInvitation(emp.employerId, emp.user.id, { profileId: c.profileId, title: "Dev", description: "описание задачи", salaryFrom: undefined as never, salaryTo: undefined as never }),
     ).rejects.toMatchObject({ status: 422 });
+  });
+
+  it("invitation floor: below it the invitation is refused and the floor is visible in the search", async () => {
+    const emp = await makeEmployer();
+    const c = await makeCategorized({});
+    await db().update(candidateProfiles).set({ inviteFloor: 300000 }).where(eq(candidateProfiles.id, c.profileId));
+    await expect(createInvitation(emp.employerId, emp.user.id, { profileId: c.profileId, ...base })).rejects.toMatchObject({
+      status: 422,
+      details: { code: "below_invite_floor", inviteFloor: 300000 },
+    });
+    expect((await candidateForEmployer(emp.employerId, emp.user.id, c.profileId)).inviteFloor).toBe(300000);
+    const r = scoreCandidate({ grade: "middle", stack: [], salaryFrom: 200000, salaryTo: 260000, format: null, city: null }, {
+      grade: "middle", score: 22, trustLevel: "high", assignedAt: new Date(), skills: [], salaryFrom: 200000, salaryTo: 250000,
+      inviteFloor: 300000, format: null, city: null, lastActiveAt: new Date(), achievements: [],
+    });
+    expect(r.cons[0]).toMatch(/Порог приглашений/);
+    await expect(createInvitation(emp.employerId, emp.user.id, { profileId: c.profileId, ...base, salaryTo: 300000 })).resolves.toHaveProperty("id");
   });
 
   it("hides contacts until acceptance, then discloses them with an audit record (hard rule #2)", async () => {
