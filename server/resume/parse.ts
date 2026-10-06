@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { structured } from "../llm";
+import { redactPersonalData } from "../llm/redact";
 import { KNOWN_CITIES } from "../matching/need-parser";
 import { extractSkills, normalizeSkill } from "../matching/skills";
 
@@ -52,30 +53,33 @@ export function parseResumeRules(text: string): ResumeDraft {
   };
 }
 
+// No name or contacts: the model never sees them (they are masked) and never returns them.
 const llmSchema = z.object({
-  fullName: z.string().nullable(),
   city: z.string().nullable(),
   experienceYears: z.number().nullable().describe("Суммарный коммерческий опыт в годах"),
-  about: z.string().nullable().describe("1-2 предложения о кандидате по тексту резюме"),
+  about: z.string().nullable().describe("1-2 предложения о кандидате по тексту резюме, без имени"),
   skills: z.array(z.string()),
   education: z.array(z.string()),
-  contacts: z.object({
-    email: z.string().nullable(),
-    phone: z.string().nullable(),
-    telegram: z.string().nullable(),
-    links: z.array(z.string()),
-  }),
 });
 
-/** LLM extraction with the rules as fallback and safety net. Contacts go straight to the protected table. */
+/**
+ * LLM extraction with the rules as fallback and safety net. The name and
+ * contacts are extracted locally by rules and go straight to the protected
+ * table; the text sent to the model is masked (`redactPersonalData`).
+ */
 export async function parseResumeText(text: string): Promise<{ draft: ResumeDraft; parsedBy: "llm" | "rules" }> {
   const rules = parseResumeRules(text);
+  const masked = redactPersonalData(text, { names: [rules.fullName], headLines: 3 });
   const llm = await structured(
     "resume",
     llmSchema,
     [
-      { role: "system", content: "Извлеки из текста резюме ИТ-специалиста структуру. Только факты из текста; чего нет — null или пустой список." },
-      { role: "user", content: text.slice(0, 12000) },
+      {
+        role: "system",
+        content:
+          "Извлеки из текста резюме ИТ-специалиста структуру. Только факты из текста; чего нет — null или пустой список. Персональные данные в тексте заменены метками вида [ИМЯ], [EMAIL] — не пытайся их восстановить.",
+      },
+      { role: "user", content: masked.slice(0, 12000) },
     ],
     { maxTokens: 900, budgetMs: 20000 },
   );
@@ -83,18 +87,13 @@ export async function parseResumeText(text: string): Promise<{ draft: ResumeDraf
   const skills = [...new Set([...llm.skills.map(normalizeSkill).filter((s): s is string => Boolean(s)), ...rules.skills])].sort();
   return {
     draft: {
-      fullName: llm.fullName ?? rules.fullName,
+      fullName: rules.fullName,
       city: llm.city ?? rules.city,
       experienceYears: llm.experienceYears ?? rules.experienceYears,
-      about: llm.about,
+      about: llm.about?.includes("[") ? null : llm.about,
       skills,
       education: llm.education.length ? llm.education : rules.education,
-      contacts: {
-        email: llm.contacts.email ?? rules.contacts.email,
-        phone: llm.contacts.phone ?? rules.contacts.phone,
-        telegram: llm.contacts.telegram ?? rules.contacts.telegram,
-        links: llm.contacts.links.length ? llm.contacts.links : rules.contacts.links,
-      },
+      contacts: rules.contacts,
     },
     parsedBy: "llm",
   };

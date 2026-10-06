@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { GRADES, SPECIALIZATIONS, WORK_FORMATS, type Grade, type Specialization, type WorkFormat } from "../config";
 import { structured } from "../llm";
+import { redactPersonalData } from "../llm/redact";
 import { extractSkills, normalizeSkill } from "./skills";
 
 export interface NeedDraft {
@@ -139,7 +140,8 @@ export async function parseNeedText(text: string): Promise<{ draft: NeedDraft; p
           "Ты извлекаешь структуру из текста вакансии ИТ-специалиста. Используй только факты из текста, ничего не придумывай; если поля нет — null. " +
           "Специализации: backend, frontend, data (Data/ML/аналитика данных), qa, mobile, devops, analyst (системный/бизнес-аналитик). Зарплата — рубли в месяц, целые числа.",
       },
-      { role: "user", content: text.slice(0, 8000) },
+      // Recruiter contacts are not needed to parse a vacancy and are not sent.
+      { role: "user", content: redactPersonalData(text).slice(0, 8000) },
     ],
     { maxTokens: 700, budgetMs: 20000 },
   );
