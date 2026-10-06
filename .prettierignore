@@ -1,0 +1,7 @@
+node_modules
+.next
+drizzle
+брендбук
+public
+package-lock.json
+docs/*.svg

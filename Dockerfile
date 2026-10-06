@@ -1,0 +1,30 @@
+# syntax=docker/dockerfile:1
+FROM node:22-bookworm-slim AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+
+FROM node:22-bookworm-slim AS build
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1 STANDALONE=1
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npm run build
+
+FROM node:22-bookworm-slim AS runner
+WORKDIR /app
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
+RUN useradd -m -u 1001 app
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
+COPY --from=build /app/public ./public
+# Migrations, seed and validation scripts run inside the container (see docker-compose).
+COPY --from=build /app/drizzle ./drizzle
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/scripts ./scripts
+COPY --from=build /app/server ./server
+COPY --from=build /app/tsconfig.json ./tsconfig.json
+RUN mkdir -p /app/storage && chown -R app /app/storage
+USER app
+EXPOSE 3000
+CMD ["sh", "-c", "node node_modules/tsx/dist/cli.mjs scripts/migrate.ts && node server.js"]
