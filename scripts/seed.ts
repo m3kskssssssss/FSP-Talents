@@ -149,7 +149,7 @@ async function insertCandidate(c: SynthCandidate, email: string, passwordHash: s
           if (a.trust !== "low") return null;
           const t = getTemplate(templateId);
           if (t.kind !== "code") return null;
-          return `// seed_${c.key}\n${t.reference.javascript(instanceParams(t, `${c.key}-${k}`).p)}`;
+          return `// seed_${c.key}\n${(t.reference.javascript ?? t.reference.python)!(instanceParams(t, `${c.key}-${k}`).p)}`;
         };
         await tx.insert(attemptItems).values(
           a.items.map((it, k) => ({

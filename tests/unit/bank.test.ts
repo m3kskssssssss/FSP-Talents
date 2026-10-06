@@ -37,15 +37,18 @@ function runJs(source: string, fn: string, inputs: unknown[][]): unknown[] {
 }
 
 describe("task bank", () => {
-  it("has at least 25 backend templates, quiz share under 30%, unique ids", () => {
-    const be = templatesFor("backend");
-    expect(be.length).toBeGreaterThanOrEqual(25);
-    expect(be.filter((t) => t.kind === "quiz").length / be.length).toBeLessThan(0.3);
-    expect(new Set(BANK.map((t) => t.id)).size).toBe(BANK.length);
-    // Difficulty is spread over the whole scale.
-    const bs = be.map((t) => t.b);
+  it.each(["backend", "frontend", "data", "qa"] as const)("%s: >= 25 templates, quiz share below 0.3, difficulty spread", (spec) => {
+    const ts = templatesFor(spec);
+    expect(ts.length).toBeGreaterThanOrEqual(25);
+    expect(ts.filter((t) => t.kind === "quiz").length / ts.length).toBeLessThan(0.3);
+    const bs = ts.map((t) => t.b);
     expect(Math.min(...bs)).toBeLessThan(-1.5);
     expect(Math.max(...bs)).toBeGreaterThan(1.5);
+  });
+
+  it("has unique ids and every code template has references for all its languages", () => {
+    expect(new Set(BANK.map((t) => t.id)).size).toBe(BANK.length);
+    for (const t of BANK) if (t.kind === "code") for (const l of t.languages) expect(t.reference[l], `${t.id} ${l}`).toBeTypeOf("function");
   });
 
   describe.each(BANK.map((t) => [t.id, t] as [string, Template]))("%s", (_id, t) => {
@@ -89,14 +92,16 @@ describe("task bank", () => {
 
     if (t.kind === "code") {
       const ct = t as CodeTemplate;
-      it("reference solutions in JS and Python agree with the server solver", () => {
+      it("reference solutions (JS / Python) agree with the server solver", () => {
         for (const s of SEEDS) {
           const { p } = instanceParams(ct, s);
           const inputs = [...(hiddenPayload(ct, s, "n1").inputs ?? []), ...(hiddenPayload(ct, s, "n2").inputs ?? [])];
           const expected = inputs.map((args) => ct.solve(p, JSON.parse(JSON.stringify(args))));
-          const js = runJs(ct.reference.javascript(p), ct.fn.name, inputs);
-          js.forEach((v, i) => expect(valuesEqual(v, expected[i], ct.compare), `js ${s} #${i}`).toBe(true));
-          if (hasPython) {
+          if (ct.reference.javascript) {
+            const js = runJs(ct.reference.javascript(p), ct.fn.name, inputs);
+            js.forEach((v, i) => expect(valuesEqual(v, expected[i], ct.compare), `js ${s} #${i}`).toBe(true));
+          }
+          if (hasPython && ct.reference.python) {
             const py = runPython(ct.reference.python(p), ct.fn.name, inputs);
             py.forEach((v, i) => expect(valuesEqual(v, expected[i], ct.compare), `py ${s} #${i}`).toBe(true));
           }

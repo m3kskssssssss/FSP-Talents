@@ -49,7 +49,7 @@ export interface CodeTemplate<P = any> extends BaseTemplate<P> {
   solve(p: P, args: Value[]): Value;
   compare?: Compare;
   /** Reference solutions as source code; verified against `solve` in unit tests. */
-  reference: Record<CodeLanguage, (p: P) => string>;
+  reference: Partial<Record<CodeLanguage, (p: P) => string>>;
 }
 
 export interface SqlTemplate<P = any> extends BaseTemplate<P> {

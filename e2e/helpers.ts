@@ -26,7 +26,7 @@ export async function solutionFor(itemId: string): Promise<Solution> {
   const t = getTemplate(item.templateId);
   if (t.kind === "code") {
     const { p } = instanceParams(t, item.seed);
-    return { kind: "code", language: "javascript", code: (t as CodeTemplate).reference.javascript(p) };
+    return { kind: "code", language: "javascript", code: (t as CodeTemplate).reference.javascript!(p) };
   }
   if (t.kind === "sql") return { kind: "sql", code: t.reference(instanceParams(t, item.seed).p) };
   const ref = await referenceAnswer(t, item.seed, "none");

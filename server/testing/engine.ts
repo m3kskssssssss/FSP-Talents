@@ -236,15 +236,16 @@ function checkCode(
   const inputs = hiddenPayload(t, itemSeed, nonce).inputs ?? [];
   if (a.outputs.length !== inputs.length) return { score: 0, correct: false, trapHits, details: "outputs count" };
   let passed = 0;
-  let twinPassed = 0;
+  let twinMatches = 0;
   inputs.forEach((args, i) => {
     const out = a.outputs[i]!;
     if (!out.ok) return;
     if (valuesEqual(out.value, t.solve(p, clone(args)), t.compare)) passed++;
-    else if (p2 && valuesEqual(out.value, t.solve(p2, clone(args)), t.compare)) twinPassed++;
+    if (p2 && valuesEqual(out.value, t.solve(p2, clone(args)), t.compare)) twinMatches++;
   });
   const score = inputs.length ? passed / inputs.length : 0;
-  if (p2 && twinPassed > 0 && twinPassed >= inputs.length / 2) trapHits.push("twin");
+  // The code implements the DOM-only value: matches the twin on (almost) all inputs but is not correct.
+  if (p2 && passed < inputs.length && twinMatches >= 0.8 * inputs.length) trapHits.push("twin");
   return { score, correct: score === 1, trapHits, details: `${passed}/${inputs.length}` };
 }
 
@@ -317,7 +318,7 @@ export async function referenceAnswer(t: Template, itemSeed: string, nonce: stri
   const { p } = instanceParams(t, itemSeed);
   if (t.kind === "code") {
     const inputs = hiddenPayload(t, itemSeed, nonce).inputs!;
-    return { kind: "code", language: t.languages[0]!, code: t.reference[t.languages[0]!](p), outputs: inputs.map((args) => ({ ok: true, value: t.solve(p, clone(args)) })) };
+    return { kind: "code", language: t.languages[0]!, code: t.reference[t.languages[0]!]?.(p) ?? "", outputs: inputs.map((args) => ({ ok: true, value: t.solve(p, clone(args)) })) };
   }
   if (t.kind === "sql") {
     const data = hiddenPayload(t, itemSeed, nonce).data!;

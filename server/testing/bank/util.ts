@@ -31,3 +31,39 @@ export const other = <T>(rng: Rng, options: readonly T[], current: T) =>
 export const sqlStr = (s: string) => `'${s.replace(/'/g, "''")}'`;
 
 export const pad2 = (n: number) => String(n).padStart(2, "0");
+
+import type { Specialization } from "../../config";
+import type { QuizTemplate } from "../types";
+
+/**
+ * Scenario quiz: a random scenario is shown, the correct answer is its own
+ * answer, distractors are answers of other scenarios. Keeps conceptual
+ * questions parameterised (the wording and options change per attempt).
+ */
+export function scenarioQuiz(o: {
+  id: string;
+  specialization: Specialization;
+  title: string;
+  skills: string[];
+  b: number;
+  a: number;
+  question: string;
+  scenarios: { s: string; a: string }[];
+}): QuizTemplate<{ i: number; d: number[] }> {
+  return {
+    id: o.id,
+    specialization: o.specialization,
+    kind: "quiz",
+    title: o.title,
+    skills: o.skills,
+    b: o.b,
+    a: o.a,
+    params: (rng) => {
+      const i = rng.int(0, o.scenarios.length - 1);
+      const others = [...new Set(o.scenarios.map((x) => x.a).filter((x) => x !== o.scenarios[i]!.a))];
+      return { i, d: rng.sample(others.map((_, k) => k), Math.min(3, others.length)).map((k) => o.scenarios.findIndex((x) => x.a === others[k])) };
+    },
+    statement: (pp) => [p(o.question), p({ b: o.scenarios[pp.i]!.s })],
+    options: (pp) => [{ text: o.scenarios[pp.i]!.a, correct: true }, ...pp.d.map((k) => ({ text: o.scenarios[k]!.a, correct: false }))],
+  };
+}
