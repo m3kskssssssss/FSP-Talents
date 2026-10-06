@@ -1,5 +1,5 @@
 import { GRADES, TEST_CONFIG, type Grade, type WorkFormat } from "../config";
-import type { FspAchievementInput } from "../matching/score";
+import type { CandidateInput, FspAchievementInput } from "../matching/score";
 import { BANK } from "../testing/bank";
 import { estimate, selectNext, shouldStop, type Administered, type BankItem } from "../testing/cat";
 import { decide, p2pl } from "../testing/irt";
@@ -62,7 +62,8 @@ export interface SynthAttempt {
   se: number;
   score: number;
   result: "passed_confident" | "passed" | "failed";
-  items: { templateId: string; x: number; a: number; b: number; kind: Administered["kind"] }[];
+  items: { templateId: string; x: number; a: number; b: number; kind: Administered["kind"]; expected: number }[];
+  stop: string;
   trust: "high" | "medium" | "low";
 }
 
@@ -121,14 +122,29 @@ export function bankItemsFor(spec: SynthSpec): BankItem[] {
   }));
 }
 
-export function simulateAttempt(theta: number, grade: Grade, bank: BankItem[], rng: Rng, opts: { leaked?: Set<string> } = {}): SynthAttempt {
+export function simulateAttempt(
+  theta: number,
+  grade: Grade,
+  bank: BankItem[],
+  rng: Rng,
+  opts: { leaked?: Set<string>; trueParams?: Map<string, { a: number; b: number }> } = {},
+): SynthAttempt {
   const adm: Administered[] = [];
+  const expected: number[] = [];
+  let stop: string;
   for (;;) {
-    const stop = shouldStop(grade, adm, { bankLeft: bank.length - adm.length });
-    if (stop) break;
+    const s = shouldStop(grade, adm, { bankLeft: bank.length - adm.length });
+    if (s) {
+      stop = s;
+      break;
+    }
     const it = selectNext(grade, adm, bank, rng)!;
+    const before = estimate(grade, adm);
+    expected.push(p2pl(before.theta, it.a, it.b));
+    // Responses follow the TRUE item parameters (unknown to the system when calibrating).
+    const tp = opts.trueParams?.get(it.id) ?? it;
     // A leaked item is answered correctly by most candidates regardless of ability.
-    const p = opts.leaked?.has(it.id) ? 0.95 : p2pl(theta, it.a, it.b);
+    const p = opts.leaked?.has(it.id) ? 0.95 : p2pl(theta, tp.a, tp.b);
     adm.push({ ...it, x: rng.float() < p ? 1 : 0 });
   }
   const est = estimate(grade, adm);
@@ -140,8 +156,9 @@ export function simulateAttempt(theta: number, grade: Grade, bank: BankItem[], r
     se: est.se,
     score: d.score,
     result: d.result,
-    items: adm.map((a) => ({ templateId: a.id, x: a.x!, a: a.a, b: a.b, kind: a.kind })),
+    items: adm.map((a, k) => ({ templateId: a.id, x: a.x!, a: a.a, b: a.b, kind: a.kind, expected: expected[k]! })),
     trust: "high",
+    stop,
   };
 }
 
@@ -281,4 +298,47 @@ export function isRelevant(need: SynthNeed, c: SynthCandidate) {
   if (need.format === "office" && c.truth.format === "remote") return false;
   if (need.format !== "remote" && need.city && need.city !== c.truth.city && c.truth.format !== "remote" && need.format === "office") return false;
   return true;
+}
+
+// ---------------------------------------------------------------- helpers shared by seed and validation
+
+const MAIN_LANG: Record<SynthSpec, string> = { backend: "python", frontend: "javascript", data: "python", qa: "python" };
+
+/** Best passed attempt that is trusted enough to give a category (same rule as the product). */
+export function categoryOf(c: SynthCandidate) {
+  let best: SynthAttempt | null = null;
+  for (const a of c.attempts) {
+    if (a.result === "failed" || a.trust === "low") continue;
+    if (!best || GRADES.indexOf(a.grade) > GRADES.indexOf(best.grade) || (a.grade === best.grade && a.score > best.score)) best = a;
+  }
+  return best;
+}
+
+/** Skills confirmed by the test: main language, SQL where tested, and two true skills from bank topics. */
+export function confirmedSkills(c: SynthCandidate) {
+  const s = new Set<string>([MAIN_LANG[c.spec]]);
+  if (c.spec === "backend" || c.spec === "data") s.add("sql");
+  for (const x of c.truth.skills.slice(0, 2)) s.add(x);
+  return [...s];
+}
+
+export function toCandidateInput(c: SynthCandidate, now: Date): CandidateInput | null {
+  const cat = categoryOf(c);
+  if (!cat || !c.visible) return null;
+  return {
+    grade: cat.grade,
+    score: cat.score,
+    trustLevel: cat.trust,
+    assignedAt: new Date(now.getTime() - cat.daysAgo * 86400000),
+    skills: [
+      ...c.declaredSkills.map((skill) => ({ skill, source: "declared" as const })),
+      ...confirmedSkills(c).map((skill) => ({ skill, source: "test_confirmed" as const })),
+    ],
+    salaryFrom: c.salaryFrom,
+    salaryTo: c.salaryTo,
+    format: c.format,
+    city: c.city,
+    lastActiveAt: new Date(now.getTime() - c.lastActiveDaysAgo * 86400000),
+    achievements: c.achievements,
+  };
 }

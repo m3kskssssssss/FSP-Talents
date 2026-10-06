@@ -23,6 +23,7 @@ import { BANK, getTemplate } from "../testing/bank";
 import { estimate, selectNext, shouldStop, toResponses, type Administered, type BankItem } from "../testing/cat";
 import { checkEligibility, type Eligibility, type PastAttempt } from "../testing/eligibility";
 import { checkAnswer, hiddenPayload, renderItem, type Answer, type PublicItem } from "../testing/engine";
+import { leakVerdict } from "../testing/calibration";
 import { decide, p2pl } from "../testing/irt";
 import { Rng } from "../testing/rng";
 import { computeTrust } from "../testing/trust";
@@ -207,17 +208,21 @@ async function items(tx: DbOrTx, attemptId: string) {
   return tx.select().from(attemptItems).where(eq(attemptItems.attemptId, attemptId)).orderBy(asc(attemptItems.position));
 }
 
-function administered(rows: ItemRow[], meta: Map<string, { a: number; b: number; kind: TaskKind }>): Administered[] {
+type Meta = Map<string, { a: number; b: number; kind: TaskKind; status: string }>;
+
+/** Answers to flagged (suspected leaked) templates do not count towards theta. */
+function administered(rows: ItemRow[], meta: Meta): Administered[] {
   return rows.map((r) => {
     const m = meta.get(r.templateId)!;
-    return { id: r.templateId, kind: m.kind, a: m.a, b: m.b, x: r.answeredAt ? (r.partialScore ?? 0) : undefined };
+    const counts = r.answeredAt && m.status !== "flagged";
+    return { id: r.templateId, kind: m.kind, a: m.a, b: m.b, x: counts ? (r.partialScore ?? 0) : undefined };
   });
 }
 
-async function templateMeta(tx: DbOrTx, ids: string[]) {
-  if (!ids.length) return new Map<string, { a: number; b: number; kind: TaskKind }>();
+async function templateMeta(tx: DbOrTx, ids: string[]): Promise<Meta> {
+  if (!ids.length) return new Map();
   const rows = await tx.select().from(taskTemplates).where(inArray(taskTemplates.id, ids));
-  return new Map(rows.map((r) => [r.id, { a: r.discriminationA, b: r.difficultyB, kind: r.kind as TaskKind }]));
+  return new Map(rows.map((r) => [r.id, { a: r.discriminationA, b: r.difficultyB, kind: r.kind as TaskKind, status: r.status }]));
 }
 
 export interface AttemptState {
@@ -373,6 +378,7 @@ export async function submitAnswer(
         expectedCorrect: sql`${taskTemplates.expectedCorrect} + ${p2pl(before.theta, m.a, m.b)}`,
       })
       .where(eq(taskTemplates.id, item.templateId));
+    await checkLeak(tx, item.templateId);
 
     const updated = await items(tx, a.id);
     const adm = administered(updated, meta);
@@ -391,6 +397,20 @@ export async function submitAnswer(
     else await serveItem(tx, a, next.id, updated.length);
   });
   return getAttempt(profileId, attemptId);
+}
+
+/** Leak drift detection after each answer (see testing/calibration.ts). */
+async function checkLeak(tx: DbOrTx, templateId: string) {
+  const [t] = await tx.select().from(taskTemplates).where(eq(taskTemplates.id, templateId));
+  if (!t || t.status !== "active") return;
+  const v = leakVerdict({ id: t.id, answered: t.answeredCount, correct: t.correctCount, expected: t.expectedCorrect });
+  if (v.flagged) {
+    await tx
+      .update(taskTemplates)
+      .set({ status: "flagged", flaggedAt: new Date(), flagReason: `Доля верных выше прогноза IRT на ${Math.round(v.excess * 100)} п.п. (z = ${v.z.toFixed(1)})` })
+      .where(eq(taskTemplates.id, templateId));
+    await audit(tx, { actorUserId: null, action: "template.flagged", entity: "task_template", entityId: templateId, meta: { excess: v.excess, z: v.z } });
+  }
 }
 
 /** Outputs can be large; keep the code and a compact summary only. */

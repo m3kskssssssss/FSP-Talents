@@ -24,7 +24,7 @@ import {
   users,
 } from "../server/db/schema";
 import { DAY_MS } from "../server/lib/time";
-import { generatePopulation, type SynthCandidate } from "../server/synth/population";
+import { confirmedSkills, generatePopulation, type SynthCandidate } from "../server/synth/population";
 import { Rng } from "../server/testing/rng";
 import { syncTemplates } from "../server/services/testing";
 import { seedInvitations } from "./seed-invitations";
@@ -45,7 +45,6 @@ async function reset() {
   console.log("database wiped");
 }
 
-const LANG_BY_SPEC = { backend: "python", frontend: "javascript", data: "python", qa: "python" } as const;
 
 async function insertCandidate(c: SynthCandidate, email: string, passwordHash: string) {
   return db().transaction(async (tx) => {
@@ -156,11 +155,7 @@ async function insertCandidate(c: SynthCandidate, email: string, passwordHash: s
         attemptId: best.attemptId,
         assignedAt: best.at,
       });
-      // Skills confirmed by the test: the main language, SQL where tested, and true skills from the bank topics.
-      const confirmed = new Set<string>([LANG_BY_SPEC[c.spec]]);
-      if (c.spec === "backend" || c.spec === "data") confirmed.add("sql");
-      for (const s of c.truth.skills.slice(0, 2)) confirmed.add(s);
-      for (const skill of confirmed) skills.push({ profileId, skill, source: "test_confirmed" as never });
+      for (const skill of confirmedSkills(c)) skills.push({ profileId, skill, source: "test_confirmed" as never });
     }
     if (skills.length) await tx.insert(candidateSkills).values(skills).onConflictDoNothing();
     if (c.achievements.length) {
