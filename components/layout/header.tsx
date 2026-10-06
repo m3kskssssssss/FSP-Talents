@@ -25,6 +25,7 @@ const navByRole = {
   admin: [
     { href: "/admin", label: "Модерация" },
     { href: "/admin/templates", label: "Банк заданий" },
+    { href: "/admin/plagiarism", label: "Похожие решения" },
   ],
 } as const;
 

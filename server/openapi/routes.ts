@@ -3,6 +3,7 @@ import { z } from "zod";
 import { baseSearchSchema, needCreateSchema, needParseSchema, rephraseSchema, searchFiltersSchema } from "../schemas/needs";
 import { consentSchema, contactsSchema, deleteAccountSchema, fspLinkSchema, profileUpdateSchema, selfAchievementSchema, skillsSchema, visibilitySchema } from "../schemas/candidate";
 import { invitationCreateSchema, invitationDecisionSchema } from "../schemas/invitations";
+import { attemptsFilterSchema, reviewSchema, templateStatusSchema } from "../schemas/moderation";
 import { answerSchema, attemptEventsSchema, startAttemptSchema } from "../schemas/testing";
 
 export type ApiRoute = Omit<RouteConfig, "responses"> & {
@@ -67,8 +68,18 @@ export function apiRoutes(): ApiRoute[] {
     { method: "delete", path: "/api/v1/me/achievements/{id}", tags: C, summary: "Удалить заявленное достижение", request: { params: idParams }, responses: { 200: ok } },
     { method: "delete", path: "/api/v1/me", tags: C, summary: "Удалить аккаунт с анонимизацией", request: body(deleteAccountSchema), responses: { 200: ok } },
   ];
+  const A = ["Модерация"];
+  const admin: ApiRoute[] = [
+    { method: "get", path: "/api/v1/admin/attempts", tags: A, summary: "Попытки по индексу доверия (сначала самые подозрительные)", request: { query: attemptsFilterSchema }, responses: { 200: ok } },
+    { method: "get", path: "/api/v1/admin/attempts/{id}", tags: A, summary: "Журнал попытки, сработавшие ловушки, похожие решения", request: { params: idParams }, responses: { 200: ok } },
+    { method: "post", path: "/api/v1/admin/attempts/{id}/review", tags: A, summary: "Решение модератора: подтвердить (категория с пометкой) или отклонить", request: { params: idParams, ...body(reviewSchema) }, responses: { 200: ok } },
+    { method: "get", path: "/api/v1/admin/templates", tags: A, summary: "Банк шаблонов: IRT, экспозиция, детектор слива", responses: { 200: ok } },
+    { method: "patch", path: "/api/v1/admin/templates/{id}", tags: A, summary: "Статус шаблона active / flagged / retired", request: { params: z.object({ id: z.string() }), ...body(templateStatusSchema) }, responses: { 200: ok } },
+    { method: "get", path: "/api/v1/admin/plagiarism", tags: A, summary: "Кластеры похожих решений (n-граммы токенов)", responses: { 200: ok } },
+  ];
   return [
     ...me,
+    ...admin,
     ...matching,
     ...inv,
     { method: "get", path: "/api/v1/tests", tags: T, summary: "Доступные тесты, правила пересдачи и история попыток", responses: { 200: ok } },

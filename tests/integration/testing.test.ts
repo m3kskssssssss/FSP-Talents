@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/server/db";
-import { attemptItems, candidateSkills, categories, testAttempts } from "@/server/db/schema";
+import { attemptItems, candidateSkills, categories, taskTemplates, testAttempts } from "@/server/db/schema";
 import { getTemplate } from "@/server/testing/bank";
 import { referenceAnswer, type Answer } from "@/server/testing/engine";
 import {
@@ -126,6 +126,18 @@ describe("testing service", () => {
     }
     expect(state.result!.trustLevel).toBe("low");
     expect(state.result!.categoryAssigned).toBe(false);
+  });
+
+  it("flags a template online when its correct-answer share drifts above the IRT prediction", async () => {
+    const { user, profileId } = await makeCandidate();
+    const { attemptId } = await startAttempt(user.id, profileId, "backend", "junior");
+    const st = await getAttempt(profileId, attemptId);
+    const item = await currentSeed(st.current!.itemId);
+    await db().update(taskTemplates).set({ answeredCount: 60, correctCount: 58, expectedCorrect: 30 }).where(eq(taskTemplates.id, item.templateId));
+    await submitAnswer(profileId, attemptId, item.id, { skipped: true });
+    const [t] = await db().select().from(taskTemplates).where(eq(taskTemplates.id, item.templateId));
+    expect(t!.status).toBe("flagged");
+    expect(t!.flagReason).toMatch(/выше прогноза IRT/);
   });
 
   it("early finish closes the attempt", async () => {

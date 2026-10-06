@@ -11,6 +11,7 @@ import { hashPassword } from "../server/auth/password";
 import { CONSENT_VERSIONS, type Grade } from "../server/config";
 import { closeDb, db } from "../server/db";
 import {
+  attemptEvents,
   attemptItems,
   candidateContacts,
   candidateProfiles,
@@ -25,6 +26,8 @@ import {
 } from "../server/db/schema";
 import { DAY_MS } from "../server/lib/time";
 import { confirmedSkills, generatePopulation, type SynthCandidate } from "../server/synth/population";
+import { getTemplate } from "../server/testing/bank";
+import { instanceParams } from "../server/testing/engine";
 import { Rng } from "../server/testing/rng";
 import { syncTemplates } from "../server/services/testing";
 import { seedInvitations } from "./seed-invitations";
@@ -45,6 +48,23 @@ async function reset() {
   console.log("database wiped");
 }
 
+
+type Sig = { code: string; title: string; points: number; count: number };
+/** Trust signals of a synthetic attempt, consistent with its journal and trap hits. */
+function signalsFor(c: SynthCandidate, a: SynthCandidate["attempts"][number]): Sig[] {
+  if (a.trust === "high") return [];
+  const sig: Sig[] = [{ code: "tab_leave", title: "Уходы со вкладки / потеря фокуса", points: 14, count: 9 }];
+  if (a.trust === "low") {
+    const markers = c.spec === "backend" ? a.items.filter((it) => !it.templateId.startsWith("synthetic-") && getTemplate(it.templateId).kind === "code").length : 0;
+    if (markers) sig.push({ code: "marker", title: "Персональный маркер попытки найден в решении", points: Math.min(90, markers * 65), count: markers });
+    sig.push({ code: "twin", title: "Ответ посчитан по скрытому значению-двойнику", points: 40, count: 1 });
+    sig.push({ code: "bulk_insert", title: "Вставка крупных блоков кода в редактор", points: 24, count: 3 });
+  } else {
+    sig.push({ code: "fullscreen_exit", title: "Выходы из полноэкранного режима", points: 20, count: 6 });
+  }
+  return sig;
+}
+const trustIndexOf = (sig: Sig[]) => Math.max(0, 100 - sig.reduce((s, x) => s + x.points, 0));
 
 async function insertCandidate(c: SynthCandidate, email: string, passwordHash: string) {
   return db().transaction(async (tx) => {
@@ -104,24 +124,33 @@ async function insertCandidate(c: SynthCandidate, email: string, passwordHash: s
           se: a.se,
           score: a.score,
           result: a.result,
-          trustIndex: a.trust === "high" ? 88 : a.trust === "medium" ? 55 : 25,
+          trustIndex: trustIndexOf(signalsFor(c, a)),
           trustLevel: a.trust,
-          trustSignals: {
-            synthetic: true,
-            signals:
-              a.trust === "high"
-                ? []
-                : [
-                    { code: "tab_leave", title: "Уходы со вкладки / потеря фокуса", points: 14, count: 9 },
-                    ...(a.trust === "low" ? [{ code: "twin", title: "Ответ посчитан по скрытому значению-двойнику", points: 40, count: 1 }, { code: "bulk_insert", title: "Вставка крупных блоков кода в редактор", points: 24, count: 3 }] : []),
-                  ],
-            answered: a.items.length,
-          },
+          trustSignals: { synthetic: true, signals: signalsFor(c, a), answered: a.items.length },
           seed: `seed-${c.key}-${a.grade}`,
           marker: `seed_${c.key}`,
         })
         .returning({ id: testAttempts.id });
+      if (a.trust !== "high") {
+        // Journal consistent with the stored trust signals.
+        const ev: { type: "blur" | "visibility_hidden" | "paste" | "bulk_insert" | "fullscreen_exit"; n: number }[] =
+          a.trust === "low"
+            ? [{ type: "blur", n: 5 }, { type: "visibility_hidden", n: 4 }, { type: "paste", n: 4 }, { type: "bulk_insert", n: 3 }, { type: "fullscreen_exit", n: 2 }]
+            : [{ type: "blur", n: 6 }, { type: "visibility_hidden", n: 3 }, { type: "paste", n: 1 }];
+        const evRows = ev.flatMap((e, j) =>
+          Array.from({ length: e.n }, (_, k) => ({ attemptId: row!.id, type: e.type, payload: e.type === "bulk_insert" || e.type === "paste" ? { len: 180 + 97 * k } : null, at: new Date(startedAt.getTime() + (j * 5 + k * 3 + 2) * 60_000) })),
+        );
+        await tx.insert(attemptEvents).values(evRows);
+      }
       if (!a.items[0]!.templateId.startsWith("synthetic-")) {
+        // Low-trust attempts carry the "leaked" reference solution with the personal marker:
+        // this is what the moderator sees as trap hits and as a similar-solutions cluster.
+        const leakedCode = (templateId: string, k: number) => {
+          if (a.trust !== "low") return null;
+          const t = getTemplate(templateId);
+          if (t.kind !== "code") return null;
+          return `// seed_${c.key}\n${t.reference.javascript(instanceParams(t, `${c.key}-${k}`).p)}`;
+        };
         await tx.insert(attemptItems).values(
           a.items.map((it, k) => ({
             attemptId: row!.id,
@@ -135,7 +164,9 @@ async function insertCandidate(c: SynthCandidate, email: string, passwordHash: s
             isCorrect: it.x >= 1,
             partialScore: it.x,
             timeMs: 60_000 + k * 7_000,
-            trapHits: a.trust === "low" && k === 2 ? ["twin"] : [],
+            code: leakedCode(it.templateId, k),
+            answer: leakedCode(it.templateId, k) ? { kind: "code", language: "javascript" } : null,
+            trapHits: leakedCode(it.templateId, k) ? ["marker"] : a.trust === "low" && k === 2 ? ["twin"] : [],
           })),
         );
       }
