@@ -54,3 +54,28 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: failure()
         with: { name: playwright-report, path: playwright-report }
+
+  # Production deploy through the Vercel CLI. Git-triggered deploys are blocked
+  # on the Hobby plan for commit authors who are not members of the Vercel
+  # project; a CLI deploy is made on behalf of the token owner instead.
+  # Needs repository secrets VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID;
+  # without them the job is skipped. Runs only after check and e2e passed.
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [check, e2e]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    concurrency: { group: production-deploy, cancel-in-progress: false }
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check secrets
+        id: secrets
+        run: |
+          if [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"
+          else echo "::notice::Vercel secrets are not set, deploy skipped"; fi
+      - name: Deploy to production (built on Vercel with the project's env)
+        if: steps.secrets.outputs.ok == 'true'
+        run: npx --yes vercel@latest deploy --prod --yes --token "$VERCEL_TOKEN"
