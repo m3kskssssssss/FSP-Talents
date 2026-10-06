@@ -47,6 +47,8 @@ jobs:
       - run: npm run e2e
         env:
           E2E_BASE_URL: http://localhost:3000
+          # The e2e "strong candidate" reads item seeds from the compose database.
+          E2E_DATABASE_URL: postgres://fsp:fsp@localhost:5432/fsp
       - if: failure()
         run: docker compose logs app | tail -200
       - uses: actions/upload-artifact@v4
