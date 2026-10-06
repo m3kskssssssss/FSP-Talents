@@ -12,6 +12,7 @@ const navByRole = {
     { href: "/candidate", label: "Кабинет" },
     { href: "/candidate/test", label: "Тесты" },
     { href: "/candidate/invitations", label: "Приглашения" },
+    { href: "/candidate/vacancies", label: "Вакансии" },
     { href: "/candidate/fsp", label: "ФСП" },
     { href: "/candidate/profile", label: "Профиль" },
   ],
@@ -21,6 +22,7 @@ const navByRole = {
     { href: "/employer/search", label: "Поиск по базе" },
     { href: "/employer/shortlist", label: "Избранное" },
     { href: "/employer/invitations", label: "Приглашения" },
+    { href: "/employer/vacancies", label: "Вакансии" },
   ],
   admin: [
     { href: "/admin", label: "Модерация" },

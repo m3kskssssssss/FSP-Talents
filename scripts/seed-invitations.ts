@@ -104,3 +104,25 @@ export async function seedInvitations() {
   }
   console.log(`invitations: ${created}`);
 }
+
+/** A few classic vacancies with applications (additional feature). */
+export async function seedVacancies() {
+  const { vacancies, applications, categories } = await import("../server/db/schema");
+  const [{ n }] = (await db().select({ n: sql<number>`count(*)::int` }).from(vacancies)) as [{ n: number }];
+  if (n > 0) return;
+  const rng = new Rng("seed-vacancies-v1");
+  const ns = await db().select().from(needs).limit(14);
+  let apps = 0;
+  for (const need of ns) {
+    const [v] = await db()
+      .insert(vacancies)
+      .values({ employerId: need.employerId, title: need.title, description: `${need.teamAbout ?? ""} Ищем специалиста в команду: стек ${need.stack.join(", ")}.`.trim(), specialization: need.specialization, grade: need.grade, stack: need.stack, salaryFrom: need.salaryFrom, salaryTo: need.salaryTo, format: need.format, city: need.city })
+      .returning();
+    const cands = await db().select({ profileId: categories.profileId }).from(categories).where(and(eq(categories.specialization, need.specialization), eq(categories.status, "active"))).limit(30);
+    for (const c of rng.sample(cands, Math.min(cands.length, rng.int(0, 3)))) {
+      await db().insert(applications).values({ vacancyId: v!.id, profileId: c.profileId, coverLetter: "Интересна задача, готов к созвону.", status: rng.pick(["sent", "viewed", "accepted", "declined"] as const) }).onConflictDoNothing();
+      apps++;
+    }
+  }
+  console.log(`vacancies: ${ns.length}, applications: ${apps}`);
+}

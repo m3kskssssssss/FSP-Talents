@@ -5,6 +5,7 @@ import { repoCheckSchema } from "../schemas/candidate";
 import { consentSchema, contactsSchema, deleteAccountSchema, fspLinkSchema, profileUpdateSchema, selfAchievementSchema, skillsSchema, visibilitySchema } from "../schemas/candidate";
 import { invitationCreateSchema, invitationDecisionSchema } from "../schemas/invitations";
 import { attemptsFilterSchema, reviewSchema, templateStatusSchema } from "../schemas/moderation";
+import { applicationStatusSchema, applySchema, vacancyCreateSchema, vacancyListSchema } from "../schemas/vacancies";
 import { answerSchema, attemptEventsSchema, startAttemptSchema } from "../schemas/testing";
 
 export type ApiRoute = Omit<RouteConfig, "responses"> & {
@@ -80,7 +81,17 @@ export function apiRoutes(): ApiRoute[] {
     { method: "patch", path: "/api/v1/admin/templates/{id}", tags: A, summary: "Статус шаблона active / flagged / retired", request: { params: z.object({ id: z.string() }), ...body(templateStatusSchema) }, responses: { 200: ok } },
     { method: "get", path: "/api/v1/admin/plagiarism", tags: A, summary: "Кластеры похожих решений (n-граммы токенов)", responses: { 200: ok } },
   ];
+  const V = ["Вакансии"];
+  const vac: ApiRoute[] = [
+    { method: "get", path: "/api/v1/vacancies", tags: V, summary: "Открытые вакансии (или свои — mine=1 для работодателя)", request: { query: vacancyListSchema }, responses: { 200: ok } },
+    { method: "post", path: "/api/v1/vacancies", tags: V, summary: "Опубликовать вакансию (вилка обязательна)", request: body(vacancyCreateSchema), responses: { 200: ok } },
+    { method: "post", path: "/api/v1/vacancies/{id}/apply", tags: V, summary: "Отклик кандидата с категорией; открывает контакты работодателю", request: { params: idParams, ...body(applySchema) }, responses: { 200: ok, 403: ok, 409: ok } },
+    { method: "post", path: "/api/v1/vacancies/{id}/close", tags: V, summary: "Закрыть вакансию", request: { params: idParams }, responses: { 200: ok } },
+    { method: "get", path: "/api/v1/vacancies/{id}/applications", tags: V, summary: "Отклики на вакансию", request: { params: idParams }, responses: { 200: ok } },
+    { method: "patch", path: "/api/v1/applications/{id}", tags: V, summary: "Статус отклика", request: { params: idParams, ...body(applicationStatusSchema) }, responses: { 200: ok, 409: ok } },
+  ];
   return [
+    ...vac,
     ...me,
     ...admin,
     ...matching,

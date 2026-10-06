@@ -30,7 +30,7 @@ import { getTemplate } from "../server/testing/bank";
 import { instanceParams } from "../server/testing/engine";
 import { Rng } from "../server/testing/rng";
 import { syncTemplates } from "../server/services/testing";
-import { seedInvitations } from "./seed-invitations";
+import { seedInvitations, seedVacancies } from "./seed-invitations";
 
 export const DEMO_PASSWORD = "Demo12345";
 const SYNTH_DOMAIN = "seed.test";
@@ -303,6 +303,7 @@ async function main() {
   }
   await seedDemo(passwordHash);
   await seedInvitations();
+  await seedVacancies();
   console.log("demo accounts ready (password: Demo12345)");
   await closeDb();
 }
