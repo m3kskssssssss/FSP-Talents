@@ -13,7 +13,7 @@ export default async function ProfilePage() {
   const p = await getMyProfile(me.profileId, me.userId);
   return (
     <div className="mx-auto max-w-3xl">
-      <PageTitle kicker="Кандидат" title="Профиль" />
+      <PageTitle title="Профиль" />
       <ProfileEditor initial={toProfileValues(p)} />
     </div>
   );

@@ -1,30 +1,84 @@
 @import "tailwindcss";
 
+/* `dark:` follows the OS unless the user pinned a theme (data-theme on <html>). Use it
+   only for things a colour token cannot express, e.g. swapping the logo file. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
+
+/*
+ * Design tokens. The single source of colour for the whole UI — see DESIGN.md.
+ *
+ * Every colour is semantic (what it is for, not what it looks like) and holds
+ * both themes in one light-dark() pair, so a token can never exist in one theme
+ * only. Tailwind's default palette is switched off: `bg-white`, `text-slate-500`
+ * and friends generate nothing, and tests/design-tokens.test.ts fails the build
+ * if raw colours sneak into app/ or components/.
+ *
+ * Theme choice: no attribute = follow the OS; data-theme="light|dark" on <html>
+ * pins it (set before paint by the inline script in app/layout.tsx).
+ */
 @theme {
-  --color-violet: #402fff;
-  --color-violet-light: #8f85ff;
-  --color-violet-50: #f1efff;
-  --color-violet-100: #e3e0ff;
-  --color-violet-700: #2f20d6;
+  --color-*: initial;
+
+  /* surfaces */
+  --color-canvas: light-dark(#ffffff, #121318); /* page background */
+  --color-surface: light-dark(#ffffff, #1b1c21); /* cards, inputs, menus */
+  --color-subtle: light-dark(#f7f6ff, #202128); /* second neutral layer: wells, hovers */
+  --color-code: light-dark(#1b1c21, #0c0d10); /* code blocks stay dark in both themes */
+  --color-code-fg: #e6e6ea;
+
+  /* text */
+  --color-fg: light-dark(#1b1c21, #ededed);
+  --color-muted: light-dark(#5b5d66, #a3a5af);
+
+  /* lines */
+  --color-line: light-dark(#c8c9ca, #3a3c46);
+
+  /* brand: solid fills (buttons, selected chips) keep the FSP violet in both themes */
+  --color-primary: #402fff;
+  --color-primary-hover: light-dark(#2f20d6, #5446ff);
+  --color-on-primary: #ffffff;
+  /* brand ink: links, headings, frames — lifted in dark so it stays legible */
+  --color-accent: light-dark(#402fff, #9d94ff);
+  --color-accent-soft: light-dark(#f1efff, #262054);
+  /* FSP logo red: only as a small solid fill (notification dot, rank marks) */
   --color-red: #ec1d35;
-  --color-red-700: #b8122a;
-  --color-graphite: #1b1c21;
-  --color-light: #ededed;
-  --color-gray: #c8c9ca;
-  --color-muted: #5b5d66;
-  --color-ok: #0f7b4b;
-  --color-warn: #8a5a00;
+
+  /* status */
+  --color-danger: light-dark(#b8122a, #ff7a8a);
+  --color-ok: light-dark(#0f7b4b, #4cc98c);
+  --color-warn: light-dark(#8a5a00, #e8b04a);
 
   --font-sans: var(--font-golos), "Golos Text", system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
 
   --radius-blank: 1.25rem;
+
+  --shadow-pop: 0 12px 28px -14px rgb(0 0 0 / 0.28); /* menus and popovers only */
 }
 
 @layer base {
+  :root {
+    color-scheme: light dark;
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+  }
   html {
-    color: var(--color-graphite);
-    background: #fff;
+    color: var(--color-fg);
+    background: var(--color-canvas);
+    accent-color: var(--color-primary);
     -webkit-font-smoothing: antialiased;
   }
   body {
@@ -32,33 +86,58 @@
     min-height: 100dvh;
   }
   :focus-visible {
-    outline: 2px solid var(--color-violet);
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
     border-radius: 6px;
   }
   ::selection {
-    background: var(--color-violet-100);
+    background: var(--color-accent-soft);
+    color: var(--color-fg);
+  }
+  * {
+    scrollbar-color: color-mix(in oklab, var(--color-accent) 35%, transparent) transparent;
+  }
+  input,
+  textarea {
+    caret-color: var(--color-accent);
+  }
+  /* numbers in tables, salaries and timers line up */
+  .font-mono,
+  time {
+    font-variant-numeric: tabular-nums;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
   }
 }
 
 @layer components {
   .label-mono {
-    @apply font-mono text-[11px] tracking-[0.12em] text-violet uppercase;
+    @apply font-mono text-[11px] tracking-[0.12em] text-accent uppercase;
   }
   .blank {
-    @apply rounded-[var(--radius-blank)] border border-violet/60 bg-white;
+    @apply rounded-[var(--radius-blank)] border border-accent/45 bg-surface;
   }
   .h-display {
-    @apply font-sans font-medium tracking-tight text-violet;
+    @apply font-sans font-medium tracking-tight text-accent;
   }
   .input {
-    @apply w-full rounded-xl border border-gray bg-white px-3.5 py-2.5 text-[15px] text-graphite placeholder:text-muted/70 transition-colors hover:border-violet/50 focus:border-violet focus:outline-none;
+    @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[15px] text-fg placeholder:text-muted/80 transition-colors hover:border-accent/50 focus:border-accent focus:outline-none;
   }
   .input[aria-invalid="true"] {
-    @apply border-red;
+    @apply border-danger;
   }
   .link {
-    @apply text-violet underline decoration-violet/30 underline-offset-4 hover:decoration-violet;
+    @apply text-accent underline decoration-accent/30 underline-offset-4 hover:decoration-accent;
+  }
+  /* rows of one list share a frame instead of each row being its own card */
+  .list-frame {
+    @apply divide-y divide-accent/15 overflow-hidden rounded-[var(--radius-blank)] border border-accent/45 bg-surface;
   }
 }
 

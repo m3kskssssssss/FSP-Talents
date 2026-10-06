@@ -9,7 +9,7 @@ export default async function NewNeedPage() {
   await requireEmployer();
   return (
     <div className="mx-auto max-w-3xl">
-      <PageTitle kicker="Новая потребность" title="Кого ищете?">
+      <PageTitle title="Кого ищете?">
         Заполните форму или вставьте текст вакансии — мы разберём его и покажем результат для проверки. Вилка зарплаты обязательна.
       </PageTitle>
       <NeedForm />

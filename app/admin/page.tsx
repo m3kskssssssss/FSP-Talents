@@ -7,6 +7,7 @@ import { cn } from "@/components/ui/cn";
 import { categoryTitle, dateTime } from "@/lib/format";
 import { requireActor } from "@/server/http/guard";
 import { listAttempts } from "@/server/services/moderation";
+import { chipState } from "@/components/ui/chip";
 
 export const metadata: Metadata = { title: "Модерация" };
 export const dynamic = "force-dynamic";
@@ -25,16 +26,16 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
   const { items, counts } = await listAttempts({ level: lv, pending: pending === "1" });
   return (
     <div>
-      <PageTitle kicker="Модерация" title="Попытки тестов">
+      <PageTitle title="Попытки тестов">
         Сначала — попытки с самым низким индексом доверия. Решение принимает человек: автоматических блокировок нет.
       </PageTitle>
       <div className="mb-5 grid grid-cols-1 gap-3 sm:max-w-xl sm:grid-cols-3">
         {(["low", "medium", "high"] as const).map((l) => {
           const c = counts.find((x) => x.level === l);
           return (
-            <Link key={l} href={`/admin?level=${l}&pending=1`} className="blank p-3 hover:bg-violet-50">
+            <Link key={l} href={`/admin?level=${l}&pending=1`} className="blank p-3 hover:bg-accent-soft">
               <TrustBadge level={l} />
-              <p className="mt-2 font-mono text-2xl text-violet">{c?.pending ?? 0}</p>
+              <p className="mt-2 font-mono text-2xl text-accent">{c?.pending ?? 0}</p>
               <p className="text-xs text-muted">ждут проверки из {c?.n ?? 0}</p>
             </Link>
           );
@@ -42,11 +43,11 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
       </div>
       <nav aria-label="Фильтр" className="mb-4 flex flex-wrap gap-1.5">
         {FILTERS.map(([v, l]) => (
-          <Link key={v} href={v ? `/admin?level=${v}` : "/admin"} className={cn("rounded-full border px-3 py-1 text-sm", (lv ?? "") === v ? "border-violet bg-violet text-white" : "border-gray")}>
+          <Link key={v} href={v ? `/admin?level=${v}` : "/admin"} className={cn("rounded-full border px-3 py-1 text-sm", chipState((lv ?? "") === v))}>
             {l}
           </Link>
         ))}
-        <Link href={`/admin?${lv ? `level=${lv}&` : ""}pending=1`} className={cn("rounded-full border px-3 py-1 text-sm", pending === "1" ? "border-violet bg-violet text-white" : "border-gray")}>
+        <Link href={`/admin?${lv ? `level=${lv}&` : ""}pending=1`} className={cn("rounded-full border px-3 py-1 text-sm", chipState(pending === "1"))}>
           Только непроверенные
         </Link>
       </nav>
@@ -67,7 +68,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
             {items.map((a) => {
               const signals = ((a.trustSignals as { signals?: { title: string }[] } | null)?.signals ?? []).map((s) => s.title);
               return (
-                <tr key={a.id} className="border-t border-violet/10 align-top">
+                <tr key={a.id} className="border-t border-accent/10 align-top">
                   <td className="py-2 pr-3">{a.candidate}</td>
                   <td className="pr-3">{categoryTitle(a.specialization, a.targetGrade)}</td>
                   <td className="pr-3 font-mono">

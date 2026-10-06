@@ -25,7 +25,7 @@ export function Report({ id, reported }: { id: string; reported: boolean }) {
   if (reported) return <p className="text-sm text-muted">Вы пожаловались на это приглашение — модератор разберётся.</p>;
   if (!open)
     return (
-      <button type="button" onClick={() => setOpen(true)} className="self-start text-sm text-muted underline-offset-4 hover:text-red hover:underline">
+      <button type="button" onClick={() => setOpen(true)} className="self-start text-sm text-muted underline-offset-4 hover:text-danger hover:underline">
         Пожаловаться на приглашение
       </button>
     );
@@ -43,13 +43,13 @@ export function Report({ id, reported }: { id: string; reported: boolean }) {
   }
 
   return (
-    <div className="blank flex flex-col gap-3 border-red/40 p-5">
+    <div className="blank flex flex-col gap-3 border-danger/40 p-5">
       <p className="font-medium">Жалоба на приглашение</p>
       <fieldset className="flex flex-col gap-1.5 text-sm">
         <legend className="sr-only">Причина</legend>
         {REASONS.map(([v, t]) => (
           <label key={v} className="flex items-center gap-2">
-            <input type="radio" name="reason" className="accent-violet" checked={reason === v} onChange={() => setReason(v)} />
+            <input type="radio" name="reason" className="accent-primary" checked={reason === v} onChange={() => setReason(v)} />
             {t}
           </label>
         ))}

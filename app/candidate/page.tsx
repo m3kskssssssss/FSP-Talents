@@ -23,7 +23,7 @@ export default async function CandidateHome() {
   const prof = p.profile;
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle kicker="Кабинет кандидата" title={prof.fullName || "Добро пожаловать"}>
+      <PageTitle title={prof.fullName || "Добро пожаловать"}>
         {[prof.city, prof.experienceYears !== null ? `опыт ${prof.experienceYears} г.` : null, formatTitle(prof.workFormat), prof.salaryExpectFrom ? `ожидания ${salaryRange(prof.salaryExpectFrom, prof.salaryExpectTo)}` : null].filter(Boolean).join(" · ")}
       </PageTitle>
 
@@ -65,7 +65,7 @@ export default async function CandidateHome() {
           <ul className="flex flex-col gap-2">
             {invs.slice(0, 4).map(({ inv, company }) => (
               <li key={inv.id} className="flex flex-wrap items-center gap-2 text-sm">
-                <Link className="font-medium hover:text-violet" href={`/candidate/invitations/${inv.id}`}>
+                <Link className="font-medium hover:text-accent" href={`/candidate/invitations/${inv.id}`}>
                   {company}
                 </Link>
                 <span className="text-muted">{inv.title}</span>

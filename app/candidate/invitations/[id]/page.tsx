@@ -20,7 +20,7 @@ export default async function CandidateInvitation({ params }: { params: Promise<
   const pct = (x: number | null) => (x === null ? "мало данных" : `${Math.round(x * 100)}%`);
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle kicker={company.name} title={inv.title}>
+      <PageTitle back={{ href: "/candidate/invitations", label: "Все приглашения" }} meta={company.name} title={inv.title}>
         <span className="flex flex-wrap items-center gap-2">
           <StatusBadge status={inv.status} />
           {company.verified && <Badge tone="ok">компания проверена</Badge>}
@@ -28,11 +28,11 @@ export default async function CandidateInvitation({ params }: { params: Promise<
       </PageTitle>
       <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
         <Blank label="Предложение">
-          <p className="font-mono text-3xl text-violet">{salaryRange(inv.salaryFrom, inv.salaryTo)}</p>
+          <p className="font-mono text-3xl text-accent">{salaryRange(inv.salaryFrom, inv.salaryTo)}</p>
           <p className="mt-1 text-sm text-muted">в месяц · {formatTitle(inv.format)}</p>
           <p className="mt-4 text-[15px] whitespace-pre-line">{inv.description}</p>
           {company.about && (
-            <div className="mt-5 border-t border-violet/15 pt-4 text-sm">
+            <div className="mt-5 border-t border-accent/15 pt-4 text-sm">
               <p className="label-mono mb-1">О компании</p>
               <p>{company.about}</p>
               {company.site && (
@@ -48,8 +48,8 @@ export default async function CandidateInvitation({ params }: { params: Promise<
             <History events={history} />
           </Blank>
           <Blank label="Репутация компании">
-            <p className={rep.level === "risky" ? "font-medium text-red" : "font-medium"}>{REPUTATION_TITLES[rep.level]}</p>
-            {rep.reasons.length > 0 && <p className="text-sm text-red">{rep.reasons.join("; ")}</p>}
+            <p className={rep.level === "risky" ? "font-medium text-danger" : "font-medium"}>{REPUTATION_TITLES[rep.level]}</p>
+            {rep.reasons.length > 0 && <p className="text-sm text-danger">{rep.reasons.join("; ")}</p>}
             <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
               <dt className="text-muted">Приглашений за 90 дней</dt>
               <dd className="font-mono">{rep.sent}</dd>

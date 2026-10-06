@@ -3,12 +3,12 @@ import { cn } from "./cn";
 
 type Tone = "violet" | "red" | "gray" | "ok" | "warn" | "solid";
 const tones: Record<Tone, string> = {
-  violet: "border-violet/40 text-violet bg-violet-50",
-  red: "border-red/40 text-red-700 bg-red/5",
-  gray: "border-gray text-muted bg-white",
+  violet: "border-accent/40 text-accent bg-accent-soft",
+  red: "border-danger/40 text-danger bg-danger/5",
+  gray: "border-line text-muted bg-surface",
   ok: "border-ok/30 text-ok bg-ok/5",
   warn: "border-warn/30 text-warn bg-warn/5",
-  solid: "border-violet bg-violet text-white",
+  solid: "border-primary bg-primary text-on-primary",
 };
 
 export function Badge({ tone = "violet", children, className, title }: { tone?: Tone; children: ReactNode; className?: string; title?: string }) {

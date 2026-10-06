@@ -15,15 +15,15 @@ export default async function EmployerVacancies() {
   const items = await listEmployerVacancies(me.employerId);
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle kicker="Дополнительно" title="Классические вакансии">
+      <PageTitle title="Классические вакансии">
         Помимо обратного подбора можно опубликовать вакансию: откликнуться могут кандидаты с категорией этой специализации, и отклик сразу открывает вам их контакты.
       </PageTitle>
       <Blank label="Опубликованные">
         {!items.length && <p className="text-sm text-muted">Вакансий нет.</p>}
-        <ul className="flex flex-col divide-y divide-violet/10">
+        <ul className="flex flex-col divide-y divide-accent/10">
           {items.map(({ v, applications }) => (
             <li key={v.id} className="flex flex-wrap items-center gap-2 py-3">
-              <Link href={`/employer/vacancies/${v.id}`} className="font-medium hover:text-violet">
+              <Link href={`/employer/vacancies/${v.id}`} className="font-medium hover:text-accent">
                 {v.title}
               </Link>
               <Badge tone="solid">{categoryTitle(v.specialization, v.grade)}</Badge>

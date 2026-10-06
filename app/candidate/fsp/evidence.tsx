@@ -46,7 +46,7 @@ function Checks({ items }: { items: Check[] }) {
       {items.map((c) => {
         const bad = c.risk === true || c.passed === false;
         return (
-          <li key={c.code} className={bad ? "text-red-700" : "text-ok"}>
+          <li key={c.code} className={bad ? "text-danger" : "text-ok"}>
             {bad ? "⚠" : "✓"} {c.title}
           </li>
         );

@@ -61,9 +61,9 @@ export function StartTest({
               title={eligibility.ok ? undefined : eligibility.message}
               className={cn(
                 "flex flex-col items-center rounded-xl border px-2 py-2.5 text-sm transition-colors",
-                !eligibility.ok && "cursor-not-allowed border-dashed border-gray text-muted",
-                eligibility.ok && grade === g && "border-violet bg-violet-50 text-violet",
-                eligibility.ok && grade !== g && "cursor-pointer border-gray hover:border-violet/50",
+                !eligibility.ok && "cursor-not-allowed border-dashed border-line text-muted",
+                eligibility.ok && grade === g && "border-accent bg-accent-soft text-accent",
+                eligibility.ok && grade !== g && "cursor-pointer border-line hover:border-accent/50",
               )}
             >
               <input type="radio" className="sr-only" name={`grade-${specialization}`} disabled={!eligibility.ok} checked={grade === g} onChange={() => setGrade(g)} />
@@ -77,43 +77,29 @@ export function StartTest({
           </p>
         ))}
       </fieldset>
-      <details className="rounded-xl border border-violet/20 p-3 text-sm">
-        <summary className="cursor-pointer font-medium">Правила прохождения</summary>
-        <ul className="mt-2 flex list-disc flex-col gap-1 pl-5 text-muted">
-          <li>Тест идёт в полноэкранном режиме; на всё — 60 минут.</li>
-          <li>Копировать условие нельзя. Вставки в редактор, уходы со вкладки и выходы из полноэкранного режима записываются в журнал попытки.</li>
-          <li>Журнал влияет только на индекс доверия к попытке. Автоматических блокировок нет: при сомнениях попытку посмотрит модератор.</li>
-          <li>Код запускается в вашем браузере. Итоговая проверка — на скрытых данных, сгенерированных в момент отправки.</li>
-          <li>Тот же грейд можно пересдать через 14 дней, грейд ниже — сразу, грейд выше — после результата от 25/30.</li>
-          <li>Первые 7 дней после первого теста грейд можно уточнять свободно; потом категория повышается не чаще раза в 90 дней.</li>
-        </ul>
-      </details>
       <label htmlFor={id} className="flex items-start gap-2.5 text-sm">
-        <input id={id} type="checkbox" className="mt-0.5 size-4 accent-violet" checked={ack} onChange={(e) => setAck(e.target.checked)} />
-        <span>Я ознакомлен(а) с правилами и согласен(на) на запись журнала попытки</span>
+        <input id={id} type="checkbox" className="mt-0.5 size-4 accent-primary" checked={ack} onChange={(e) => setAck(e.target.checked)} />
+        <span>Я ознакомлен(а) с правилами прохождения и согласен(на) на запись журнала попытки</span>
       </label>
       {error && <Notice tone="error">{error}</Notice>}
       <Button onClick={() => start("full")} disabled={!grade || !ack || pending}>
         {pending ? "Готовим вариант…" : grade ? `Начать тест ${gradeTitle(grade)}` : "Нет доступных грейдов"}
       </Button>
       {express && (
-        <div className="flex flex-col gap-2 rounded-xl border border-dashed border-violet/40 p-3 text-sm">
-          <p>
-            <span className="font-medium">Экспресс-проверка для демо</span> — {TEST_CONFIG_EXPRESS.maxItems} коротких заданий без кода, до {TEST_CONFIG_EXPRESS.durationMinutes} минут.
-            Тот же адаптивный движок и шкала, категория помечается «экспресс-проверка». Не влияет на пересдачи и калибровку банка.
-          </p>
-          <div className="flex flex-wrap items-center gap-2">
-            <select aria-label="Грейд экспресс-проверки" className="input w-auto py-1.5" value={expressGrade} onChange={(e) => setExpressGrade(e.target.value as Grade)}>
-              {grades.map(({ grade: g }) => (
-                <option key={g} value={g}>
-                  {gradeTitle(g)}
-                </option>
-              ))}
-            </select>
-            <Button variant="secondary" size="sm" onClick={() => start("express")} disabled={!ack || pending}>
-              Пройти экспресс-проверку
-            </Button>
-          </div>
+        <div className="flex flex-wrap items-center gap-2 border-t border-accent/15 pt-4 text-sm">
+          <span className="mr-auto text-muted">
+            Экспресс · {TEST_CONFIG_EXPRESS.maxItems} заданий, до {TEST_CONFIG_EXPRESS.durationMinutes} мин
+          </span>
+          <select aria-label="Грейд экспресс-проверки" className="input w-auto py-1.5" value={expressGrade} onChange={(e) => setExpressGrade(e.target.value as Grade)}>
+            {grades.map(({ grade: g }) => (
+              <option key={g} value={g}>
+                {gradeTitle(g)}
+              </option>
+            ))}
+          </select>
+          <Button variant="secondary" size="sm" onClick={() => start("express")} disabled={!ack || pending}>
+            Пройти экспресс
+          </Button>
         </div>
       )}
     </div>

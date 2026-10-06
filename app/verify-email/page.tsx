@@ -21,7 +21,7 @@ export default async function VerifyEmailPage({ searchParams }: { searchParams: 
   }
   return (
     <div className="mx-auto max-w-md">
-      <PageTitle kicker="Подтверждение email" title={error ? "Ссылка не сработала" : "Email подтверждён"}>
+      <PageTitle title={error ? "Ссылка не сработала" : "Email подтверждён"}>
         {error ?? "Теперь можно войти в аккаунт."}
       </PageTitle>
       <Link href="/login" className={buttonClass("primary", "lg")}>

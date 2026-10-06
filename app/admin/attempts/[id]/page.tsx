@@ -33,7 +33,7 @@ export default async function AttemptPage({ params }: { params: Promise<{ id: st
   const signals = (a.trustSignals as { signals?: { code: string; title: string; points: number; count?: number }[] } | null)?.signals ?? [];
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle kicker={`Попытка · ${dateTime(a.startedAt)}`} title={`${d.candidate}: ${categoryTitle(a.specialization, a.targetGrade)}`}>
+      <PageTitle meta={`Попытка · ${dateTime(a.startedAt)}`} title={`${d.candidate}: ${categoryTitle(a.specialization, a.targetGrade)}`}>
         <span className="flex flex-wrap items-center gap-2">
           <TrustBadge level={a.trustLevel} index={a.trustIndex} />
           <Badge tone="violet">
@@ -51,7 +51,7 @@ export default async function AttemptPage({ params }: { params: Promise<{ id: st
           <ul className="flex flex-col gap-2 text-sm">
             {signals.map((s) => (
               <li key={s.code} className="flex gap-3">
-                <span className="w-10 shrink-0 font-mono text-red-700">−{s.points}</span>
+                <span className="w-10 shrink-0 font-mono text-danger">−{s.points}</span>
                 <span>
                   {s.title}
                   {s.count !== undefined ? <span className="text-muted"> · {s.count}</span> : null}
@@ -71,7 +71,7 @@ export default async function AttemptPage({ params }: { params: Promise<{ id: st
           {!d.events.length && <p className="text-sm text-muted">Событий нет.</p>}
           <ol className="max-h-56 overflow-y-auto font-mono text-xs">
             {d.events.map((e) => (
-              <li key={e.id} className="flex gap-3 border-t border-violet/10 py-1">
+              <li key={e.id} className="flex gap-3 border-t border-accent/10 py-1">
                 <span className="text-muted">{new Date(e.at).toLocaleTimeString("ru-RU")}</span>
                 <span>{EVENT_TITLES[e.type] ?? e.type}</span>
                 {e.payload && <span className="text-muted">{JSON.stringify(e.payload)}</span>}
@@ -95,7 +95,7 @@ export default async function AttemptPage({ params }: { params: Promise<{ id: st
         {!d.items.length && <p className="text-sm text-muted">Детализация по заданиям недоступна (синтетическая попытка без банка заданий).</p>}
         <ol className="flex flex-col gap-3">
           {d.items.map((i) => (
-            <li key={i.id} className="border-t border-violet/10 pt-3 first:border-none first:pt-0">
+            <li key={i.id} className="border-t border-accent/10 pt-3 first:border-none first:pt-0">
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="font-mono text-xs text-muted">#{i.position + 1}</span>
                 <span className="font-medium">{i.title}</span>
@@ -116,7 +116,7 @@ export default async function AttemptPage({ params }: { params: Promise<{ id: st
               {i.code && (
                 <details className="mt-2">
                   <summary className="cursor-pointer text-xs text-muted">Код решения</summary>
-                  <pre className="mt-1 max-h-64 overflow-auto rounded-xl bg-graphite p-3 font-mono text-[12px] text-light">{i.code}</pre>
+                  <pre className="mt-1 max-h-64 overflow-auto rounded-xl bg-code p-3 font-mono text-[12px] text-code-fg">{i.code}</pre>
                 </details>
               )}
             </li>

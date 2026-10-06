@@ -98,7 +98,7 @@ export function ProfileForm({ initial, submitLabel, onSaved }: { initial: Profil
 
   return (
     <form onSubmit={save} className="flex flex-col gap-5" noValidate>
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-violet/50 p-4">
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-accent/50 p-4">
         <div className="min-w-0 flex-1">
           <p className="font-medium">Есть резюме в PDF?</p>
           <p className="text-sm text-muted">Загрузите — заполним поля автоматически. До 4 МБ.</p>
@@ -148,7 +148,7 @@ export function ProfileForm({ initial, submitLabel, onSaved }: { initial: Profil
       <Field label="Навыки" htmlFor="skills" hint="Заявленные навыки. Подтверждённые тестом добавятся автоматически и весят больше.">
         <StackInput id="skills" value={v.skills} onChange={(skills) => set({ skills })} />
       </Field>
-      <fieldset className="grid gap-4 rounded-xl border border-violet/20 p-4 sm:grid-cols-2">
+      <fieldset className="grid gap-4 rounded-xl border border-accent/20 p-4 sm:grid-cols-2">
         <legend className="px-1 text-sm font-medium">Контакты — скрыты от работодателей, пока вы не примете приглашение</legend>
         <Field label="Email для связи" htmlFor="email" error={errors.email}>
           <input id="email" className="input" type="email" value={v.email} onChange={(e) => set({ email: e.target.value })} autoComplete="email" />

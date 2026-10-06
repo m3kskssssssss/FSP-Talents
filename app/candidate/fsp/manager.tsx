@@ -74,7 +74,7 @@ export function FspManager({ fspId, achievements }: { fspId: string | null; achi
               {a.place ? <Badge tone="red">{a.place} место</Badge> : <Badge tone="gray">участие</Badge>}
               <Badge tone={SOURCE[a.source][1]}>{SOURCE[a.source][0]}</Badge>
               {a.source === "self" && (
-                <button type="button" className="ml-auto text-xs text-muted underline hover:text-red-700" onClick={async () => { await api(`/api/v1/me/achievements/${a.id}`, { method: "DELETE" }); router.refresh(); }}>
+                <button type="button" className="ml-auto text-xs text-muted underline hover:text-danger" onClick={async () => { await api(`/api/v1/me/achievements/${a.id}`, { method: "DELETE" }); router.refresh(); }}>
                   удалить
                 </button>
               )}

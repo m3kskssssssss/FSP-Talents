@@ -8,10 +8,10 @@ type Size = "sm" | "md" | "lg";
 const base =
   "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 select-none";
 const variants: Record<Variant, string> = {
-  primary: "bg-violet text-white hover:bg-violet-700",
-  secondary: "border border-violet text-violet bg-white hover:bg-violet-50",
-  ghost: "text-violet hover:bg-violet-50",
-  danger: "border border-red text-red-700 bg-white hover:bg-red/5",
+  primary: "bg-primary text-on-primary hover:bg-primary-hover disabled:bg-accent-soft disabled:text-muted disabled:opacity-100",
+  secondary: "border border-accent text-accent bg-surface hover:bg-accent-soft",
+  ghost: "text-accent hover:bg-accent-soft",
+  danger: "border border-danger text-danger bg-surface hover:bg-danger/5",
 };
 const sizes: Record<Size, string> = {
   sm: "h-8 px-3.5 text-sm",

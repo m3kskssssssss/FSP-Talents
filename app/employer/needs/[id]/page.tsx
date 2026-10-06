@@ -19,7 +19,7 @@ export default async function NeedPage({ params }: { params: Promise<{ id: strin
   const searches = (await listSearches(me.employerId, 100)).filter((s) => s.needId === id);
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle kicker="Потребность" title={need.title} />
+      <PageTitle back={{ href: "/employer/needs", label: "Все потребности" }} title={need.title} />
       <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
         <Blank label="Параметры" aside={<Badge tone="gray">{need.parsedBy === "llm" ? "разобрано ИИ" : need.parsedBy === "rules" ? "разобрано по правилам" : "форма"}</Badge>}>
           <dl className="grid grid-cols-[140px_1fr] gap-y-2 text-sm">

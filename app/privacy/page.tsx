@@ -45,13 +45,13 @@ const sections: [string, string[]][] = [
 export default function PrivacyPage() {
   return (
     <article className="mx-auto max-w-3xl">
-      <PageTitle kicker={`Версия ${CONSENT_VERSIONS.pd_processing}`} title="Политика обработки персональных данных">
+      <PageTitle meta={`Версия ${CONSENT_VERSIONS.pd_processing}`} title="Политика обработки персональных данных">
         Документ составлен для прототипа в соответствии с требованиями Федерального закона № 152-ФЗ «О персональных данных».
       </PageTitle>
       <div className="flex flex-col gap-8">
         {sections.map(([h, items]) => (
           <section key={h}>
-            <h2 className="mb-3 text-xl font-medium text-violet">{h}</h2>
+            <h2 className="mb-3 text-xl font-medium text-accent">{h}</h2>
             <ul className="flex list-disc flex-col gap-2 pl-5 text-[15px] leading-relaxed">
               {items.map((i) => (
                 <li key={i}>{i}</li>

@@ -8,6 +8,7 @@ import { api } from "@/lib/api-client";
 import { gradeTitle, plural } from "@/lib/format";
 import type { CandidateCard as Card } from "@/server/services/matching";
 import { CandidateCard } from "./candidate-card";
+import { chipState } from "@/components/ui/chip";
 
 type Filters = {
   grades?: string[];
@@ -128,14 +129,14 @@ export function SearchView({ searchId, initial }: { searchId: string; initial: R
 
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-      <button type="button" onClick={() => setShowFilters(!showFilters)} aria-expanded={showFilters} aria-controls="filters" className="rounded-full border border-violet px-4 py-2 text-sm text-violet lg:hidden">
+      <button type="button" onClick={() => setShowFilters(!showFilters)} aria-expanded={showFilters} aria-controls="filters" className="rounded-full border border-accent px-4 py-2 text-sm text-accent lg:hidden">
         {showFilters ? "Скрыть фильтры" : `Фильтры${isEmpty(filters) ? "" : " · активны"}`}
       </button>
       <aside id="filters" aria-label="Фильтры" className={cn(showFilters ? "flex" : "hidden", "flex-col gap-5 lg:sticky lg:top-4 lg:flex lg:self-start")}>
         <div className="blank flex flex-col gap-4 p-4">
           <div className="flex items-center justify-between">
             <p className="label-mono">Уточнить</p>
-            <button type="button" onClick={reset} disabled={isEmpty(filters)} className="text-sm text-violet underline-offset-4 hover:underline disabled:text-muted disabled:no-underline">
+            <button type="button" onClick={reset} disabled={isEmpty(filters)} className="text-sm text-accent underline-offset-4 hover:underline disabled:text-muted disabled:no-underline">
               Сбросить
             </button>
           </div>
@@ -143,7 +144,7 @@ export function SearchView({ searchId, initial }: { searchId: string; initial: R
             <legend className="mb-1.5 text-sm font-medium">Грейд</legend>
             <div className="flex gap-1.5">
               {["junior", "middle", "senior"].map((g) => (
-                <button key={g} type="button" aria-pressed={filters.grades?.includes(g) ?? false} onClick={() => toggleIn("grades", g)} className={cn("rounded-full border px-2.5 py-1 text-xs", filters.grades?.includes(g) ? "border-violet bg-violet text-white" : "border-gray hover:border-violet/50")}>
+                <button key={g} type="button" aria-pressed={filters.grades?.includes(g) ?? false} onClick={() => toggleIn("grades", g)} className={cn("rounded-full border px-2.5 py-1 text-xs", chipState(filters.grades?.includes(g)))}>
                   {gradeTitle(g)}
                 </button>
               ))}
@@ -153,25 +154,25 @@ export function SearchView({ searchId, initial }: { searchId: string; initial: R
             <legend className="mb-1.5 text-sm font-medium">Стек</legend>
             <div className="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
               {data.facets.skills.slice(0, 40).map((s) => (
-                <button key={s.skill} type="button" aria-pressed={filters.stack?.includes(s.skill) ?? false} onClick={() => toggleIn("stack", s.skill)} className={cn("rounded-full border px-2 py-0.5 font-mono text-[11px]", filters.stack?.includes(s.skill) ? "border-violet bg-violet text-white" : "border-gray hover:border-violet/50")}>
+                <button key={s.skill} type="button" aria-pressed={filters.stack?.includes(s.skill) ?? false} onClick={() => toggleIn("stack", s.skill)} className={cn("rounded-full border px-2 py-0.5 font-mono text-[11px]", chipState(filters.stack?.includes(s.skill)))}>
                   {s.title}
                 </button>
               ))}
             </div>
             <label className="mt-2 flex items-center gap-2 text-sm">
-              <input type="checkbox" className="accent-violet" checked={Boolean(filters.confirmedOnly)} onChange={(e) => update({ confirmedOnly: e.target.checked || undefined })} />
+              <input type="checkbox" className="accent-primary" checked={Boolean(filters.confirmedOnly)} onChange={(e) => update({ confirmedOnly: e.target.checked || undefined })} />
               Только подтверждённые тестом
             </label>
           </fieldset>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" className="accent-violet" checked={Boolean(filters.onlyFsp)} onChange={(e) => update({ onlyFsp: e.target.checked || undefined })} />
+            <input type="checkbox" className="accent-primary" checked={Boolean(filters.onlyFsp)} onChange={(e) => update({ onlyFsp: e.target.checked || undefined })} />
             Только с достижениями ФСП
           </label>
           <div>
             <label htmlFor="minScore" className="mb-1 flex justify-between text-sm font-medium">
-              Порог теста <span className="font-mono text-violet">{filters.minScore ?? 0}/30</span>
+              Порог теста <span className="font-mono text-accent">{filters.minScore ?? 0}/30</span>
             </label>
-            <input id="minScore" type="range" min={0} max={30} step={1} value={filters.minScore ?? 0} onChange={(e) => setFilters({ ...filters, minScore: Number(e.target.value) || undefined })} onMouseUp={() => update({})} onKeyUp={() => update({})} onTouchEnd={() => update({})} className="w-full accent-violet" />
+            <input id="minScore" type="range" min={0} max={30} step={1} value={filters.minScore ?? 0} onChange={(e) => setFilters({ ...filters, minScore: Number(e.target.value) || undefined })} onMouseUp={() => update({})} onKeyUp={() => update({})} onTouchEnd={() => update({})} className="w-full accent-primary" />
           </div>
           <div className="flex flex-col gap-1">
             <label htmlFor="city" className="text-sm font-medium">
@@ -197,12 +198,12 @@ export function SearchView({ searchId, initial }: { searchId: string; initial: R
           </div>
           {data.search.needId && (
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" className="accent-violet" checked={filters.includeNear !== false} onChange={(e) => update({ includeNear: e.target.checked ? undefined : false })} />
+              <input type="checkbox" className="accent-primary" checked={filters.includeNear !== false} onChange={(e) => update({ includeNear: e.target.checked ? undefined : false })} />
               Показывать соседний грейд
             </label>
           )}
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" className="accent-violet" checked={filters.includeUnconfirmed !== false} onChange={(e) => update({ includeUnconfirmed: e.target.checked ? undefined : false })} />
+            <input type="checkbox" className="accent-primary" checked={filters.includeUnconfirmed !== false} onChange={(e) => update({ includeUnconfirmed: e.target.checked ? undefined : false })} />
             Показывать неподтверждённый грейд
           </label>
         </div>
@@ -222,7 +223,7 @@ export function SearchView({ searchId, initial }: { searchId: string; initial: R
         {rephraseState === "llm" && <Notice>Доводы переформулированы ИИ без добавления новых фактов; исходные формулировки — детерминированные.</Notice>}
         {rephraseState === "templates" && <Notice>ИИ недоступен — показаны исходные формулировки.</Notice>}
         {data.hints && data.hints.length > 0 && (
-          <div className="rounded-xl border border-violet/30 bg-violet-50/60 p-4">
+          <div className="rounded-xl border border-accent/30 bg-accent-soft/60 p-4">
             <p className="label-mono mb-2">Что, если изменить потребность</p>
             <ul className="flex list-disc flex-col gap-1 pl-5 text-sm">
               {data.hints.map((h) => (

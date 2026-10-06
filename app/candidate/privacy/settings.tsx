@@ -78,7 +78,7 @@ export function PrivacySettings({ visibility, consents, log }: { visibility: str
         </ul>
       </Blank>
 
-      <Blank label="Удаление аккаунта" className="border-red/50">
+      <Blank label="Удаление аккаунта" className="border-danger/50">
         <p className="mb-3 text-sm">Персональные данные и контакты будут удалены, открытые приглашения — закрыты. Обезличенная статистика тестов сохранится для калибровки заданий.</p>
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-48 flex-1">

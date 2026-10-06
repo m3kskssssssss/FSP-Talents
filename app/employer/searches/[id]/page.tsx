@@ -18,7 +18,7 @@ export default async function SearchPage({ params }: { params: Promise<{ id: str
   const need = res.search.need;
   return (
     <div>
-      <PageTitle kicker={`Подборка · ${dateTime(res.search.createdAt)}`} title={need ? need.title : "Поиск по базе"}>
+      <PageTitle meta={`Подборка · ${dateTime(res.search.createdAt)}`} title={need ? need.title : "Поиск по базе"}>
         {need ? (
           <span className="flex flex-wrap items-center gap-1.5">
             <Badge tone="solid">{categoryTitle(need.specialization, need.grade)}</Badge>

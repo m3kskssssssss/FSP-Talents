@@ -9,6 +9,7 @@ import { requireActor } from "@/server/http/guard";
 import { REPUTATION_TITLES } from "@/server/invitations/reputation";
 import { listReports, REPORT_REASONS } from "@/server/services/reputation";
 import { Resolve } from "./resolve";
+import { chipState } from "@/components/ui/chip";
 
 export const metadata: Metadata = { title: "Жалобы на работодателей" };
 export const dynamic = "force-dynamic";
@@ -22,13 +23,13 @@ export default async function Reports({ searchParams }: { searchParams: Promise<
   const items = await listReports(st === "all" ? undefined : st);
   return (
     <div>
-      <PageTitle kicker="Модерация" title="Жалобы на работодателей">
+      <PageTitle title="Жалобы на работодателей">
         Защита от фиктивных вакансий: кандидаты жалуются на приглашения, открытые жалобы и низкая доля принятых приглашений сразу урезают дневной лимит компании. Подтверждённая
         жалоба переводит компанию в статус риска, который видят кандидаты. Блокировок без решения человека нет.
       </PageTitle>
       <nav className="mb-5 flex gap-2 text-sm">
         {(["open", "confirmed", "dismissed", "all"] as const).map((s) => (
-          <Link key={s} href={`/admin/reports?status=${s}`} className={cn("rounded-full border px-3 py-1", st === s ? "border-violet bg-violet text-white" : "border-gray")}>
+          <Link key={s} href={`/admin/reports?status=${s}`} className={cn("rounded-full border px-3 py-1", chipState(st === s))}>
             {s === "all" ? "Все" : STATUS[s][0]}
           </Link>
         ))}

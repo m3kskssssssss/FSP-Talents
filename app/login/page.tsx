@@ -12,7 +12,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const { next } = await searchParams;
   return (
     <div className="mx-auto max-w-md">
-      <PageTitle kicker="Вход" title="С возвращением" />
+      <PageTitle title="С возвращением" />
       <LoginForm next={next} />
       {keycloakEnabled() && (
         <form action={keycloakAction} className="mt-4">
@@ -22,7 +22,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </form>
       )}
       {env().DEMO_MODE && (
-        <div className="mt-6 rounded-xl border border-dashed border-violet/40 p-4 text-sm text-muted">
+        <div className="mt-6 rounded-xl border border-dashed border-accent/40 p-4 text-sm text-muted">
           <p className="label-mono mb-2">Демо-аккаунты</p>
           <p>
             candidate@demo.ru · strong@demo.ru · employer@demo.ru · admin@demo.ru — пароль <span className="font-mono">Demo12345</span>

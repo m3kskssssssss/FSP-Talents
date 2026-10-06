@@ -81,7 +81,7 @@ export function RegisterForm({ initialRole }: { initialRole: Role }) {
               key={v}
               className={cn(
                 "flex cursor-pointer items-center justify-center rounded-xl border px-3 py-2.5 text-sm transition-colors",
-                role === v ? "border-violet bg-violet-50 text-violet" : "border-gray hover:border-violet/50",
+                role === v ? "border-accent bg-accent-soft text-accent" : "border-line hover:border-accent/50",
               )}
             >
               <input type="radio" name="role" value={v} checked={role === v} onChange={() => setRole(v)} className="sr-only" />
@@ -107,7 +107,7 @@ export function RegisterForm({ initialRole }: { initialRole: Role }) {
       </Field>
       <div className="flex flex-col gap-2.5 text-sm">
         <label className="flex items-start gap-2.5">
-          <input type="checkbox" name="pd" className="mt-0.5 size-4 accent-violet" required />
+          <input type="checkbox" name="pd" className="mt-0.5 size-4 accent-primary" required />
           <span>
             Даю согласие на обработку персональных данных в соответствии с{" "}
             <Link className="link" href="/privacy" target="_blank">
@@ -117,14 +117,14 @@ export function RegisterForm({ initialRole }: { initialRole: Role }) {
           </span>
         </label>
         <label className="flex items-start gap-2.5">
-          <input type="checkbox" name="privacy" className="mt-0.5 size-4 accent-violet" required />
+          <input type="checkbox" name="privacy" className="mt-0.5 size-4 accent-primary" required />
           <span>Ознакомлен(а) с политикой конфиденциальности</span>
         </label>
         <label className="flex items-start gap-2.5">
-          <input type="checkbox" name="marketing" className="mt-0.5 size-4 accent-violet" />
+          <input type="checkbox" name="marketing" className="mt-0.5 size-4 accent-primary" />
           <span className="text-muted">Получать новости ФСП (необязательно)</span>
         </label>
-        {errors["consents.pd_processing"] && <p className="text-xs text-red-700">{errors["consents.pd_processing"]}</p>}
+        {errors["consents.pd_processing"] && <p className="text-xs text-danger">{errors["consents.pd_processing"]}</p>}
       </div>
       {formError && <Notice tone="error">{formError}</Notice>}
       <Button type="submit" size="lg" disabled={pending}>

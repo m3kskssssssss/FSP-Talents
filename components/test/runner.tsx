@@ -10,6 +10,7 @@ import { Runner, type Output, type RunLang } from "@/lib/runner";
 import type { AttemptState } from "@/server/services/testing";
 import { CodeEditor } from "./code-editor";
 import { Statement } from "./statement";
+import { chipState } from "@/components/ui/chip";
 
 type State = Omit<AttemptState, "startedAt" | "deadlineAt" | "serverNow"> & {
   startedAt: string;
@@ -267,7 +268,7 @@ export function TestRunner({ initial }: { initial: State }) {
   return (
     <div className="relative">
       {blocked && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/95 p-6 backdrop-blur">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface/95 p-6 backdrop-blur">
           <div className="blank max-w-md p-6 text-center">
             <p className="label-mono mb-3">{started ? "Полноэкранный режим" : "Перед началом"}</p>
             <p className="mb-5">
@@ -283,7 +284,7 @@ export function TestRunner({ initial }: { initial: State }) {
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-violet/15 pb-3">
+      <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-accent/15 pb-3">
         <p className="label-mono">
           {specTitle(state.specialization)} · {gradeTitle(state.grade)}
         </p>
@@ -291,13 +292,13 @@ export function TestRunner({ initial }: { initial: State }) {
           Задание <span className="font-mono">{state.answered + 1}</span>
           <span className="text-muted"> из {state.minItems}–{state.maxItems}</span>
         </p>
-        <div className="h-1.5 w-28 overflow-hidden rounded-full bg-violet-50" aria-hidden="true">
-          <div className="h-full bg-violet" style={{ width: `${Math.min(100, (state.answered / state.maxItems) * 100)}%` }} />
+        <div className="h-1.5 w-28 overflow-hidden rounded-full bg-accent-soft" aria-hidden="true">
+          <div className="h-full bg-primary" style={{ width: `${Math.min(100, (state.answered / state.maxItems) * 100)}%` }} />
         </div>
         <span className="font-mono text-[11px] text-muted" title="Числа и данные в условии сгенерированы для вашей попытки">
           вариант только ваш
         </span>
-        <p className={cn("ml-auto font-mono text-lg tabular-nums", left < 5 * 60_000 ? "text-red-700" : "text-violet")} role="timer" aria-label="Осталось времени">
+        <p className={cn("ml-auto font-mono text-lg tabular-nums", left < 5 * 60_000 ? "text-danger" : "text-accent")} role="timer" aria-label="Осталось времени">
           {mounted ? `${mm}:${ss}` : "--:--"}
         </p>
       </div>
@@ -326,7 +327,7 @@ export function TestRunner({ initial }: { initial: State }) {
               <p className="label-mono mb-2">Примеры</p>
               <ul className="flex flex-col gap-1.5 font-mono text-[12.5px]">
                 {view.code.examples.map((e, i) => (
-                  <li key={i} className="rounded-lg bg-violet-50/60 px-2.5 py-1.5 break-all">
+                  <li key={i} className="rounded-lg bg-accent-soft/60 px-2.5 py-1.5 break-all">
                     {view.code!.fn.name}({e.args.map(show).join(", ")}) → {show(e.expected)}
                   </li>
                 ))}
@@ -336,7 +337,7 @@ export function TestRunner({ initial }: { initial: State }) {
           {view.kind === "sql" && view.sql && (
             <details className="mt-4" open>
               <summary className="label-mono cursor-pointer">Схема</summary>
-              <pre className="mt-2 overflow-x-auto rounded-xl bg-graphite p-3 font-mono text-[12px] text-light">{view.sql.schema}</pre>
+              <pre className="mt-2 overflow-x-auto rounded-xl bg-code p-3 font-mono text-[12px] text-code-fg">{view.sql.schema}</pre>
             </details>
           )}
         </section>
@@ -353,7 +354,7 @@ export function TestRunner({ initial }: { initial: State }) {
                       role="radio"
                       aria-checked={lang === l}
                       onClick={() => setLang(l)}
-                      className={cn("rounded-full border px-3 py-1 font-mono text-xs", lang === l ? "border-violet bg-violet text-white" : "border-violet/40 text-violet")}
+                      className={cn("rounded-full border px-3 py-1 font-mono text-xs", chipState(lang === l))}
                     >
                       {l === "python" ? "Python" : "JavaScript"}
                     </button>
@@ -382,7 +383,7 @@ export function TestRunner({ initial }: { initial: State }) {
               {examples && (
                 <ul className="flex flex-col gap-1.5 text-sm" aria-live="polite">
                   {examples.map((r, i) => (
-                    <li key={i} className={cn("rounded-lg border px-3 py-2 font-mono text-[12px] break-all", r.ok ? "border-ok/30 bg-ok/5" : "border-red/30 bg-red/5")}>
+                    <li key={i} className={cn("rounded-lg border px-3 py-2 font-mono text-[12px] break-all", r.ok ? "border-ok/30 bg-ok/5" : "border-danger/30 bg-danger/5")}>
                       <span className="mr-2">{r.ok ? "✓" : "✗"}</span>
                       {r.label} → {r.got}
                       {!r.ok && <span className="block text-muted">ожидалось: {r.expected}</span>}
@@ -394,11 +395,11 @@ export function TestRunner({ initial }: { initial: State }) {
                 <div className="overflow-x-auto">
                   <table className="font-mono text-[12px]">
                     <thead>
-                      <tr>{sqlPreview.columns.map((c) => <th key={c} className="px-2 py-1 text-left text-violet">{c}</th>)}</tr>
+                      <tr>{sqlPreview.columns.map((c) => <th key={c} className="px-2 py-1 text-left text-accent">{c}</th>)}</tr>
                     </thead>
                     <tbody>
                       {sqlPreview.rows.slice(0, 20).map((r, i) => (
-                        <tr key={i}>{r.map((v, k) => <td key={k} className="border-t border-gray/50 px-2 py-1">{String(v)}</td>)}</tr>
+                        <tr key={i}>{r.map((v, k) => <td key={k} className="border-t border-line/50 px-2 py-1">{String(v)}</td>)}</tr>
                       ))}
                     </tbody>
                   </table>
@@ -427,11 +428,11 @@ export function TestRunner({ initial }: { initial: State }) {
               {view.quiz.options.map((o) => {
                 const checked = selected.includes(o.id);
                 return (
-                  <label key={o.id} className={cn("flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5", checked ? "border-violet bg-violet-50" : "border-gray hover:border-violet/50")}>
+                  <label key={o.id} className={cn("flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5", checked ? "border-accent bg-accent-soft" : "border-line hover:border-accent/50")}>
                     <input
                       type={view.quiz!.multi ? "checkbox" : "radio"}
                       name="quiz"
-                      className="mt-1 accent-violet"
+                      className="mt-1 accent-primary"
                       checked={checked}
                       onChange={(e) =>
                         setSelected((s) => (view.quiz!.multi ? (e.target.checked ? [...s, o.id] : s.filter((x) => x !== o.id)) : [o.id]))
@@ -452,7 +453,7 @@ export function TestRunner({ initial }: { initial: State }) {
             <Button variant="ghost" onClick={() => submit(true)} disabled={Boolean(busy)}>
               Пропустить
             </Button>
-            <button type="button" onClick={finishEarly} className="ml-auto text-sm text-muted underline underline-offset-4 hover:text-red-700">
+            <button type="button" onClick={finishEarly} className="ml-auto text-sm text-muted underline underline-offset-4 hover:text-danger">
               Завершить досрочно
             </button>
           </div>

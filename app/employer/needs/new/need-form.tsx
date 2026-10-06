@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import { Field, Notice } from "@/components/ui/field";
 import { api, ApiError, fieldErrors } from "@/lib/api-client";
+import { chipState } from "@/components/ui/chip";
 
 type Draft = {
   title: string;
@@ -116,7 +117,7 @@ export function NeedForm() {
             ["text", "Вставить текст вакансии"],
           ] as const
         ).map(([k, l]) => (
-          <button key={k} role="tab" type="button" aria-selected={tab === k} onClick={() => setTab(k)} className={cn("rounded-full border px-4 py-2 text-sm", tab === k ? "border-violet bg-violet text-white" : "border-violet/40 text-violet")}>
+          <button key={k} role="tab" type="button" aria-selected={tab === k} onClick={() => setTab(k)} className={cn("rounded-full border px-4 py-2 text-sm", chipState(tab === k))}>
             {l}
           </button>
         ))}

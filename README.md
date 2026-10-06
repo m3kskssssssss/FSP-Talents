@@ -109,6 +109,7 @@ CI (GitHub Actions) на каждый push:
 | [`docs/libraries.md`](docs/libraries.md) | Библиотеки с версиями |
 | [`docs/limitations.md`](docs/limitations.md) | Ограничения и план развития |
 | [`docs/demo-script.md`](docs/demo-script.md) | Сценарий демо |
+| [`DESIGN.md`](DESIGN.md) | Дизайн-система: токены светлой и тёмной темы, компоненты, правила для новых экранов |
 
 ## Стек
 

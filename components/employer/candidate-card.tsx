@@ -55,13 +55,13 @@ export function CandidateCard({ c, needId, rephrased }: { c: Card; needId?: stri
   return (
     <article className="blank flex flex-col gap-4 p-5" aria-labelledby={`cand-${c.profileId}`}>
       <header className="flex flex-wrap items-start gap-x-4 gap-y-2">
-        <div className="flex size-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-violet text-white" title="Совпадение с потребностью">
+        <div className="flex size-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-primary text-on-primary" title="Совпадение с потребностью">
           <span className="font-mono text-lg leading-none">{c.match}</span>
           <span className="font-mono text-[9px] uppercase opacity-80">match</span>
         </div>
         <div className="min-w-0 flex-1">
           <h3 id={`cand-${c.profileId}`} className="text-lg font-medium">
-            <Link href={`/employer/candidates/${c.profileId}`} className="hover:text-violet">
+            <Link href={`/employer/candidates/${c.profileId}`} className="hover:text-accent">
               {c.displayName}
             </Link>
           </h3>
@@ -119,7 +119,7 @@ export function CandidateCard({ c, needId, rephrased }: { c: Card; needId?: stri
           <ul className="flex flex-col gap-1 text-sm">
             {cons.map((p) => (
               <li key={p} className="flex gap-2">
-                <span className="text-red-700" aria-hidden="true">
+                <span className="text-danger" aria-hidden="true">
                   −
                 </span>
                 {p}
@@ -139,8 +139,8 @@ export function CandidateCard({ c, needId, rephrased }: { c: Card; needId?: stri
                 "rounded-full border px-2 py-0.5 font-mono text-[11px]",
                 s.level === "test" && "border-ok/40 bg-ok/5 text-ok",
                 s.level === "implied" && "border-ok/30 text-ok",
-                (s.level === "resume" || s.level === "declared") && "border-gray text-muted",
-                s.level === "missing" && "border-dashed border-gray text-muted line-through",
+                (s.level === "resume" || s.level === "declared") && "border-line text-muted",
+                s.level === "missing" && "border-dashed border-line text-muted line-through",
               )}
             >
               {s.title}
@@ -166,8 +166,8 @@ export function CandidateCard({ c, needId, rephrased }: { c: Card; needId?: stri
             <div key={k} className="flex items-center gap-2">
               <dt className="w-24 text-muted">{COMPONENT_TITLES[k]}</dt>
               <dd className="flex flex-1 items-center gap-2">
-                <span className="h-1.5 flex-1 rounded-full bg-violet-50">
-                  <span className="block h-full rounded-full bg-violet" style={{ width: `${Math.round(v * 100)}%` }} />
+                <span className="h-1.5 flex-1 rounded-full bg-accent-soft">
+                  <span className="block h-full rounded-full bg-primary" style={{ width: `${Math.round(v * 100)}%` }} />
                 </span>
                 <span className="w-8 font-mono text-xs">{Math.round(v * 100)}</span>
               </dd>
@@ -176,7 +176,7 @@ export function CandidateCard({ c, needId, rephrased }: { c: Card; needId?: stri
         </dl>
       </details>
 
-      <footer className="flex flex-wrap items-center gap-2 border-t border-violet/15 pt-3">
+      <footer className="flex flex-wrap items-center gap-2 border-t border-accent/15 pt-3">
         {canInvite ? (
           <Link href={inviteHref} className={buttonClass("primary", "sm")}>
             Пригласить

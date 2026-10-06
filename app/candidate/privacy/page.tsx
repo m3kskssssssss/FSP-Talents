@@ -13,7 +13,7 @@ export default async function PrivacyPage() {
   const log = await contactAccessLog(me.profileId);
   return (
     <div className="mx-auto max-w-3xl">
-      <PageTitle kicker="Кандидат" title="Приватность и согласия">
+      <PageTitle title="Приватность и согласия">
         Управляйте видимостью профиля, согласиями (152-ФЗ) и смотрите, какие компании получили ваши контакты.
       </PageTitle>
       <PrivacySettings visibility={p.profile.visibility} consents={JSON.parse(JSON.stringify(p.consents))} log={JSON.parse(JSON.stringify(log))} />

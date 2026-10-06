@@ -32,8 +32,8 @@ export function History({ events }: { events: { toStatus: InvitationStatus; at: 
         const done = Boolean(st.at);
         return (
           <li key={i} className="relative flex gap-3 pb-4 last:pb-0">
-            {i < steps.length - 1 && <span aria-hidden="true" className={`absolute top-4 left-[7px] h-full w-px ${done ? "bg-violet" : "bg-gray"}`} />}
-            <span aria-hidden="true" className={`relative mt-1 size-[15px] shrink-0 rounded-full border-2 ${done ? "border-violet bg-violet" : "border-gray bg-white"}`} />
+            {i < steps.length - 1 && <span aria-hidden="true" className={`absolute top-4 left-[7px] h-full w-px ${done ? "bg-primary" : "bg-line"}`} />}
+            <span aria-hidden="true" className={`relative mt-1 size-[15px] shrink-0 rounded-full border-2 ${done ? "border-primary bg-primary" : "border-line bg-surface"}`} />
             <div>
               <p className={done ? "font-medium" : "text-muted"}>{done ? STATUS_TITLES[st.s] : "Ответ кандидата"}</p>
               {st.at && <p className="font-mono text-xs text-muted">{dateTime(st.at)}</p>}

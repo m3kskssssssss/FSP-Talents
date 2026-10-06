@@ -21,7 +21,7 @@ export default async function AttemptResult({ params }: { params: Promise<{ id: 
   if (a.status === "in_progress") {
     return (
       <div>
-        <PageTitle kicker="Тест" title="Попытка ещё идёт" />
+        <PageTitle title="Попытка ещё идёт" />
         <a href={`/test/${id}`} className={buttonClass("primary", "lg")}>
           Вернуться к тесту
         </a>
@@ -34,7 +34,7 @@ export default async function AttemptResult({ params }: { params: Promise<{ id: 
   const pct = Math.min(100, (r.score / TEST_CONFIG.scaleMax) * 100);
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle kicker={`${a.mode === "express" ? "Экспресс-проверка · " : ""}${statusText[a.status]} · ${dateTime(a.startedAt)}`} title={passed ? "Тест сдан" : "Тест не сдан"}>
+      <PageTitle meta={`${a.mode === "express" ? "Экспресс-проверка · " : ""}${statusText[a.status]} · ${dateTime(a.startedAt)}`} title={passed ? "Тест сдан" : "Тест не сдан"}>
         {categoryTitle(a.specialization, a.grade)} · отвечено заданий: {a.answered}
       </PageTitle>
       {a.mode === "express" && (
@@ -46,13 +46,13 @@ export default async function AttemptResult({ params }: { params: Promise<{ id: 
 
       <div className="grid gap-6 md:grid-cols-[1.2fr_1fr]">
         <Blank label="Результат">
-          <p className="font-mono text-5xl text-violet">
+          <p className="font-mono text-5xl text-accent">
             {r.score.toFixed(1)}
             <span className="text-2xl text-muted">/{TEST_CONFIG.scaleMax}</span>
           </p>
-          <div className="relative mt-4 h-2 rounded-full bg-violet-50" aria-hidden="true">
-            <div className="h-full rounded-full bg-violet" style={{ width: `${pct}%` }} />
-            <span className="absolute -top-1 h-4 w-px bg-graphite" style={{ left: `${(TEST_CONFIG.passScore / 30) * 100}%` }} />
+          <div className="relative mt-4 h-2 rounded-full bg-accent-soft" aria-hidden="true">
+            <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+            <span className="absolute -top-1 h-4 w-px bg-fg" style={{ left: `${(TEST_CONFIG.passScore / 30) * 100}%` }} />
             <span className="absolute -top-1 h-4 w-px bg-ok" style={{ left: `${(TEST_CONFIG.confidentScore / 30) * 100}%` }} />
           </div>
           <p className="mt-2 text-xs text-muted">

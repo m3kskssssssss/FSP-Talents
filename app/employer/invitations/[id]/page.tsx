@@ -19,7 +19,7 @@ export default async function EmployerInvitation({ params }: { params: Promise<{
   const cand = await candidateForEmployer(me.employerId, me.userId, inv.profileId);
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle kicker="Приглашение" title={inv.title}>
+      <PageTitle back={{ href: "/employer/invitations", label: "Все приглашения" }} title={inv.title}>
         <span className="flex items-center gap-2">
           <StatusBadge status={inv.status} /> {cand.displayName}
         </span>

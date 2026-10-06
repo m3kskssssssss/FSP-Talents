@@ -12,7 +12,7 @@ export default async function PlagiarismPage() {
   const clusters = await plagiarismReport();
   return (
     <div>
-      <PageTitle kicker="Модерация" title="Похожие решения">
+      <PageTitle title="Похожие решения">
         Решения одного шаблона из разных попыток сравниваются по нормализованным токенам (без комментариев и имён переменных), 5-граммы, схожесть Жаккара ≥ 80%. Это сигнал для модератора, а не вердикт: короткие канонические решения похожи естественно.
       </PageTitle>
       {!clusters.length && <p className="text-muted">Подозрительных кластеров нет.</p>}
@@ -28,7 +28,7 @@ export default async function PlagiarismPage() {
                 </li>
               ))}
             </ul>
-            <pre className="mt-3 max-h-48 overflow-auto rounded-xl bg-graphite p-3 font-mono text-[12px] text-light">{c.members[0]!.code}</pre>
+            <pre className="mt-3 max-h-48 overflow-auto rounded-xl bg-code p-3 font-mono text-[12px] text-code-fg">{c.members[0]!.code}</pre>
           </Blank>
         ))}
       </div>

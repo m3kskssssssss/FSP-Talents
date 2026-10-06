@@ -16,7 +16,7 @@ export default async function CandidateVacancies() {
   const applied = new Set(mine.map((m) => m.a.vacancyId));
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle kicker="Дополнительно" title="Вакансии">
+      <PageTitle title="Вакансии">
         Главный путь — приглашения от компаний. Но можно откликнуться и самому: отклик откроет компании ваши контакты. Нужна категория той же специализации.
       </PageTitle>
       {mine.length > 0 && (
@@ -37,7 +37,7 @@ export default async function CandidateVacancies() {
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-lg font-medium">{v.title}</h2>
               <span className="text-muted">· {company}</span>
-              <span className="ml-auto font-mono text-violet">{salaryRange(v.salaryFrom, v.salaryTo)}</span>
+              <span className="ml-auto font-mono text-accent">{salaryRange(v.salaryFrom, v.salaryTo)}</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               <Badge tone="solid">{categoryTitle(v.specialization, v.grade)}</Badge>

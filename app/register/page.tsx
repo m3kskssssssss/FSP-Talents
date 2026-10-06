@@ -8,7 +8,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
   const { role } = await searchParams;
   return (
     <div className="mx-auto max-w-xl">
-      <PageTitle kicker="Регистрация" title="Создайте аккаунт">
+      <PageTitle title="Создайте аккаунт">
         Кандидаты проходят тест и получают категорию. Работодатели находят кандидатов и приглашают их.
       </PageTitle>
       <RegisterForm initialRole={role === "employer" ? "employer" : "candidate"} />

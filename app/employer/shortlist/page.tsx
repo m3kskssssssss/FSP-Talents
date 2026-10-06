@@ -12,7 +12,7 @@ export default async function ShortlistPage() {
   const items = await listShortlist(me.employerId);
   return (
     <div>
-      <PageTitle kicker="Работодатель" title="Избранное">
+      <PageTitle title="Избранное">
         Кандидаты, которых вы отложили из подборок. Match здесь посчитан без привязки к потребности.
       </PageTitle>
       {!items.length && <p className="text-muted">Пока пусто — добавляйте кандидатов из подборок звёздочкой.</p>}

@@ -19,7 +19,7 @@ export default async function CandidateForEmployer({ params }: { params: Promise
   const c = await candidateForEmployer(me.employerId, me.userId, profileId);
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle kicker="Кандидат" title={c.displayName}>
+      <PageTitle title={c.displayName}>
         {[c.city, c.experienceYears !== null ? `опыт ${c.experienceYears} г.` : null, formatTitle(c.workFormat), `ожидания ${salaryRange(c.salaryExpect.from, c.salaryExpect.to)}`].filter(Boolean).join(" · ")}
       </PageTitle>
       <div className="flex flex-wrap gap-2">

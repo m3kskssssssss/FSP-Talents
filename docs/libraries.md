@@ -12,10 +12,12 @@
 | `@codemirror/language` | 6.12.4 | MIT | runtime | CodeMirror |
 | `@codemirror/state` | 6.7.6 | MIT | runtime | CodeMirror |
 | `@codemirror/view` | 6.43.13 | MIT | runtime | CodeMirror |
+| `@lezer/highlight` | 1.2.5 | MIT | runtime | CodeMirror (подсветка синтаксиса) |
 | `@node-rs/argon2` | 2.2.1 | MIT | runtime | Хеширование паролей (argon2id) |
 | `@react-pdf/renderer` | 4.9.0 | MIT | runtime | Генерация PDF-резюме |
 | `@upstash/ratelimit` | 2.2.0 | MIT | runtime | Rate limit (если задан Upstash) |
 | `@upstash/redis` | 1.39.0 | MIT | runtime | Rate limit (если задан Upstash) |
+| `@vercel/analytics` | 2.0.1 | MIT | runtime |  |
 | `@vercel/blob` | 2.8.0 | Apache-2.0 | runtime | Хранилище файлов на Vercel |
 | `codemirror` | 6.0.2 | MIT | runtime | Редактор кода в тесте |
 | `drizzle-orm` | 0.45.3 | Apache-2.0 | runtime | ORM для PostgreSQL |

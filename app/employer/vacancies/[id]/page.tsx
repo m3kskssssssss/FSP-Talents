@@ -18,7 +18,7 @@ export default async function VacancyPage({ params }: { params: Promise<{ id: st
   const { vacancy, items } = await vacancyApplications(me.employerId, id);
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle kicker="Вакансия" title={vacancy.title}>
+      <PageTitle back={{ href: "/employer/vacancies", label: "Все вакансии" }} title={vacancy.title}>
         <span className="flex flex-wrap gap-1.5">
           <Badge tone="solid">{categoryTitle(vacancy.specialization, vacancy.grade)}</Badge>
           <Badge tone="violet">{salaryRange(vacancy.salaryFrom, vacancy.salaryTo)}</Badge>
@@ -26,10 +26,10 @@ export default async function VacancyPage({ params }: { params: Promise<{ id: st
       </PageTitle>
       <Blank label={`Отклики (${items.length})`}>
         {!items.length && <p className="text-sm text-muted">Откликов пока нет.</p>}
-        <ul className="flex flex-col divide-y divide-violet/10">
+        <ul className="flex flex-col divide-y divide-accent/10">
           {items.map((a) => (
             <li key={a.id} className="flex flex-wrap items-center gap-3 py-3">
-              <Link className="font-medium hover:text-violet" href={`/employer/candidates/${a.profileId}`}>
+              <Link className="font-medium hover:text-accent" href={`/employer/candidates/${a.profileId}`}>
                 {a.candidateName}
               </Link>
               <span className="text-sm text-muted">{a.city}</span>

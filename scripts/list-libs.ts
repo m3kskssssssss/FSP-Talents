@@ -11,7 +11,7 @@ const PURPOSE: Record<string, string> = {
   "@node-rs/argon2": "Хеширование паролей (argon2id)", openai: "Клиент RouterAI (OpenAI-совместимый API)",
   seedrandom: "Детерминированный RNG генераторов заданий", "sql.js": "SQLite/WASM: эталон SQL-заданий на сервере и песочница в браузере",
   codemirror: "Редактор кода в тесте", "@codemirror/lang-python": "Подсветка Python", "@codemirror/lang-javascript": "Подсветка JS", "@codemirror/lang-sql": "Подсветка SQL",
-  "@codemirror/state": "CodeMirror", "@codemirror/view": "CodeMirror", "@codemirror/commands": "CodeMirror", "@codemirror/language": "CodeMirror",
+  "@codemirror/state": "CodeMirror", "@codemirror/view": "CodeMirror", "@codemirror/commands": "CodeMirror", "@codemirror/language": "CodeMirror", "@lezer/highlight": "CodeMirror (подсветка синтаксиса)",
   unpdf: "Извлечение текста из PDF-резюме", "@react-pdf/renderer": "Генерация PDF-резюме",
   "pdf-lib": "Метаданные и структура PDF-сертификатов", exifr: "EXIF изображений сертификатов",
   nodemailer: "Почта через SMTP (Mailpit локально)", resend: "Почта на Vercel", "@vercel/blob": "Хранилище файлов на Vercel",

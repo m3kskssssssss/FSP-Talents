@@ -20,9 +20,9 @@ export function StackInput({ value, onChange, id }: { value: string[]; onChange:
     <div>
       <div className="input flex min-h-11 flex-wrap items-center gap-1.5 py-1.5">
         {value.map((s) => (
-          <span key={s} className="flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 font-mono text-xs text-violet">
+          <span key={s} className="flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 font-mono text-xs text-accent">
             {skillTitle(s)}
-            <button type="button" aria-label={`Убрать ${skillTitle(s)}`} onClick={() => onChange(value.filter((x) => x !== s))} className="text-violet/70 hover:text-red-700">
+            <button type="button" aria-label={`Убрать ${skillTitle(s)}`} onClick={() => onChange(value.filter((x) => x !== s))} className="text-accent/70 hover:text-danger">
               ×
             </button>
           </span>
@@ -45,7 +45,7 @@ export function StackInput({ value, onChange, id }: { value: string[]; onChange:
       {suggestions.length > 0 && (
         <div className="mt-1 flex flex-wrap gap-1">
           {suggestions.map(([k, s]) => (
-            <button key={k} type="button" onClick={() => add(k)} className="rounded-full border border-violet/30 px-2 py-0.5 text-xs text-violet hover:bg-violet-50">
+            <button key={k} type="button" onClick={() => add(k)} className="rounded-full border border-accent/30 px-2 py-0.5 text-xs text-accent hover:bg-accent-soft">
               + {s.title}
             </button>
           ))}

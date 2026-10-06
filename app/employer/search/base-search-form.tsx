@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import { Field, Notice } from "@/components/ui/field";
 import { api, ApiError } from "@/lib/api-client";
+import { chipState } from "@/components/ui/chip";
 
 export function BaseSearchForm() {
   const router = useRouter();
@@ -49,7 +50,7 @@ export function BaseSearchForm() {
           <legend className="mb-1.5 text-sm font-medium">Грейды</legend>
           <div className="flex gap-1.5">
             {["junior", "middle", "senior"].map((g) => (
-              <button key={g} type="button" aria-pressed={grades.includes(g)} onClick={() => setGrades(grades.includes(g) ? grades.filter((x) => x !== g) : [...grades, g])} className={cn("rounded-full border px-3 py-2 text-sm", grades.includes(g) ? "border-violet bg-violet text-white" : "border-gray")}>
+              <button key={g} type="button" aria-pressed={grades.includes(g)} onClick={() => setGrades(grades.includes(g) ? grades.filter((x) => x !== g) : [...grades, g])} className={cn("rounded-full border px-3 py-2 text-sm", chipState(grades.includes(g)))}>
                 {g[0]!.toUpperCase() + g.slice(1)}
               </button>
             ))}

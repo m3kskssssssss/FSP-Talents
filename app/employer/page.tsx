@@ -29,13 +29,13 @@ export default async function EmployerHome() {
   ] as const;
   return (
     <div className="flex flex-col gap-8">
-      <PageTitle kicker="Кабинет работодателя" title={company!.companyName}>
+      <PageTitle title={company!.companyName}>
         {company!.about}
       </PageTitle>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map(([l, n, href]) => (
-          <Link key={l} href={href} className="blank p-4 transition-colors hover:bg-violet-50">
-            <p className="font-mono text-3xl text-violet">{n}</p>
+          <Link key={l} href={href} className="blank p-4 transition-colors hover:bg-accent-soft">
+            <p className="font-mono text-3xl text-accent">{n}</p>
             <p className="text-sm text-muted">{l}</p>
           </Link>
         ))}
@@ -50,10 +50,10 @@ export default async function EmployerHome() {
       </div>
       <Blank label="Потребности" aside={<span className="font-mono text-xs text-muted">приглашений за сутки: {recent!.n}</span>}>
         {!needs.length && <p className="text-muted">Создайте первую потребность — подборка появится сразу.</p>}
-        <ul className="flex flex-col divide-y divide-violet/10">
+        <ul className="flex flex-col divide-y divide-accent/10">
           {needs.slice(0, 6).map(({ need, lastSearchId }) => (
             <li key={need.id} className="flex flex-wrap items-center gap-2 py-3">
-              <Link href={`/employer/needs/${need.id}`} className="font-medium hover:text-violet">
+              <Link href={`/employer/needs/${need.id}`} className="font-medium hover:text-accent">
                 {need.title}
               </Link>
               <Badge tone="solid">{categoryTitle(need.specialization, need.grade)}</Badge>

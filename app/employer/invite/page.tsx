@@ -20,7 +20,7 @@ export default async function InvitePage({ searchParams }: { searchParams: Promi
   const need = needId ? await getNeed(me.employerId, needId) : null;
   return (
     <div className="mx-auto max-w-2xl">
-      <PageTitle kicker="Приглашение" title={`Пригласить: ${cand.displayName}`}>
+      <PageTitle title={`Пригласить: ${cand.displayName}`}>
         <span className="flex flex-wrap items-center gap-1.5">
           {cand.categories.map((c) => (
             <Badge key={c.specialization} tone="solid">

@@ -12,7 +12,7 @@ export default async function FspPage() {
   const p = await getMyProfile(me.profileId, me.userId);
   return (
     <div className="mx-auto max-w-3xl">
-      <PageTitle kicker="Федерация спортивного программирования" title="ФСП ID и достижения">
+      <PageTitle title="ФСП ID и достижения">
         Достижения поднимают вас внутри вашей категории. Подтверждённые реестром ФСП весят больше всего; заявленные самостоятельно — минимально.
       </PageTitle>
       <FspManager fspId={p.profile.fspId} achievements={JSON.parse(JSON.stringify(p.achievements))} />
