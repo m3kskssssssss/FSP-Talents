@@ -61,3 +61,21 @@
     @apply text-violet underline decoration-violet/30 underline-offset-4 hover:decoration-violet;
   }
 }
+
+/* ---------------------------------------------------------------- test traps */
+.statement {
+  user-select: none;
+  -webkit-user-select: none;
+}
+.twin::before {
+  content: attr(data-shown);
+}
+.twin-dom {
+  font-size: 0;
+  line-height: 0;
+}
+.trap-hidden {
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
+}
