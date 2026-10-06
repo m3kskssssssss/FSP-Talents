@@ -80,6 +80,11 @@ export function CandidateCard({ c, needId, rephrased }: { c: Card; needId?: stri
               тест {c.category.score.toFixed(1)}/30
             </Badge>
             {c.category.trustLevel === "medium" && <Badge tone="warn">с пометкой</Badge>}
+            {c.category.express && (
+              <Badge tone="gray" title="Категория по короткой экспресс-проверке демо-режима, а не по полному тесту">
+                экспресс-проверка
+              </Badge>
+            )}
             {c.near && <Badge tone="gray">соседний грейд</Badge>}
             {c.fsp.confirmed > 0 && (
               <Badge tone="red" title="Подтверждённые достижения ФСП">

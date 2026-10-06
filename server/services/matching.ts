@@ -28,6 +28,8 @@ export interface PoolCandidate extends CandidateInput {
   experienceYears: number | null;
   about: string | null;
   theta: number;
+  /** Category assigned by the express demo check. */
+  express: boolean;
 }
 
 const profileColumns = {
@@ -58,6 +60,7 @@ async function loadUnconfirmed(where: { spec?: Specialization; grades?: Grade[];
   const conds = [
     inArray(testAttempts.status, ["finished", "expired"]),
     eq(testAttempts.result, "failed"),
+    eq(testAttempts.mode, "full"),
     sql`coalesce(${testAttempts.trustLevel}::text, 'high') <> 'low'`,
     sql`coalesce((${testAttempts.trustSignals}->>'answered')::int, 0) >= 5`,
     sql`NOT EXISTS (SELECT 1 FROM ${categories} k WHERE k.profile_id = ${testAttempts.profileId} AND k.specialization = ${testAttempts.specialization} AND k.status = 'active')`,
@@ -115,27 +118,24 @@ async function loadPool(where: { spec?: Specialization; grades?: Grade[]; profil
   }
   const confirmedRows = await db()
     .select({
-      profileId: candidateProfiles.id,
-      fullName: candidateProfiles.fullName,
-      city: candidateProfiles.city,
-      about: candidateProfiles.about,
-      experienceYears: candidateProfiles.experienceYears,
-      salaryFrom: candidateProfiles.salaryExpectFrom,
-      salaryTo: candidateProfiles.salaryExpectTo,
-      format: candidateProfiles.workFormat,
-      lastActiveAt: candidateProfiles.lastActiveAt,
+      ...profileColumns,
       specialization: categories.specialization,
       grade: categories.grade,
       score: categories.score,
       theta: categories.theta,
       trustLevel: categories.trustLevel,
       assignedAt: categories.assignedAt,
+      express: sql<boolean>`coalesce(${testAttempts.mode} = 'express', false)`,
     })
     .from(categories)
     .innerJoin(candidateProfiles, eq(candidateProfiles.id, categories.profileId))
     .innerJoin(users, eq(users.id, candidateProfiles.userId))
+    .leftJoin(testAttempts, eq(testAttempts.id, categories.attemptId))
     .where(and(...conds));
-  const rows = [...confirmedRows.map((r) => ({ ...r, confirmed: true })), ...(where.unconfirmed ? await loadUnconfirmed(where) : [])];
+  const rows = [
+    ...confirmedRows.map((r) => ({ ...r, confirmed: true })),
+    ...(where.unconfirmed ? (await loadUnconfirmed(where)).map((r) => ({ ...r, express: false })) : []),
+  ];
   if (!rows.length) return [];
   const ids = [...new Set(rows.map((r) => r.profileId))];
   // Two batched queries instead of N+1.
@@ -267,7 +267,7 @@ export interface CandidateCard {
   displayName: string;
   city: string | null;
   experienceYears: number | null;
-  category: { specialization: Specialization; grade: Grade; score: number; trustLevel: "high" | "medium" | "low"; assignedAt: Date };
+  category: { specialization: Specialization; grade: Grade; score: number; trustLevel: "high" | "medium" | "low"; assignedAt: Date; express: boolean };
   salaryExpect: { from: number | null; to: number | null };
   workFormat: WorkFormat | null;
   skills: { skill: string; title: string; source: "declared" | "resume" | "test_confirmed" }[];
@@ -305,7 +305,7 @@ export function toCard(c: PoolCandidate, r: MatchResult, extra: { match: number;
     displayName: maskName(c.fullName),
     city: c.city,
     experienceYears: c.experienceYears,
-    category: { specialization: c.specialization, grade: c.grade, score: c.score, trustLevel: c.trustLevel, assignedAt: c.assignedAt },
+    category: { specialization: c.specialization, grade: c.grade, score: c.score, trustLevel: c.trustLevel, assignedAt: c.assignedAt, express: c.express },
     salaryExpect: { from: c.salaryFrom, to: c.salaryTo },
     workFormat: c.format,
     skills,

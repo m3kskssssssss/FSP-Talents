@@ -34,9 +34,15 @@ export default async function AttemptResult({ params }: { params: Promise<{ id: 
   const pct = Math.min(100, (r.score / TEST_CONFIG.scaleMax) * 100);
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle kicker={`${statusText[a.status]} · ${dateTime(a.startedAt)}`} title={passed ? "Тест сдан" : "Тест не сдан"}>
+      <PageTitle kicker={`${a.mode === "express" ? "Экспресс-проверка · " : ""}${statusText[a.status]} · ${dateTime(a.startedAt)}`} title={passed ? "Тест сдан" : "Тест не сдан"}>
         {categoryTitle(a.specialization, a.grade)} · отвечено заданий: {a.answered}
       </PageTitle>
+      {a.mode === "express" && (
+        <Notice>
+          Это экспресс-проверка демо-режима: {TEST_CONFIG.express.maxItems} заданий вместо {TEST_CONFIG.minItems}–{TEST_CONFIG.maxItems}, поэтому точность ниже. Движок, шкала и
+          правила присвоения категории те же; категория помечена «экспресс-проверка».
+        </Notice>
+      )}
 
       <div className="grid gap-6 md:grid-cols-[1.2fr_1fr]">
         <Blank label="Результат">

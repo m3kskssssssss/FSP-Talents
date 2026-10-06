@@ -36,7 +36,7 @@ export default async function TestsPage({ searchParams }: { searchParams: Promis
                 Продолжить начатую попытку
               </a>
             ) : (
-              <StartTest specialization={s.specialization} grades={s.grades} preferred={spec === s.specialization ? grade : undefined} />
+              <StartTest specialization={s.specialization} grades={s.grades} preferred={spec === s.specialization ? grade : undefined} express={s.expressAvailable} />
             )}
             {s.attempts.length > 0 && (
               <div className="mt-5 border-t border-violet/15 pt-4">
@@ -45,7 +45,10 @@ export default async function TestsPage({ searchParams }: { searchParams: Promis
                   {s.attempts.slice(0, 5).map((a) => (
                     <li key={a.id} className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-xs text-muted">{dateTime(a.startedAt)}</span>
-                      <span>{gradeTitle(a.grade)}</span>
+                      <span>
+                        {gradeTitle(a.grade)}
+                        {a.mode === "express" && <span className="text-muted"> · экспресс</span>}
+                      </span>
                       {a.result && <Badge tone={resultBadge[a.result][1]}>{resultBadge[a.result][0]}</Badge>}
                       {a.score !== null && <span className="font-mono text-xs">{a.score.toFixed(1)}/30</span>}
                       {a.status !== "in_progress" && (

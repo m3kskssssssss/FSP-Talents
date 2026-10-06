@@ -63,6 +63,14 @@ export const TEST_CONFIG = {
   calibrationDays: 7,
   /** Afterwards, a test above the active category opens this long after it was assigned. */
   gradeChangeCooldownDays: 90,
+  /**
+   * Express check for the jury (Q&A: "a 3-5 minute express test is fine, but
+   * they must be able to take the test themselves"). Available only with
+   * DEMO_MODE: short questions without code, the same CAT and scoring, the
+   * category is marked "express"; it does not touch calibration counters or
+   * the leak detector and does not count towards retake cooldowns.
+   */
+  express: { minItems: 6, maxItems: 6, durationMinutes: 15, kinds: ["quiz", "calc"] as const },
   /** Seconds allowed for in-browser execution of hidden tests. */
   hiddenRunTimeoutMs: 8000,
   /** Window between issuing hidden inputs and receiving outputs. */

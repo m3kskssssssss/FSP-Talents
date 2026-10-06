@@ -5,25 +5,41 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import { Notice } from "@/components/ui/field";
 import { gradeTitle } from "@/lib/format";
+import { TEST_CONFIG } from "@/server/config";
 import { api, ApiError } from "@/lib/api-client";
 
 type Grade = "junior" | "middle" | "senior";
+const TEST_CONFIG_EXPRESS = TEST_CONFIG.express;
 type Elig = { ok: true } | { ok: false; code: string; message: string };
 
-export function StartTest({ specialization, grades, preferred }: { specialization: string; grades: { grade: Grade; eligibility: Elig }[]; preferred?: string }) {
+export function StartTest({
+  specialization,
+  grades,
+  preferred,
+  express = false,
+}: {
+  specialization: string;
+  grades: { grade: Grade; eligibility: Elig }[];
+  preferred?: string;
+  /** Demo mode: offer the short express check. */
+  express?: boolean;
+}) {
   const firstOk = grades.find((g) => g.grade === preferred && g.eligibility.ok)?.grade ?? grades.find((g) => g.eligibility.ok)?.grade ?? null;
   const [grade, setGrade] = useState<Grade | null>(firstOk);
+  // Express checks ignore retake cooldowns, so any grade can be picked for them.
+  const [expressGrade, setExpressGrade] = useState<Grade>(firstOk ?? (preferred as Grade) ?? "middle");
   const [ack, setAck] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  async function start() {
-    if (!grade) return;
+  async function start(mode: "full" | "express" = "full") {
+    const g = mode === "express" ? expressGrade : grade;
+    if (!g) return;
     setPending(true);
     setError(null);
     try {
       const r = await api<{ attemptId: string }>("/api/v1/tests/attempts", {
-        body: { specialization, grade, acknowledgeMonitoring: true },
+        body: { specialization, grade: g, mode, acknowledgeMonitoring: true },
       });
       // Full page load: the test page must be cross-origin isolated (COOP/COEP).
       window.location.href = `/test/${r.attemptId}`;
@@ -77,9 +93,29 @@ export function StartTest({ specialization, grades, preferred }: { specializatio
         <span>Я ознакомлен(а) с правилами и согласен(на) на запись журнала попытки</span>
       </label>
       {error && <Notice tone="error">{error}</Notice>}
-      <Button onClick={start} disabled={!grade || !ack || pending}>
+      <Button onClick={() => start("full")} disabled={!grade || !ack || pending}>
         {pending ? "Готовим вариант…" : grade ? `Начать тест ${gradeTitle(grade)}` : "Нет доступных грейдов"}
       </Button>
+      {express && (
+        <div className="flex flex-col gap-2 rounded-xl border border-dashed border-violet/40 p-3 text-sm">
+          <p>
+            <span className="font-medium">Экспресс-проверка для демо</span> — {TEST_CONFIG_EXPRESS.maxItems} коротких заданий без кода, до {TEST_CONFIG_EXPRESS.durationMinutes} минут.
+            Тот же адаптивный движок и шкала, категория помечается «экспресс-проверка». Не влияет на пересдачи и калибровку банка.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <select aria-label="Грейд экспресс-проверки" className="input w-auto py-1.5" value={expressGrade} onChange={(e) => setExpressGrade(e.target.value as Grade)}>
+              {grades.map(({ grade: g }) => (
+                <option key={g} value={g}>
+                  {gradeTitle(g)}
+                </option>
+              ))}
+            </select>
+            <Button variant="secondary" size="sm" onClick={() => start("express")} disabled={!ack || pending}>
+              Пройти экспресс-проверку
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

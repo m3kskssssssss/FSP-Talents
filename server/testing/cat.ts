@@ -21,7 +21,8 @@ export interface Administered {
   x?: number;
 }
 
-export type CatConfig = typeof TEST_CONFIG;
+/** Item limits are numbers (not literals) so that the express check can override them. */
+export type CatConfig = Omit<typeof TEST_CONFIG, "minItems" | "maxItems"> & { minItems: number; maxItems: number };
 
 export const itemWeight = (kind: TaskKind, cfg: CatConfig = TEST_CONFIG) => (kind === "quiz" ? cfg.quizWeight : 1);
 

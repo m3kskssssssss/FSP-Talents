@@ -39,6 +39,8 @@ export const taskKindEnum = pgEnum("task_kind", ["code", "sql", "quiz", "calc"])
 export const templateStatusEnum = pgEnum("template_status", ["active", "flagged", "retired"]);
 export const attemptStatusEnum = pgEnum("attempt_status", ["in_progress", "finished", "expired", "abandoned"]);
 export const attemptResultEnum = pgEnum("attempt_result", ["passed_confident", "passed", "failed"]);
+/** express = short demo check for the jury (DEMO_MODE only), see TEST_CONFIG.express. */
+export const attemptModeEnum = pgEnum("attempt_mode", ["full", "express"]);
 export const trustLevelEnum = pgEnum("trust_level", ["high", "medium", "low"]);
 export const attemptEventEnum = pgEnum("attempt_event", [
   "visibility_hidden",
@@ -244,6 +246,7 @@ export const testAttempts = pgTable(
       .references(() => candidateProfiles.id, { onDelete: "cascade" }),
     specialization: specializationEnum("specialization").notNull(),
     targetGrade: gradeEnum("target_grade").notNull(),
+    mode: attemptModeEnum("mode").notNull().default("full"),
     status: attemptStatusEnum("status").notNull().default("in_progress"),
     startedAt: ts("started_at").notNull().defaultNow(),
     deadlineAt: ts("deadline_at").notNull(),

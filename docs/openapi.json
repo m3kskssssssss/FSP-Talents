@@ -5332,6 +5332,17 @@
           },
           {
             "schema": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "required": false,
+            "name": "includeUnconfirmed",
+            "in": "query"
+          },
+          {
+            "schema": {
               "type": "integer",
               "minimum": 1,
               "maximum": 100,
@@ -7310,6 +7321,14 @@
                       "middle",
                       "senior"
                     ]
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "full",
+                      "express"
+                    ],
+                    "default": "full"
                   },
                   "acknowledgeMonitoring": {
                     "type": "boolean",

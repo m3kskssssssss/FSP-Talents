@@ -8,6 +8,7 @@ import {
   type Specialization,
 } from "../config";
 import { db, type DbOrTx, type Tx } from "../db";
+import { env } from "../env";
 import {
   attemptEvents,
   attemptItems,
@@ -20,9 +21,22 @@ import { randomToken, sha256 } from "../lib/crypto";
 import { AppError, conflict, forbidden, notFound } from "../lib/errors";
 import { addMinutes } from "../lib/time";
 import { BANK, getTemplate } from "../testing/bank";
-import { estimate, selectNext, shouldStop, toResponses, type Administered, type BankItem } from "../testing/cat";
+import {
+  estimate,
+  selectNext,
+  shouldStop,
+  toResponses,
+  type Administered,
+  type BankItem,
+} from "../testing/cat";
 import { checkEligibility, type Eligibility, type PastAttempt } from "../testing/eligibility";
-import { checkAnswer, hiddenPayload, renderItem, type Answer, type PublicItem } from "../testing/engine";
+import {
+  checkAnswer,
+  hiddenPayload,
+  renderItem,
+  type Answer,
+  type PublicItem,
+} from "../testing/engine";
 import { leakVerdict } from "../testing/calibration";
 import { decide, p2pl } from "../testing/irt";
 import { Rng } from "../testing/rng";
@@ -70,7 +84,19 @@ export async function syncTemplates(force = false) {
   synced = true;
 }
 
-async function bankFor(tx: DbOrTx, spec: Specialization): Promise<BankItem[]> {
+type Mode = (typeof testAttempts.$inferSelect)["mode"];
+
+/** Item-count limits of an attempt: the full adaptive test or the short express check. */
+const limitsFor = (mode: Mode) =>
+  mode === "express"
+    ? {
+        ...TEST_CONFIG,
+        minItems: TEST_CONFIG.express.minItems,
+        maxItems: TEST_CONFIG.express.maxItems,
+      }
+    : TEST_CONFIG;
+
+async function bankFor(tx: DbOrTx, spec: Specialization, mode: Mode = "full"): Promise<BankItem[]> {
   const rows = await tx
     .select()
     .from(taskTemplates)
@@ -80,9 +106,16 @@ async function bankFor(tx: DbOrTx, spec: Specialization): Promise<BankItem[]> {
     .from(testAttempts)
     .where(eq(testAttempts.specialization, spec))) as [{ n: number }];
   const known = new Set(BANK.map((t) => t.id));
+  const kinds: readonly string[] | null = mode === "express" ? TEST_CONFIG.express.kinds : null;
   return rows
-    .filter((r) => known.has(r.id))
-    .map((r) => ({ id: r.id, kind: r.kind, a: r.discriminationA, b: r.difficultyB, exposureRate: n > 0 ? r.exposureCount / n : 0 }));
+    .filter((r) => known.has(r.id) && (!kinds || kinds.includes(r.kind)))
+    .map((r) => ({
+      id: r.id,
+      kind: r.kind,
+      a: r.discriminationA,
+      b: r.difficultyB,
+      exposureRate: n > 0 ? r.exposureCount / n : 0,
+    }));
 }
 
 // ---------------------------------------------------------------- availability
@@ -91,7 +124,11 @@ export async function attemptHistory(profileId: string, spec?: Specialization) {
   return db()
     .select()
     .from(testAttempts)
-    .where(spec ? and(eq(testAttempts.profileId, profileId), eq(testAttempts.specialization, spec)) : eq(testAttempts.profileId, profileId))
+    .where(
+      spec
+        ? and(eq(testAttempts.profileId, profileId), eq(testAttempts.specialization, spec))
+        : eq(testAttempts.profileId, profileId),
+    )
     .orderBy(desc(testAttempts.startedAt));
 }
 
@@ -109,10 +146,15 @@ export async function availability(profileId: string) {
       specialization: spec,
       category,
       inProgress: h.find((a) => a.status === "in_progress")?.id ?? null,
-      grades: GRADES.map((grade) => ({ grade, eligibility: checkEligibility(toPast(h), grade, now, category) as Eligibility })),
+      grades: GRADES.map((grade) => ({
+        grade,
+        eligibility: checkEligibility(toPast(h), grade, now, category) as Eligibility,
+      })),
+      expressAvailable: env().DEMO_MODE,
       attempts: h.map((a) => ({
         id: a.id,
         grade: a.targetGrade,
+        mode: a.mode,
         status: a.status,
         result: a.result,
         score: a.score,
@@ -124,18 +166,47 @@ export async function availability(profileId: string) {
   });
 }
 
+/** Express checks never count towards retake rules; an attempt in progress always blocks a new one. */
 const toPast = (rows: (typeof testAttempts.$inferSelect)[]): PastAttempt[] =>
-  rows.map((r) => ({ grade: r.targetGrade, status: r.status, startedAt: r.startedAt, finishedAt: r.finishedAt, score: r.score }));
+  rows
+    .filter((r) => r.mode === "full" || r.status === "in_progress")
+    .map((r) => ({
+      grade: r.targetGrade,
+      status: r.status,
+      startedAt: r.startedAt,
+      finishedAt: r.finishedAt,
+      score: r.score,
+    }));
 
 // ---------------------------------------------------------------- start
 
-const MARKER_WORDS = ["kvant", "orbita", "vektor", "sigma", "fotan", "lambda", "gradus", "tensor", "pulsar", "kristal"];
+const MARKER_WORDS = [
+  "kvant",
+  "orbita",
+  "vektor",
+  "sigma",
+  "fotan",
+  "lambda",
+  "gradus",
+  "tensor",
+  "pulsar",
+  "kristal",
+];
 
-export async function startAttempt(userId: string, profileId: string, spec: Specialization, grade: Grade) {
+export async function startAttempt(
+  userId: string,
+  profileId: string,
+  spec: Specialization,
+  grade: Grade,
+  mode: Mode = "full",
+) {
+  if (mode === "express" && !env().DEMO_MODE)
+    throw forbidden("Экспресс-проверка доступна только в демо-режиме");
   if (!TESTABLE_SPECIALIZATIONS.includes(spec as (typeof TESTABLE_SPECIALIZATIONS)[number])) {
     throw new AppError(422, "validation_error", "Для этой специализации тест пока недоступен");
   }
-  if (!(await hasActiveConsent(userId, "pd_processing"))) throw forbidden("Нужно согласие на обработку персональных данных");
+  if (!(await hasActiveConsent(userId, "pd_processing")))
+    throw forbidden("Нужно согласие на обработку персональных данных");
   await syncTemplates();
   return db().transaction(async (tx) => {
     // Serialise starts per candidate.
@@ -147,9 +218,17 @@ export async function startAttempt(userId: string, profileId: string, spec: Spec
     const [category] = await tx
       .select({ grade: categories.grade, assignedAt: categories.assignedAt })
       .from(categories)
-      .where(and(eq(categories.profileId, profileId), eq(categories.specialization, spec), eq(categories.status, "active")));
+      .where(
+        and(
+          eq(categories.profileId, profileId),
+          eq(categories.specialization, spec),
+          eq(categories.status, "active"),
+        ),
+      );
     const elig = checkEligibility(toPast(history), grade, new Date(), category);
-    if (!elig.ok) throw conflict(elig.message, { code: elig.code, availableAt: elig.availableAt });
+    // Express (demo) checks only respect "one attempt at a time".
+    if (!elig.ok && (mode === "full" || elig.code === "in_progress"))
+      throw conflict(elig.message, { code: elig.code, availableAt: elig.availableAt });
     const seed = randomToken(24);
     const rng = new Rng(seed);
     const marker = `${rng.pick(MARKER_WORDS)}_${rng.token(3)}`;
@@ -160,13 +239,17 @@ export async function startAttempt(userId: string, profileId: string, spec: Spec
         profileId,
         specialization: spec,
         targetGrade: grade,
+        mode,
         seed,
         marker,
         startedAt,
-        deadlineAt: addMinutes(startedAt, TEST_CONFIG.durationMinutes),
+        deadlineAt: addMinutes(
+          startedAt,
+          mode === "express" ? TEST_CONFIG.express.durationMinutes : TEST_CONFIG.durationMinutes,
+        ),
       })
       .returning();
-    const bank = await bankFor(tx, spec);
+    const bank = await bankFor(tx, spec, mode);
     const first = selectNext(grade, [], bank, rng.fork("select/0"));
     if (!first) throw new AppError(503, "bank_empty", "Банк заданий пуст");
     await serveItem(tx, a!, first.id, 0);
@@ -193,6 +276,8 @@ async function serveItem(tx: DbOrTx, attempt: AttemptRow, templateId: string, po
     marker: attempt.marker,
     traps: { twin: Boolean(t.twin), hiddenText: true, microText: true },
   });
+  // Express demo checks do not affect exposure control or calibration.
+  if (attempt.mode === "express") return;
   await tx
     .update(taskTemplates)
     .set({ exposureCount: sql`${taskTemplates.exposureCount} + 1` })
@@ -210,7 +295,11 @@ async function loadOwned(tx: DbOrTx, profileId: string, attemptId: string, lock 
 }
 
 async function items(tx: DbOrTx, attemptId: string) {
-  return tx.select().from(attemptItems).where(eq(attemptItems.attemptId, attemptId)).orderBy(asc(attemptItems.position));
+  return tx
+    .select()
+    .from(attemptItems)
+    .where(eq(attemptItems.attemptId, attemptId))
+    .orderBy(asc(attemptItems.position));
 }
 
 type Meta = Map<string, { a: number; b: number; kind: TaskKind; status: string }>;
@@ -220,20 +309,32 @@ function administered(rows: ItemRow[], meta: Meta): Administered[] {
   return rows.map((r) => {
     const m = meta.get(r.templateId)!;
     const counts = r.answeredAt && m.status !== "flagged";
-    return { id: r.templateId, kind: m.kind, a: m.a, b: m.b, x: counts ? (r.partialScore ?? 0) : undefined };
+    return {
+      id: r.templateId,
+      kind: m.kind,
+      a: m.a,
+      b: m.b,
+      x: counts ? (r.partialScore ?? 0) : undefined,
+    };
   });
 }
 
 async function templateMeta(tx: DbOrTx, ids: string[]): Promise<Meta> {
   if (!ids.length) return new Map();
   const rows = await tx.select().from(taskTemplates).where(inArray(taskTemplates.id, ids));
-  return new Map(rows.map((r) => [r.id, { a: r.discriminationA, b: r.difficultyB, kind: r.kind as TaskKind, status: r.status }]));
+  return new Map(
+    rows.map((r) => [
+      r.id,
+      { a: r.discriminationA, b: r.difficultyB, kind: r.kind as TaskKind, status: r.status },
+    ]),
+  );
 }
 
 export interface AttemptState {
   id: string;
   specialization: Specialization;
   grade: Grade;
+  mode: Mode;
   status: AttemptRow["status"];
   startedAt: Date;
   deadlineAt: Date;
@@ -241,7 +342,13 @@ export interface AttemptState {
   answered: number;
   minItems: number;
   maxItems: number;
-  current: null | { itemId: string; position: number; servedAt: Date; view: PublicItem; hiddenIssued: boolean };
+  current: null | {
+    itemId: string;
+    position: number;
+    servedAt: Date;
+    view: PublicItem;
+    hiddenIssued: boolean;
+  };
   result: null | {
     score: number;
     result: AttemptRow["result"];
@@ -268,7 +375,13 @@ export async function getAttempt(profileId: string, attemptId: string): Promise<
   let current: AttemptState["current"] = null;
   if (cur) {
     const { view } = await renderItem(getTemplate(cur.templateId), cur.seed, cur.marker);
-    current = { itemId: cur.id, position: cur.position, servedAt: cur.servedAt, view, hiddenIssued: Boolean(cur.hiddenNonce) };
+    current = {
+      itemId: cur.id,
+      position: cur.position,
+      servedAt: cur.servedAt,
+      view,
+      hiddenIssued: Boolean(cur.hiddenNonce),
+    };
   }
   let result: AttemptState["result"] = null;
   if (a.status !== "in_progress" && a.score !== null) {
@@ -290,13 +403,14 @@ export async function getAttempt(profileId: string, attemptId: string): Promise<
     id: a.id,
     specialization: a.specialization,
     grade: a.targetGrade,
+    mode: a.mode,
     status: a.status,
     startedAt: a.startedAt,
     deadlineAt: a.deadlineAt,
     serverNow: new Date(),
     answered: rows.filter((r) => r.answeredAt).length,
-    minItems: TEST_CONFIG.minItems,
-    maxItems: TEST_CONFIG.maxItems,
+    minItems: limitsFor(a.mode).minItems,
+    maxItems: limitsFor(a.mode).maxItems,
     current,
     result,
   };
@@ -310,10 +424,14 @@ export async function issueHidden(profileId: string, attemptId: string, itemId: 
     assertOpen(a);
     const item = await currentItem(tx, a.id, itemId);
     const t = getTemplate(item.templateId);
-    if (t.kind !== "code" && t.kind !== "sql") throw new AppError(400, "no_hidden", "Для этого задания скрытые тесты не нужны");
+    if (t.kind !== "code" && t.kind !== "sql")
+      throw new AppError(400, "no_hidden", "Для этого задания скрытые тесты не нужны");
     // A fresh nonce on every request: inputs are generated at submission time.
     const nonce = randomToken(12);
-    await tx.update(attemptItems).set({ hiddenNonce: nonce, hiddenIssuedAt: new Date() }).where(eq(attemptItems.id, item.id));
+    await tx
+      .update(attemptItems)
+      .set({ hiddenNonce: nonce, hiddenIssuedAt: new Date() })
+      .where(eq(attemptItems.id, item.id));
     return { ...hiddenPayload(t, item.seed, nonce), timeoutMs: TEST_CONFIG.hiddenRunTimeoutMs };
   });
 }
@@ -350,7 +468,8 @@ export async function submitAnswer(
       if (!input.answer) throw new AppError(422, "validation_error", "Нет ответа");
       if ((t.kind === "code" || t.kind === "sql") && item.hiddenIssuedAt) {
         const age = (Date.now() - item.hiddenIssuedAt.getTime()) / 1000;
-        if (age > TEST_CONFIG.hiddenWindowSeconds) throw conflict("Скрытые тесты устарели — отправьте решение ещё раз");
+        if (age > TEST_CONFIG.hiddenWindowSeconds)
+          throw conflict("Скрытые тесты устарели — отправьте решение ещё раз");
       }
       const r = await checkAnswer(t, item.seed, item.marker, input.answer, item.hiddenNonce);
       score = r.score;
@@ -358,7 +477,10 @@ export async function submitAnswer(
       trapHits = r.trapHits;
     }
     const rows = await items(tx, a.id);
-    const meta = await templateMeta(tx, rows.map((r) => r.templateId));
+    const meta = await templateMeta(
+      tx,
+      rows.map((r) => r.templateId),
+    );
     const before = estimate(a.targetGrade, administered(rows, meta));
     const now = new Date();
     const timeMs = input.timeMs ?? now.getTime() - item.servedAt.getTime();
@@ -375,29 +497,44 @@ export async function submitAnswer(
       })
       .where(eq(attemptItems.id, item.id));
     const m = meta.get(item.templateId)!;
-    await tx
-      .update(taskTemplates)
-      .set({
-        answeredCount: sql`${taskTemplates.answeredCount} + 1`,
-        correctCount: sql`${taskTemplates.correctCount} + ${correct ? 1 : 0}`,
-        expectedCorrect: sql`${taskTemplates.expectedCorrect} + ${p2pl(before.theta, m.a, m.b)}`,
-      })
-      .where(eq(taskTemplates.id, item.templateId));
-    await checkLeak(tx, item.templateId);
+    if (a.mode === "full") {
+      await tx
+        .update(taskTemplates)
+        .set({
+          answeredCount: sql`${taskTemplates.answeredCount} + 1`,
+          correctCount: sql`${taskTemplates.correctCount} + ${correct ? 1 : 0}`,
+          expectedCorrect: sql`${taskTemplates.expectedCorrect} + ${p2pl(before.theta, m.a, m.b)}`,
+        })
+        .where(eq(taskTemplates.id, item.templateId));
+      await checkLeak(tx, item.templateId);
+    }
 
     const updated = await items(tx, a.id);
     const adm = administered(updated, meta);
     const est = estimate(a.targetGrade, adm);
-    await tx.update(attemptItems).set({ thetaAfter: est.theta, seAfter: est.se }).where(eq(attemptItems.id, item.id));
+    await tx
+      .update(attemptItems)
+      .set({ thetaAfter: est.theta, seAfter: est.se })
+      .where(eq(attemptItems.id, item.id));
 
-    const bank = await bankFor(tx, a.specialization);
+    const bank = await bankFor(tx, a.specialization, a.mode);
     const used = new Set(updated.map((r) => r.templateId));
-    const stop = shouldStop(a.targetGrade, adm, { bankLeft: bank.filter((b) => !used.has(b.id)).length, now, deadline: a.deadlineAt });
+    const stop = shouldStop(
+      a.targetGrade,
+      adm,
+      { bankLeft: bank.filter((b) => !used.has(b.id)).length, now, deadline: a.deadlineAt },
+      limitsFor(a.mode),
+    );
     if (stop) {
       await finalize(tx, a, stop === "deadline" ? "expired" : "finished");
       return;
     }
-    const next = selectNext(a.targetGrade, adm, bank, new Rng(a.seed).fork(`select/${updated.length}`));
+    const next = selectNext(
+      a.targetGrade,
+      adm,
+      bank,
+      new Rng(a.seed).fork(`select/${updated.length}`),
+    );
     if (!next) await finalize(tx, a, "finished");
     else await serveItem(tx, a, next.id, updated.length);
   });
@@ -408,20 +545,36 @@ export async function submitAnswer(
 async function checkLeak(tx: DbOrTx, templateId: string) {
   const [t] = await tx.select().from(taskTemplates).where(eq(taskTemplates.id, templateId));
   if (!t || t.status !== "active") return;
-  const v = leakVerdict({ id: t.id, answered: t.answeredCount, correct: t.correctCount, expected: t.expectedCorrect });
+  const v = leakVerdict({
+    id: t.id,
+    answered: t.answeredCount,
+    correct: t.correctCount,
+    expected: t.expectedCorrect,
+  });
   if (v.flagged) {
     await tx
       .update(taskTemplates)
-      .set({ status: "flagged", flaggedAt: new Date(), flagReason: `Доля верных выше прогноза IRT на ${Math.round(v.excess * 100)} п.п. (z = ${v.z.toFixed(1)})` })
+      .set({
+        status: "flagged",
+        flaggedAt: new Date(),
+        flagReason: `Доля верных выше прогноза IRT на ${Math.round(v.excess * 100)} п.п. (z = ${v.z.toFixed(1)})`,
+      })
       .where(eq(taskTemplates.id, templateId));
-    await audit(tx, { actorUserId: null, action: "template.flagged", entity: "task_template", entityId: templateId, meta: { excess: v.excess, z: v.z } });
+    await audit(tx, {
+      actorUserId: null,
+      action: "template.flagged",
+      entity: "task_template",
+      entityId: templateId,
+      meta: { excess: v.excess, z: v.z },
+    });
   }
 }
 
 /** Outputs can be large; keep the code and a compact summary only. */
 function stripForStorage(a: Answer): Record<string, unknown> {
   if (a.kind === "code") return { kind: a.kind, language: a.language, outputs: a.outputs.length };
-  if (a.kind === "sql") return { kind: a.kind, rows: "error" in a.result ? -1 : a.result.rows.length };
+  if (a.kind === "sql")
+    return { kind: a.kind, rows: "error" in a.result ? -1 : a.result.rows.length };
   return a as unknown as Record<string, unknown>;
 }
 
@@ -440,7 +593,10 @@ async function finalize(tx: Tx, a: AttemptRow, status: "finished" | "expired" | 
   const rows = await items(tx, a.id);
   const answered = rows.filter((r) => r.answeredAt);
   // Unanswered served item is dropped (not counted as wrong) unless time ran out.
-  const meta = await templateMeta(tx, rows.map((r) => r.templateId));
+  const meta = await templateMeta(
+    tx,
+    rows.map((r) => r.templateId),
+  );
   const adm = administered(answered, meta);
   const est = estimate(a.targetGrade, adm);
   const { score, result } = decide(est.theta, a.targetGrade);
@@ -491,10 +647,22 @@ async function finalize(tx: Tx, a: AttemptRow, status: "finished" | "expired" | 
   if (skills.size && trust.level !== "low") {
     await tx
       .insert(candidateSkills)
-      .values([...skills].map((skill) => ({ profileId: a.profileId, skill, source: "test_confirmed" as const })))
+      .values(
+        [...skills].map((skill) => ({
+          profileId: a.profileId,
+          skill,
+          source: "test_confirmed" as const,
+        })),
+      )
       .onConflictDoNothing();
   }
-  await audit(tx, { actorUserId: null, action: "test.finalized", entity: "test_attempt", entityId: a.id, meta: { status, result: finalResult, trust: trust.level } });
+  await audit(tx, {
+    actorUserId: null,
+    action: "test.finalized",
+    entity: "test_attempt",
+    entityId: a.id,
+    meta: { status, result: finalResult, trust: trust.level },
+  });
 }
 
 /**
@@ -509,9 +677,16 @@ export async function assignCategory(
   const [existing] = await tx
     .select()
     .from(categories)
-    .where(and(eq(categories.profileId, a.profileId), eq(categories.specialization, a.specialization), eq(categories.status, "active")));
+    .where(
+      and(
+        eq(categories.profileId, a.profileId),
+        eq(categories.specialization, a.specialization),
+        eq(categories.status, "active"),
+      ),
+    );
   if (existing && gradeIndex(existing.grade) > gradeIndex(a.targetGrade)) return false;
-  if (existing) await tx.update(categories).set({ status: "superseded" }).where(eq(categories.id, existing.id));
+  if (existing)
+    await tx.update(categories).set({ status: "superseded" }).where(eq(categories.id, existing.id));
   await tx.insert(categories).values({
     profileId: a.profileId,
     specialization: a.specialization,
@@ -530,12 +705,23 @@ export async function assignCategory(
 export async function logEvents(
   profileId: string,
   attemptId: string,
-  events: { type: (typeof attemptEvents.$inferInsert)["type"]; itemId?: string; payload?: Record<string, unknown> }[],
+  events: {
+    type: (typeof attemptEvents.$inferInsert)["type"];
+    itemId?: string;
+    payload?: Record<string, unknown>;
+  }[],
 ) {
   const a = await loadOwned(db(), profileId, attemptId);
   if (a.status !== "in_progress" || !events.length) return { stored: 0 };
   await db()
     .insert(attemptEvents)
-    .values(events.map((e) => ({ attemptId, itemId: e.itemId ?? null, type: e.type, payload: e.payload ?? null })));
+    .values(
+      events.map((e) => ({
+        attemptId,
+        itemId: e.itemId ?? null,
+        type: e.type,
+        payload: e.payload ?? null,
+      })),
+    );
   return { stored: events.length };
 }

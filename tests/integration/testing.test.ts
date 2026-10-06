@@ -52,6 +52,38 @@ describe("testing service", () => {
     await syncTemplates(true);
   });
 
+  it("express check: 6 items without code, a marked category, no calibration side effects, no cooldown", async () => {
+    const { user, profileId } = await makeCandidate();
+    const before = await db().select().from(taskTemplates);
+    const { attemptId } = await startAttempt(user.id, profileId, "backend", "middle", "express");
+    const fin = await play(profileId, attemptId, () => true);
+    expect(fin.mode).toBe("express");
+    expect(fin.answered).toBe(6);
+    expect(fin.maxItems).toBe(6);
+    expect(fin.result!.categoryAssigned).toBe(true);
+    const served = await db().select().from(attemptItems).where(eq(attemptItems.attemptId, attemptId));
+    for (const it of served) expect(["quiz", "calc"]).toContain(getTemplate(it.templateId).kind);
+    // Counters used by calibration and the leak detector are untouched.
+    const after = await db().select().from(taskTemplates);
+    const sum = (rows: typeof before) => rows.reduce((s, r) => s + r.answeredCount + r.exposureCount, 0);
+    expect(sum(after)).toBe(sum(before));
+    // Does not burn the 14-day cooldown of the full test.
+    await expect(startAttempt(user.id, profileId, "backend", "middle")).resolves.toHaveProperty("attemptId");
+  });
+
+  it("express check is refused outside demo mode", async () => {
+    const { resetEnvCache } = await import("@/server/env");
+    process.env.DEMO_MODE = "false";
+    resetEnvCache();
+    try {
+      const { user, profileId } = await makeCandidate();
+      await expect(startAttempt(user.id, profileId, "backend", "middle", "express")).rejects.toMatchObject({ status: 403 });
+    } finally {
+      process.env.DEMO_MODE = "true";
+      resetEnvCache();
+    }
+  });
+
   it("serves items one by one, without reference data, and assigns a category to a strong candidate", async () => {
     const { user, profileId } = await makeCandidate();
     const { attemptId } = await startAttempt(user.id, profileId, "backend", "middle");

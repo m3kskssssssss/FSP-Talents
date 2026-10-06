@@ -5,6 +5,8 @@ import { gradeSchema } from "./common";
 export const startAttemptSchema = z.object({
   specialization: z.enum(TESTABLE_SPECIALIZATIONS),
   grade: gradeSchema,
+  /** express = short demo check, only with DEMO_MODE. */
+  mode: z.enum(["full", "express"]).default("full"),
   acknowledgeMonitoring: z.literal(true, { error: "Подтвердите, что ознакомлены с правилами прохождения" }),
 });
 
