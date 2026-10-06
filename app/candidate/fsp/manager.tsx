@@ -7,6 +7,7 @@ import { Blank } from "@/components/ui/blank";
 import { Button } from "@/components/ui/button";
 import { Field, Notice } from "@/components/ui/field";
 import { api, ApiError } from "@/lib/api-client";
+import { EvidenceForms } from "./evidence";
 
 type Ach = { id: string; competition: string; discipline: string; stage: "regional" | "district" | "final"; year: number; place: number | null; source: "fsp_registry" | "organizer" | "repo" | "self"; sportsCategory: string | null };
 const STAGE = { regional: "региональный этап", district: "окружной этап", final: "финал" };
@@ -81,6 +82,8 @@ export function FspManager({ fspId, achievements }: { fspId: string | null; achi
           ))}
         </ul>
       </Blank>
+
+      <EvidenceForms />
 
       <Blank label="Добавить достижение вручную">
         <form onSubmit={addSelf} className="grid gap-3 sm:grid-cols-2">

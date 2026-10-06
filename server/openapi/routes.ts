@@ -1,6 +1,7 @@
 import type { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import { baseSearchSchema, needCreateSchema, needParseSchema, rephraseSchema, searchFiltersSchema } from "../schemas/needs";
+import { repoCheckSchema } from "../schemas/candidate";
 import { consentSchema, contactsSchema, deleteAccountSchema, fspLinkSchema, profileUpdateSchema, selfAchievementSchema, skillsSchema, visibilitySchema } from "../schemas/candidate";
 import { invitationCreateSchema, invitationDecisionSchema } from "../schemas/invitations";
 import { attemptsFilterSchema, reviewSchema, templateStatusSchema } from "../schemas/moderation";
@@ -66,6 +67,8 @@ export function apiRoutes(): ApiRoute[] {
     { method: "post", path: "/api/v1/me/fsp", tags: C, summary: "Привязать ФСП ID и импортировать достижения из реестра (мок). 404 — нет в реестре, 503 — реестр недоступен", request: body(fspLinkSchema), responses: { 200: ok, 404: ok, 503: ok } },
     { method: "post", path: "/api/v1/me/achievements", tags: C, summary: "Добавить заявленное достижение (доверие low)", request: body(selfAchievementSchema), responses: { 200: ok } },
     { method: "delete", path: "/api/v1/me/achievements/{id}", tags: C, summary: "Удалить заявленное достижение", request: { params: idParams }, responses: { 200: ok } },
+    { method: "post", path: "/api/v1/me/certificates", tags: C, summary: "Сертификат (multipart: file + поля достижения): метаданные → сигналы риска → уровень доверия organizer/self", responses: { 200: ok, 422: ok } },
+    { method: "post", path: "/api/v1/me/repo-check", tags: C, summary: "Подтвердить хакатон репозиторием GitHub (уровень доверия repo)", request: body(repoCheckSchema), responses: { 200: ok, 503: ok } },
     { method: "delete", path: "/api/v1/me", tags: C, summary: "Удалить аккаунт с анонимизацией", request: body(deleteAccountSchema), responses: { 200: ok } },
   ];
   const A = ["Модерация"];

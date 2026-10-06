@@ -44,3 +44,21 @@ export const selfAchievementSchema = z.object({
   place: z.number().int().min(1).max(1000).nullable().optional(),
 });
 export const deleteAccountSchema = z.object({ confirm: z.literal("УДАЛИТЬ", { error: "Введите слово УДАЛИТЬ" }) });
+
+const achievementInfo = {
+  competition: z.string().trim().min(3).max(200),
+  discipline: z.enum(["алгоритмическое", "продуктовое", "ИБ", "робототехника", "БАС"]),
+  stage: z.enum(["regional", "district", "final"]),
+  year: z.coerce.number().int().min(2015).max(new Date().getFullYear()),
+  place: z.coerce.number().int().min(1).max(1000).nullable().optional(),
+};
+export const certificateInfoSchema = z.object({ ...achievementInfo, eventDate: z.iso.date().optional() });
+export const repoCheckSchema = z
+  .object({
+    ...achievementInfo,
+    repo: z.string().trim().regex(/^[\w.-]+\/[\w.-]+$/, "Формат: owner/repo"),
+    login: z.string().trim().regex(/^[\w-]{1,39}$/, "Логин GitHub"),
+    from: z.iso.date(),
+    to: z.iso.date(),
+  })
+  .refine((v) => v.from <= v.to, { message: "Дата начала позже даты окончания", path: ["to"] });

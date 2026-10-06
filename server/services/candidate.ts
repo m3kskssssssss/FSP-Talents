@@ -17,6 +17,9 @@ import {
   testAttempts,
   users,
 } from "../db/schema";
+import { assessCertificate, detectKind, extractMeta } from "../evidence/certificate";
+import { checkRepository } from "../evidence/github";
+import { certificates } from "../db/schema";
 import { FspRegistryUnavailable, getFspRegistry } from "../fsp/registry";
 import { AppError, notFound, unprocessable } from "../lib/errors";
 import { skillTitle } from "../matching/skills";
@@ -229,4 +232,66 @@ export async function uploadResume(profileId: string, file: { name: string; type
   // Skills from the resume affect ranking only and are always marked as "claimed".
   await setSkills(profileId, draft.skills, "resume");
   return { resumeId: row!.id, parsedBy, draft: { ...withoutContacts, contacts } };
+}
+
+// ---------------------------------------------------------------- evidence: certificates and repositories
+
+
+type AchievementInfo = { competition: string; discipline: "алгоритмическое" | "продуктовое" | "ИБ" | "робототехника" | "БАС"; stage: "regional" | "district" | "final"; year: number; place?: number | null };
+
+/**
+ * Certificate upload: metadata signals decide the trust level. Without risk
+ * signals the achievement counts as confirmed by the organizer; with risks it
+ * is kept as "claimed" (self) until a moderator or the registry confirms it.
+ */
+export async function uploadCertificate(profileId: string, file: { name: string; data: Buffer }, info: AchievementInfo & { eventDate?: string }) {
+  if (file.data.length > MAX_UPLOAD_BYTES) throw unprocessable("Файл больше 4 МБ");
+  const kind = detectKind(file.data);
+  if (!kind) throw unprocessable("Поддерживаются PDF, JPG и PNG");
+  const meta = await extractMeta(file.data);
+  const { checks, trust } = assessCertificate(meta, info.eventDate);
+  const key = await getStorage().put(`certificates/${profileId}`, file.name || `certificate.${kind}`, file.data, kind === "pdf" ? "application/pdf" : `image/${kind}`);
+  const confirmed = trust !== "low";
+  const [ach] = await db()
+    .insert(fspAchievements)
+    .values({
+      profileId,
+      competition: info.competition,
+      discipline: info.discipline,
+      stage: info.stage,
+      year: info.year,
+      place: info.place ?? null,
+      source: confirmed ? "organizer" : "self",
+      trustLevel: confirmed ? (trust === "high" ? "high" : "medium") : "low",
+      evidence: { certificate: true, checks: checks.map((c) => c.code) },
+    })
+    .returning();
+  const [cert] = await db()
+    .insert(certificates)
+    .values({ profileId, fileKey: key, title: info.competition, eventDate: info.eventDate ?? null, meta: meta as unknown as Record<string, unknown>, checks: { items: checks, achievementId: ach!.id }, trustLevel: trust })
+    .returning();
+  return { certificateId: cert!.id, trust, checks, meta, achievementSource: ach!.source };
+}
+
+export async function verifyRepository(profileId: string, input: { repo: string; login: string; from: string; to: string } & AchievementInfo, fetchImpl?: Parameters<typeof checkRepository>[1]) {
+  let res;
+  try {
+    res = await checkRepository(input, fetchImpl);
+  } catch {
+    throw new AppError(503, "github_unavailable", "GitHub API недоступен или превышен лимит запросов — попробуйте позже");
+  }
+  if (res.ok) {
+    await db().insert(fspAchievements).values({
+      profileId,
+      competition: input.competition,
+      discipline: input.discipline,
+      stage: input.stage,
+      year: input.year,
+      place: input.place ?? null,
+      source: "repo",
+      trustLevel: "medium",
+      evidence: { repo: input.repo, login: input.login, commits: res.commits },
+    });
+  }
+  return res;
 }
