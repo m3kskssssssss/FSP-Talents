@@ -28,6 +28,7 @@ const navByRole = {
     { href: "/admin", label: "Модерация" },
     { href: "/admin/templates", label: "Банк заданий" },
     { href: "/admin/plagiarism", label: "Похожие решения" },
+    { href: "/admin/reports", label: "Жалобы" },
   ],
 } as const;
 

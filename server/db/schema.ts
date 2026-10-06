@@ -430,6 +430,35 @@ export const invitations = pgTable(
   ],
 );
 
+export const reportReasonEnum = pgEnum("report_reason", ["fake_vacancy", "salary_mismatch", "spam", "inappropriate", "other"]);
+export const reportStatusEnum = pgEnum("report_status", ["open", "confirmed", "dismissed"]);
+
+/** Candidate complaints about an invitation; part of employer reputation (protection from fake vacancies). */
+export const employerReports = pgTable(
+  "employer_reports",
+  {
+    id: id(),
+    employerId: uuid("employer_id")
+      .notNull()
+      .references(() => employers.id, { onDelete: "cascade" }),
+    invitationId: uuid("invitation_id").references(() => invitations.id, { onDelete: "set null" }),
+    reporterProfileId: uuid("reporter_profile_id")
+      .notNull()
+      .references(() => candidateProfiles.id, { onDelete: "cascade" }),
+    reason: reportReasonEnum("reason").notNull(),
+    note: text("note"),
+    status: reportStatusEnum("status").notNull().default("open"),
+    createdAt: createdAt(),
+    resolvedAt: ts("resolved_at"),
+    resolvedBy: uuid("resolved_by"),
+    resolutionNote: text("resolution_note"),
+  },
+  (t) => [
+    index("employer_reports_employer_idx").on(t.employerId, t.createdAt),
+    uniqueIndex("employer_reports_once_idx").on(t.invitationId, t.reporterProfileId),
+  ],
+);
+
 export const invitationEvents = pgTable(
   "invitation_events",
   {

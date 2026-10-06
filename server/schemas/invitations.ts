@@ -15,3 +15,13 @@ export const invitationDecisionSchema = z.object({
   decision: z.enum(["accept", "decline"]),
   reason: z.string().trim().max(1000).optional(),
 });
+
+export const reportSchema = z.object({
+  reason: z.enum(["fake_vacancy", "salary_mismatch", "spam", "inappropriate", "other"]),
+  note: z.string().trim().max(1000).optional(),
+});
+
+export const reportResolveSchema = z.object({
+  decision: z.enum(["confirmed", "dismissed"]),
+  note: z.string().trim().max(1000).optional(),
+});

@@ -14,7 +14,8 @@ import {
   withdraw,
 } from "@/server/services/invitations";
 import { resetDb } from "../helpers/db";
-import { makeCandidate, makeCategorized, makeEmployer } from "../helpers/factories";
+import { makeCandidate, makeCategorized, makeEmployer, makeUser } from "../helpers/factories";
+import { employerReputation, listReports, reportInvitation, resolveReport } from "@/server/services/reputation";
 
 const base = { title: "Python-разработчик", description: "Платёжный шлюз, высокие нагрузки", salaryFrom: 200000, salaryTo: 260000 };
 
@@ -48,6 +49,26 @@ describe("invitations", () => {
     });
     expect(r.cons[0]).toMatch(/Порог приглашений/);
     await expect(createInvitation(emp.employerId, emp.user.id, { profileId: c.profileId, ...base, salaryTo: 300000 })).resolves.toHaveProperty("id");
+  });
+
+  it("a candidate reports an invitation once; reputation and the moderator see it", async () => {
+    const emp = await makeEmployer();
+    const c = await makeCategorized({});
+    const other = await makeCategorized({});
+    const inv = await createInvitation(emp.employerId, emp.user.id, { profileId: c.profileId, ...base });
+    await expect(reportInvitation(other.profileId, other.user.id, inv.id, "spam")).rejects.toMatchObject({ status: 404 });
+    const r = await reportInvitation(c.profileId, c.user.id, inv.id, "fake_vacancy", "Просили оплатить обучение");
+    expect(r.wasOpen).toBe(true);
+    await expect(reportInvitation(c.profileId, c.user.id, inv.id, "spam")).rejects.toMatchObject({ status: 409 });
+    const list = await listReports("open");
+    expect(list).toHaveLength(1);
+    expect(list[0]!.company).toBeTruthy();
+    expect((await getForCandidate(c.profileId, c.user.id, inv.id)).reported).toBe(true);
+    const admin = await makeUser("admin");
+    await resolveReport(admin.id, list[0]!.id, "confirmed");
+    const rep = await employerReputation(emp.employerId);
+    expect(rep.level).toBe("risky");
+    expect(rep.dailyQuota).toBe(5);
   });
 
   it("hides contacts until acceptance, then discloses them with an audit record (hard rule #2)", async () => {

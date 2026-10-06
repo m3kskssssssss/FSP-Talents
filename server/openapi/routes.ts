@@ -3,7 +3,7 @@ import { z } from "zod";
 import { baseSearchSchema, needCreateSchema, needParseSchema, rephraseSchema, searchFiltersSchema } from "../schemas/needs";
 import { repoCheckSchema } from "../schemas/candidate";
 import { consentSchema, contactsSchema, deleteAccountSchema, fspLinkSchema, profileUpdateSchema, selfAchievementSchema, skillsSchema, visibilitySchema } from "../schemas/candidate";
-import { invitationCreateSchema, invitationDecisionSchema } from "../schemas/invitations";
+import { invitationCreateSchema, invitationDecisionSchema, reportResolveSchema, reportSchema } from "../schemas/invitations";
 import { attemptsFilterSchema, reviewSchema, templateStatusSchema } from "../schemas/moderation";
 import { applicationStatusSchema, applySchema, vacancyCreateSchema, vacancyListSchema } from "../schemas/vacancies";
 import { answerSchema, attemptEventsSchema, startAttemptSchema } from "../schemas/testing";
@@ -49,6 +49,7 @@ export function apiRoutes(): ApiRoute[] {
     { method: "get", path: "/api/v1/invitations", tags: I, summary: "Приглашения: кандидат видит свои, работодатель — отправленные", responses: { 200: ok } },
     { method: "get", path: "/api/v1/invitations/{id}", tags: I, summary: "Приглашение и история статусов (кандидат: открытие переводит sent → viewed)", request: { params: idParams }, responses: { 200: ok, 404: ok } },
     { method: "post", path: "/api/v1/invitations/{id}/decision", tags: I, summary: "Кандидат принимает или отклоняет. Недопустимый переход — 409", request: { params: idParams, ...body(invitationDecisionSchema) }, responses: { 200: ok, 409: ok } },
+    { method: "post", path: "/api/v1/invitations/{id}/report", tags: I, summary: "Жалоба кандидата на приглашение (фиктивная вакансия, несоответствие условий, спам). Открытое приглашение заодно отклоняется. Повтор — 409", request: { params: idParams, ...body(reportSchema) }, responses: { 200: ok, 404: ok, 409: ok } },
     { method: "post", path: "/api/v1/invitations/{id}/withdraw", tags: I, summary: "Работодатель отзывает приглашение", request: { params: idParams }, responses: { 200: ok, 409: ok } },
     { method: "get", path: "/api/v1/candidates/{profileId}", tags: I, summary: "Профиль кандидата для работодателя; contacts = null до принятия приглашения", request: { params: z.object({ profileId: z.uuid() }) }, responses: { 200: ok, 404: ok } },
     { method: "get", path: "/api/v1/notifications", tags: I, summary: "Уведомления пользователя", responses: { 200: ok } },
@@ -77,6 +78,8 @@ export function apiRoutes(): ApiRoute[] {
     { method: "get", path: "/api/v1/admin/attempts", tags: A, summary: "Попытки по индексу доверия (сначала самые подозрительные)", request: { query: attemptsFilterSchema }, responses: { 200: ok } },
     { method: "get", path: "/api/v1/admin/attempts/{id}", tags: A, summary: "Журнал попытки, сработавшие ловушки, похожие решения", request: { params: idParams }, responses: { 200: ok } },
     { method: "post", path: "/api/v1/admin/attempts/{id}/review", tags: A, summary: "Решение модератора: подтвердить (категория с пометкой) или отклонить", request: { params: idParams, ...body(reviewSchema) }, responses: { 200: ok } },
+    { method: "get", path: "/api/v1/admin/reports", tags: A, summary: "Жалобы на работодателей с их репутацией; ?status=open|confirmed|dismissed", responses: { 200: ok } },
+    { method: "post", path: "/api/v1/admin/reports/{id}", tags: A, summary: "Решение по жалобе: подтвердить (компания получает статус риска и минимальную квоту) или отклонить", request: { params: idParams, ...body(reportResolveSchema) }, responses: { 200: ok, 404: ok } },
     { method: "get", path: "/api/v1/admin/templates", tags: A, summary: "Банк шаблонов: IRT, экспозиция, детектор слива", responses: { 200: ok } },
     { method: "patch", path: "/api/v1/admin/templates/{id}", tags: A, summary: "Статус шаблона active / flagged / retired", request: { params: z.object({ id: z.string() }), ...body(templateStatusSchema) }, responses: { 200: ok } },
     { method: "get", path: "/api/v1/admin/plagiarism", tags: A, summary: "Кластеры похожих решений (n-граммы токенов)", responses: { 200: ok } },

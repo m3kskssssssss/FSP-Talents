@@ -2,6 +2,7 @@ import { and, asc, desc, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 import { INVITATION_CONFIG } from "../config";
 import { db, type DbOrTx } from "../db";
 import {
+  employerReports,
   applications,
   candidateContacts,
   candidateProfiles,
@@ -26,6 +27,7 @@ import type { InvitationCreate } from "../schemas/invitations";
 import { audit } from "./audit";
 import { loadPool, maskName } from "./matching";
 import { notify } from "./notifications";
+import { employerReputation } from "./reputation";
 
 type InvitationRow = typeof invitations.$inferSelect;
 
@@ -89,7 +91,9 @@ export async function createInvitation(employerId: string, actorUserId: string, 
       .select({ n: sql<number>`count(*)::int` })
       .from(invitations)
       .where(and(eq(invitations.employerId, employerId), gte(invitations.createdAt, new Date(Date.now() - 24 * 3600_000))))) as [{ n: number }];
-    if (n >= INVITATION_CONFIG.perEmployerPerDay) throw tooMany(`Лимит — ${INVITATION_CONFIG.perEmployerPerDay} приглашений в сутки`);
+    // The daily quota depends on reputation: spam and complaints shrink it, accepted invitations grow it.
+    const { dailyQuota } = await employerReputation(employerId, tx);
+    if (n >= dailyQuota) throw tooMany(`Лимит — ${dailyQuota} приглашений в сутки (зависит от репутации компании)`);
     const dup = await tx
       .select({ id: invitations.id })
       .from(invitations)
@@ -179,6 +183,8 @@ export async function getForCandidate(profileId: string, userId: string, id: str
   return {
     invitation: inv,
     company: { name: e!.companyName, about: e!.about, site: e!.site, city: e!.city, verified: e!.verifiedStatus === "verified" },
+    reputation: await employerReputation(inv.employerId),
+    reported: (await db().select({ id: employerReports.id }).from(employerReports).where(and(eq(employerReports.invitationId, inv.id), eq(employerReports.reporterProfileId, profileId)))).length > 0,
     history: await history(inv.id),
   };
 }
