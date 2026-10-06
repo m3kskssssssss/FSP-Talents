@@ -1,6 +1,6 @@
-брендбук
-playwright-report
-test-results
-coverage
-.scratch
-storage
+/брендбук
+/playwright-report
+/test-results
+/coverage
+/.scratch
+/storage
