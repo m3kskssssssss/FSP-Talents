@@ -8,6 +8,7 @@ import {
   candidateProfiles,
   candidateSkills,
   categories,
+  chats,
   consents,
   employers,
   fspAchievements,
@@ -281,6 +282,7 @@ export async function deleteAccount(userId: string, profileId: string) {
       })
       .where(eq(candidateProfiles.id, profileId));
     await tx.delete(candidateContacts).where(eq(candidateContacts.profileId, profileId));
+    await tx.delete(chats).where(eq(chats.profileId, profileId));
     await tx.delete(candidateSkills).where(eq(candidateSkills.profileId, profileId));
     await tx.delete(fspAchievements).where(eq(fspAchievements.profileId, profileId));
     await tx.delete(resumes).where(eq(resumes.profileId, profileId));

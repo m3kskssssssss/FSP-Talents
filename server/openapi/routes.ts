@@ -1,3 +1,4 @@
+import { chatMessageSchema } from "../schemas/chats";
 import type { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import {
@@ -222,6 +223,37 @@ export function apiRoutes(): ApiRoute[] {
       summary: "Фото кандидата для работодателя: открывается вместе с контактами, иначе 404",
       request: { params: z.object({ profileId: z.uuid() }) },
       responses: { 200: { description: "image" }, 404: ok },
+    },
+    {
+      method: "get",
+      path: "/api/v1/chats",
+      tags: I,
+      summary: "Мои чаты (кандидат или работодатель): последний месседж и число непрочитанных",
+      responses: { 200: ok },
+    },
+    {
+      method: "get",
+      path: "/api/v1/chats/{id}/messages",
+      tags: I,
+      summary: "Сообщения чата; чтение отмечает чат прочитанным для своей стороны",
+      request: { params: idParams },
+      responses: { 200: ok, 404: ok },
+    },
+    {
+      method: "post",
+      path: "/api/v1/chats/{id}/messages",
+      tags: I,
+      summary:
+        "Отправить сообщение (до 4000 символов). Чат открывается при принятии приглашения или отклика",
+      request: { params: idParams, ...body(chatMessageSchema) },
+      responses: { 200: ok, 404: ok, 422: ok },
+    },
+    {
+      method: "get",
+      path: "/api/v1/me/unread",
+      tags: I,
+      summary: "Счётчики для шапки: непрочитанные уведомления и сообщения",
+      responses: { 200: ok },
     },
     {
       method: "get",

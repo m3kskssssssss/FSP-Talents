@@ -515,6 +515,52 @@ export const employerReports = pgTable(
   ],
 );
 
+// ---------------------------------------------------------------- chats
+
+export const chatAuthorEnum = pgEnum("chat_author", ["employer", "candidate", "system"]);
+
+/**
+ * One conversation per employer and candidate. It opens when the candidate
+ * accepts an invitation or the employer accepts the candidate's application —
+ * the same moment contacts open, so nobody is messaged before they agreed.
+ */
+export const chats = pgTable(
+  "chats",
+  {
+    id: id(),
+    employerId: uuid("employer_id")
+      .notNull()
+      .references(() => employers.id, { onDelete: "cascade" }),
+    profileId: uuid("profile_id")
+      .notNull()
+      .references(() => candidateProfiles.id, { onDelete: "cascade" }),
+    /** Position the conversation started from (invitation or vacancy title). */
+    title: text("title").notNull(),
+    employerReadAt: ts("employer_read_at"),
+    candidateReadAt: ts("candidate_read_at"),
+    lastMessageAt: ts("last_message_at").notNull().defaultNow(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex("chats_pair_uniq").on(t.employerId, t.profileId),
+    index("chats_profile_idx").on(t.profileId, t.lastMessageAt),
+  ],
+);
+
+export const chatMessages = pgTable(
+  "chat_messages",
+  {
+    id: id(),
+    chatId: uuid("chat_id")
+      .notNull()
+      .references(() => chats.id, { onDelete: "cascade" }),
+    author: chatAuthorEnum("author").notNull(),
+    body: text("body").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index("chat_messages_chat_idx").on(t.chatId, t.createdAt)],
+);
+
 export const invitationEvents = pgTable(
   "invitation_events",
   {

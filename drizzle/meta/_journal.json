@@ -43,6 +43,13 @@
       "when": 1791353772267,
       "tag": "0005_profile_photo",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791355213361,
+      "tag": "0006_chats",
+      "breakpoints": true
     }
   ]
 }

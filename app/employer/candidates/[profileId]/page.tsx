@@ -8,6 +8,7 @@ import { Blank } from "@/components/ui/blank";
 import { buttonClass } from "@/components/ui/button";
 import { categoryTitle, date, formatTitle, salaryRange } from "@/lib/format";
 import { requireEmployer } from "@/server/http/guard";
+import { chatIdFor } from "@/server/services/chats";
 import { candidateForEmployer } from "@/server/services/invitations";
 
 export const metadata: Metadata = { title: "Кандидат" };
@@ -29,6 +30,7 @@ export default async function CandidateForEmployer({
   const { profileId } = await params;
   const me = await requireEmployer();
   const c = await candidateForEmployer(me.employerId, me.userId, profileId);
+  const chatId = await chatIdFor(me.employerId, c.profileId);
   const best = c.categories.reduce<number | null>(
     (m, k) => (m === null || k.score > m ? k.score : m),
     c.unconfirmed?.score ?? null,
@@ -67,6 +69,14 @@ export default async function CandidateForEmployer({
           },
         ]}
       >
+        {chatId && (
+          <Link
+            href={`/employer/chats?chat=${chatId}`}
+            className={buttonClass(c.contacts ? "primary" : "secondary", "sm")}
+          >
+            Написать
+          </Link>
+        )}
         {!c.contacts && (
           <Link
             href={`/employer/invite?profile=${c.profileId}`}

@@ -33,6 +33,7 @@ import { skillTitle } from "../matching/skills";
 import type { InvitationCreate } from "../schemas/invitations";
 import { audit } from "./audit";
 import { photoUrl, pickShowcase } from "./candidate";
+import { openChat } from "./chats";
 import { loadPool, maskName } from "./matching";
 import { notify } from "./notifications";
 import { employerReputation } from "./reputation";
@@ -312,6 +313,12 @@ export async function decide(
         entity: "candidate_profile",
         entityId: profileId,
         meta: { employerId: inv.employerId, invitationId: inv.id },
+      });
+      await openChat(tx, {
+        employerId: inv.employerId,
+        profileId,
+        title: inv.title,
+        reason: `Кандидат принял приглашение «${inv.title}». Теперь можно договориться о встрече здесь.`,
       });
     }
     await notify(tx, e!.userId, {

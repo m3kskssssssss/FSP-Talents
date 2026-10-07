@@ -181,6 +181,11 @@
     opacity: 0;
   }
 }
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
 @keyframes float {
   50% {
     transform: translateY(-8px);
@@ -205,6 +210,16 @@
   }
   .ping {
     animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  /* dialogs and chat: short, like other interface motion (DESIGN.md §5) */
+  .modal-backdrop {
+    animation: fade 0.2s ease-out both;
+  }
+  .modal-panel {
+    animation: rise 0.22s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .chat-bubble {
+    animation: rise 0.18s ease-out both;
   }
   /* endless ticker: render the items twice, the track slides by half its width */
   .marquee {
@@ -233,6 +248,9 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .rise,
+    .modal-backdrop,
+    .modal-panel,
+    .chat-bubble,
     .reveal,
     .grow-bar,
     .pattern-draw,

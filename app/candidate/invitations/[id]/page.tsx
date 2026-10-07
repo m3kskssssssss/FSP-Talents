@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { History, StatusBadge } from "@/components/invitations/status";
 import { Badge } from "@/components/ui/badge";
 import { Blank, PageTitle } from "@/components/ui/blank";
 import { Notice } from "@/components/ui/field";
 import { date, formatTitle, salaryRange } from "@/lib/format";
 import { requireCandidate } from "@/server/http/guard";
+import { chatIdFor } from "@/server/services/chats";
 import { getForCandidate } from "@/server/services/invitations";
 import { REPUTATION_TITLES } from "@/server/invitations/reputation";
 import { Decision } from "./decision";
@@ -16,11 +18,22 @@ export const dynamic = "force-dynamic";
 export default async function CandidateInvitation({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const me = await requireCandidate();
-  const { invitation: inv, company, reputation: rep, reported, history } = await getForCandidate(me.profileId, me.userId, id);
+  const {
+    invitation: inv,
+    company,
+    reputation: rep,
+    reported,
+    history,
+  } = await getForCandidate(me.profileId, me.userId, id);
+  const chatId = inv.status === "accepted" ? await chatIdFor(inv.employerId, me.profileId) : null;
   const pct = (x: number | null) => (x === null ? "мало данных" : `${Math.round(x * 100)}%`);
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle back={{ href: "/candidate/invitations", label: "Все приглашения" }} meta={company.name} title={inv.title}>
+      <PageTitle
+        back={{ href: "/candidate/invitations", label: "Все приглашения" }}
+        meta={company.name}
+        title={inv.title}
+      >
         <span className="flex flex-wrap items-center gap-2">
           <StatusBadge status={inv.status} />
           {company.verified && <Badge tone="ok">компания проверена</Badge>}
@@ -28,11 +41,13 @@ export default async function CandidateInvitation({ params }: { params: Promise<
       </PageTitle>
       <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
         <Blank label="Предложение">
-          <p className="font-mono text-3xl text-accent">{salaryRange(inv.salaryFrom, inv.salaryTo)}</p>
-          <p className="mt-1 text-sm text-muted">в месяц · {formatTitle(inv.format)}</p>
+          <p className="text-accent font-mono text-3xl">
+            {salaryRange(inv.salaryFrom, inv.salaryTo)}
+          </p>
+          <p className="text-muted mt-1 text-sm">в месяц · {formatTitle(inv.format)}</p>
           <p className="mt-4 text-[15px] whitespace-pre-line">{inv.description}</p>
           {company.about && (
-            <div className="mt-5 border-t border-accent/15 pt-4 text-sm">
+            <div className="border-accent/15 mt-5 border-t pt-4 text-sm">
               <p className="label-mono mb-1">О компании</p>
               <p>{company.about}</p>
               {company.site && (
@@ -48,8 +63,12 @@ export default async function CandidateInvitation({ params }: { params: Promise<
             <History events={history} />
           </Blank>
           <Blank label="Репутация компании">
-            <p className={rep.level === "risky" ? "font-medium text-danger" : "font-medium"}>{REPUTATION_TITLES[rep.level]}</p>
-            {rep.reasons.length > 0 && <p className="text-sm text-danger">{rep.reasons.join("; ")}</p>}
+            <p className={rep.level === "risky" ? "text-danger font-medium" : "font-medium"}>
+              {REPUTATION_TITLES[rep.level]}
+            </p>
+            {rep.reasons.length > 0 && (
+              <p className="text-danger text-sm">{rep.reasons.join("; ")}</p>
+            )}
             <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
               <dt className="text-muted">Приглашений за 90 дней</dt>
               <dd className="font-mono">{rep.sent}</dd>
@@ -60,14 +79,24 @@ export default async function CandidateInvitation({ params }: { params: Promise<
               <dt className="text-muted">На платформе с</dt>
               <dd className="font-mono">{date(rep.since)}</dd>
             </dl>
-            <p className="mt-2 text-xs text-muted">Считается по истории приглашений компании на платформе и жалобам кандидатов.</p>
+            <p className="text-muted mt-2 text-xs">
+              Считается по истории приглашений компании на платформе и жалобам кандидатов.
+            </p>
           </Blank>
         </div>
       </div>
       {inv.status === "viewed" ? (
         <Decision id={inv.id} />
       ) : inv.status === "accepted" ? (
-        <Notice tone="ok">Вы приняли приглашение — компания видит ваши контакты и свяжется с вами.</Notice>
+        <Notice tone="ok">
+          Вы приняли приглашение — компания видит ваши контакты, а для переписки открыт чат.{" "}
+          <Link
+            className="link"
+            href={chatId ? `/candidate/chats?chat=${chatId}` : "/candidate/chats"}
+          >
+            Написать компании
+          </Link>
+        </Notice>
       ) : null}
       <Report id={inv.id} reported={reported} />
     </div>

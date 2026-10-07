@@ -18,15 +18,20 @@ const linkBase = "rounded-full px-3 py-1.5 text-sm whitespace-nowrap transition-
 const linkIdle = "text-fg hover:bg-accent-soft hover:text-accent";
 const linkActive = "bg-accent-soft font-medium text-accent";
 
-/** Inline links on wide screens. */
+/** Inline links on wide screens (xl: eight items need the room). */
 export function NavLinks({ items }: { items: readonly NavItem[] }) {
   const pathname = usePathname();
   return (
-    <nav aria-label="Основная навигация" className="hidden items-center gap-1 lg:flex">
+    <nav aria-label="Основная навигация" className="hidden items-center gap-1 xl:flex">
       {items.map((n) => {
         const active = isActive(pathname, n.href, items);
         return (
-          <Link key={n.href} href={n.href} aria-current={active ? "page" : undefined} className={cn(linkBase, active ? linkActive : linkIdle)}>
+          <Link
+            key={n.href}
+            href={n.href}
+            aria-current={active ? "page" : undefined}
+            className={cn(linkBase, active ? linkActive : linkIdle)}
+          >
             {n.label}
           </Link>
         );
@@ -35,7 +40,7 @@ export function NavLinks({ items }: { items: readonly NavItem[] }) {
   );
 }
 
-/** Disclosure menu below lg: the button sits in the header, the panel drops under it. */
+/** Disclosure menu below xl: the button sits in the header, the panel drops under it. */
 export function NavMenu({ items, footer }: { items: readonly NavItem[]; footer?: ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -57,35 +62,58 @@ export function NavMenu({ items, footer }: { items: readonly NavItem[]; footer?:
   }, [open]);
 
   return (
-    <div className="lg:hidden">
+    <div className="xl:hidden">
       <button
         ref={button}
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((o) => !o)}
-        className="flex h-9 items-center gap-2 rounded-full border border-line px-3 text-sm text-fg transition-colors hover:border-accent/50"
+        className="border-line text-fg hover:border-accent/50 flex h-9 items-center gap-2 rounded-full border px-3 text-sm transition-colors"
       >
-        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          className="size-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        >
           {open ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
         </svg>
         <span className="max-w-[9rem] truncate">{current?.label ?? "Меню"}</span>
       </button>
       {open && (
-        <nav id={panelId} aria-label="Основная навигация" className="absolute inset-x-0 top-full z-40 border-b border-accent/15 bg-canvas shadow-pop">
+        <nav
+          id={panelId}
+          aria-label="Основная навигация"
+          className="border-accent/15 bg-canvas shadow-pop absolute inset-x-0 top-full z-40 border-b"
+        >
           <ul className="mx-auto grid max-w-6xl gap-1 px-4 py-3 sm:grid-cols-2 sm:px-6">
             {items.map((n) => {
               const active = isActive(pathname, n.href, items);
               return (
                 <li key={n.href}>
-                  <Link href={n.href} aria-current={active ? "page" : undefined} className={cn("block rounded-xl px-3 py-2.5 text-[15px]", active ? linkActive : linkIdle)}>
+                  <Link
+                    href={n.href}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "block rounded-xl px-3 py-2.5 text-[15px]",
+                      active ? linkActive : linkIdle,
+                    )}
+                  >
                     {n.label}
                   </Link>
                 </li>
               );
             })}
           </ul>
-          {footer && <div className="mx-auto flex max-w-6xl justify-end border-t border-accent/10 px-4 py-3 sm:px-6">{footer}</div>}
+          {footer && (
+            <div className="border-accent/10 mx-auto flex max-w-6xl justify-end border-t px-4 py-3 sm:px-6">
+              {footer}
+            </div>
+          )}
         </nav>
       )}
     </div>

@@ -3,8 +3,11 @@ import { and, count, eq, isNull } from "drizzle-orm";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
 import { notifications } from "@/server/db/schema";
+import { candidateProfileId, employerId } from "@/server/http/guard";
+import { unreadChats } from "@/server/services/chats";
 import { buttonClass } from "../ui/button";
 import { Logo } from "../ui/logo";
+import { HeaderPanels } from "./header-panels";
 import { NavLinks, NavMenu } from "./nav";
 import { SignOutButton } from "./sign-out";
 import { ThemeToggle } from "./theme-toggle";
@@ -17,6 +20,8 @@ const navByRole = {
     { href: "/candidate/vacancies", label: "Вакансии" },
     { href: "/candidate/fsp", label: "ФСП" },
     { href: "/candidate/profile", label: "Профиль" },
+    { href: "/candidate/chats", label: "Чаты" },
+    { href: "/blog", label: "Блог" },
   ],
   employer: [
     { href: "/employer", label: "Кабинет" },
@@ -25,12 +30,15 @@ const navByRole = {
     { href: "/employer/shortlist", label: "Избранное" },
     { href: "/employer/invitations", label: "Приглашения" },
     { href: "/employer/vacancies", label: "Вакансии" },
+    { href: "/employer/chats", label: "Чаты" },
+    { href: "/blog", label: "Блог" },
   ],
   admin: [
     { href: "/admin", label: "Модерация" },
     { href: "/admin/templates", label: "Банк заданий" },
     { href: "/admin/plagiarism", label: "Похожие решения" },
     { href: "/admin/reports", label: "Жалобы" },
+    { href: "/blog", label: "Блог" },
   ],
 } as const;
 
@@ -38,14 +46,23 @@ export async function Header() {
   const session = await auth();
   const role = session?.user?.role;
   const nav = role ? navByRole[role] : [];
-  const unread = session?.user?.id
-    ? ((
+  const uid = session?.user?.id;
+  const unread = { notifications: 0, chats: 0 };
+  if (uid && role) {
+    unread.notifications =
+      (
         await db()
           .select({ n: count() })
           .from(notifications)
-          .where(and(eq(notifications.userId, session.user.id), isNull(notifications.readAt)))
-      )[0]?.n ?? 0)
-    : 0;
+          .where(and(eq(notifications.userId, uid), isNull(notifications.readAt)))
+      )[0]?.n ?? 0;
+    if (role === "candidate")
+      unread.chats = await unreadChats({ role, profileId: await candidateProfileId(uid) }).catch(
+        () => 0,
+      );
+    if (role === "employer")
+      unread.chats = await unreadChats({ role, employerId: await employerId(uid) }).catch(() => 0);
+  }
   return (
     <header className="border-accent/15 bg-canvas sticky top-0 z-40 border-b">
       <div className="relative mx-auto flex max-w-6xl items-center gap-x-6 px-4 py-3 sm:px-6">
@@ -64,32 +81,11 @@ export async function Header() {
           <ThemeToggle />
           {session?.user ? (
             <>
-              <Link
-                href="/notifications"
-                className="text-accent hover:bg-accent-soft relative rounded-full p-2 transition-colors"
-                aria-label={`Уведомления${unread ? `: ${unread} новых` : ""}`}
-              >
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  className="size-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                >
-                  <path d="M6 9a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9Z" />
-                  <path d="M10 19a2 2 0 0 0 4 0" />
-                </svg>
-                {unread > 0 && (
-                  <span className="bg-red text-on-primary absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full font-mono text-[10px] font-medium">
-                    {unread > 9 ? "9+" : unread}
-                  </span>
-                )}
-              </Link>
+              {role && <HeaderPanels role={role} unread={unread} />}
               {nav.length > 0 ? (
                 <>
                   <NavMenu items={nav} footer={<SignOutButton />} />
-                  <div className="hidden lg:block">
+                  <div className="hidden xl:block">
                     <SignOutButton />
                   </div>
                 </>
@@ -99,7 +95,7 @@ export async function Header() {
             </>
           ) : (
             <>
-              <span className="hidden sm:block">
+              <span className="hidden min-[440px]:block">
                 <Link href="/blog" className={buttonClass("ghost", "sm")}>
                   Блог
                 </Link>
