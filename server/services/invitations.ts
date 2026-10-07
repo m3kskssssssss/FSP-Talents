@@ -32,7 +32,7 @@ import { sendMailSafe } from "../mail";
 import { skillTitle } from "../matching/skills";
 import type { InvitationCreate } from "../schemas/invitations";
 import { audit } from "./audit";
-import { pickShowcase } from "./candidate";
+import { photoUrl, pickShowcase } from "./candidate";
 import { loadPool, maskName } from "./matching";
 import { notify } from "./notifications";
 import { employerReputation } from "./reputation";
@@ -63,15 +63,13 @@ async function apply(
     .where(and(eq(invitations.id, inv.id), eq(invitations.status, inv.status)))
     .returning();
   if (!updated.length) throw conflict("Статус приглашения уже изменился — обновите страницу");
-  await tx
-    .insert(invitationEvents)
-    .values({
-      invitationId: inv.id,
-      fromStatus: inv.status,
-      toStatus: t.to,
-      actorUserId,
-      note: note ?? null,
-    });
+  await tx.insert(invitationEvents).values({
+    invitationId: inv.id,
+    fromStatus: inv.status,
+    toStatus: t.to,
+    actorUserId,
+    note: note ?? null,
+  });
   return updated[0]!;
 }
 
@@ -512,6 +510,8 @@ export async function candidateForEmployer(
       certificate: a.certificate,
     })),
     workHistory: p.workHistory,
+    /** Opens together with the contacts. */
+    photo: access ? photoUrl(`/api/v1/candidates/${profileId}/photo`, p.photoKey) : null,
     invitations: related.map((r) => ({ ...r, statusTitle: STATUS_TITLES[r.status] })),
     contacts,
     contactAccess: access,

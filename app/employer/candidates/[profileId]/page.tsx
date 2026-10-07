@@ -38,6 +38,7 @@ export default async function CandidateForEmployer({
       <ProfileHero
         seed={c.profileId}
         name={c.displayName}
+        photo={c.photo}
         facts={[
           c.city,
           c.experienceYears !== null && `опыт ${c.experienceYears} г.`,

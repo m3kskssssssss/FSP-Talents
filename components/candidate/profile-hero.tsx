@@ -15,6 +15,8 @@ export function ProfileHero({
   facts,
   categories,
   stats,
+  photo,
+  avatar,
   children,
 }: {
   seed: string;
@@ -22,15 +24,12 @@ export function ProfileHero({
   facts: (string | null | undefined | false)[];
   categories: { specialization: string; grade: string; note?: string }[];
   stats: Stat[];
+  /** Photo URL; initials are shown when there is none. */
+  photo?: string | null;
+  /** Replaces the avatar entirely (the candidate's own page puts the photo editor here). */
+  avatar?: ReactNode;
   children?: ReactNode;
 }) {
-  const initials =
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((w) => w[0]!.toUpperCase())
-      .join("") || "—";
   return (
     <section className="blank relative overflow-hidden">
       <Pattern
@@ -40,13 +39,7 @@ export function ProfileHero({
       />
       <div className="relative flex flex-col gap-5 p-5 sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-          <div className="rise bg-primary text-on-primary relative flex size-20 shrink-0 items-center justify-center rounded-full font-mono text-2xl sm:size-24 sm:text-3xl">
-            {initials}
-            <span
-              aria-hidden="true"
-              className="border-accent/40 absolute -inset-1.5 rounded-full border"
-            />
-          </div>
+          {avatar ?? <Avatar name={name} photo={photo} />}
           <div className="rise min-w-0" style={{ "--d": "80ms" } as React.CSSProperties}>
             <h1 className="h-display text-3xl leading-tight text-balance sm:text-4xl">{name}</h1>
             <p className="text-muted mt-1.5 text-pretty">{facts.filter(Boolean).join(" · ")}</p>
@@ -79,5 +72,31 @@ export function ProfileHero({
         {children && <div className="flex flex-wrap gap-2">{children}</div>}
       </div>
     </section>
+  );
+}
+
+export const initialsOf = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join("") || "—";
+
+/** Round avatar: the photo if there is one, otherwise initials on the brand violet. */
+export function Avatar({ name, photo }: { name: string; photo?: string | null }) {
+  return (
+    <div className="rise bg-primary text-on-primary relative flex size-20 shrink-0 items-center justify-center rounded-full font-mono text-2xl sm:size-24 sm:text-3xl">
+      {photo ? (
+        // eslint-disable-next-line @next/next/no-img-element -- private API image, not for the Next optimizer
+        <img src={photo} alt={`Фото: ${name}`} className="size-full rounded-full object-cover" />
+      ) : (
+        initialsOf(name)
+      )}
+      <span
+        aria-hidden="true"
+        className="border-accent/40 absolute -inset-1.5 rounded-full border"
+      />
+    </div>
   );
 }

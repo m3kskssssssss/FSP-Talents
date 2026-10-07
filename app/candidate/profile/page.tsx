@@ -6,9 +6,10 @@ import { Blank } from "@/components/ui/blank";
 import { buttonClass } from "@/components/ui/button";
 import { formatTitle, salaryRange } from "@/lib/format";
 import { requireCandidate } from "@/server/http/guard";
-import { getMyProfile } from "@/server/services/candidate";
+import { getMyProfile, photoUrl } from "@/server/services/candidate";
 import { ProfileEditor } from "./editor";
 import { ExperienceEditor } from "./experience-editor";
+import { PhotoEditor } from "./photo-editor";
 import { ShowcaseEditor } from "./showcase-editor";
 
 export const metadata: Metadata = { title: "Профиль" };
@@ -38,6 +39,12 @@ export default async function ProfilePage() {
       <ProfileHero
         seed={me.profileId}
         name={prof.fullName || "Ваш профиль"}
+        avatar={
+          <PhotoEditor
+            name={prof.fullName || "Ваш профиль"}
+            photo={photoUrl("/api/v1/me/photo", prof.photoKey)}
+          />
+        }
         facts={[
           prof.city,
           prof.experienceYears !== null && `опыт ${prof.experienceYears} г.`,

@@ -24,10 +24,18 @@ export function StartTest({
   /** Demo mode: offer the short express check. */
   express?: boolean;
 }) {
-  const firstOk = grades.find((g) => g.grade === preferred && g.eligibility.ok)?.grade ?? grades.find((g) => g.eligibility.ok)?.grade ?? null;
+  const firstOk =
+    grades.find((g) => g.grade === preferred && g.eligibility.ok)?.grade ??
+    grades.find((g) => g.eligibility.ok)?.grade ??
+    null;
   const [grade, setGrade] = useState<Grade | null>(firstOk);
   // Express checks ignore retake cooldowns, so any grade can be picked for them.
-  const [expressGrade, setExpressGrade] = useState<Grade>(firstOk ?? (preferred as Grade) ?? "middle");
+  const expressGrades = grades
+    .filter(({ eligibility: e }) => e.ok || e.code !== "below_category")
+    .map((g) => g.grade);
+  const [expressGrade, setExpressGrade] = useState<Grade>(
+    firstOk ?? expressGrades.find((g) => g === preferred) ?? expressGrades[0] ?? "middle",
+  );
   const [ack, setAck] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -61,43 +69,77 @@ export function StartTest({
               title={eligibility.ok ? undefined : eligibility.message}
               className={cn(
                 "flex flex-col items-center rounded-xl border px-2 py-2.5 text-sm transition-colors",
-                !eligibility.ok && "cursor-not-allowed border-dashed border-line text-muted",
+                !eligibility.ok && "border-line text-muted cursor-not-allowed border-dashed",
                 eligibility.ok && grade === g && "border-accent bg-accent-soft text-accent",
-                eligibility.ok && grade !== g && "cursor-pointer border-line hover:border-accent/50",
+                eligibility.ok &&
+                  grade !== g &&
+                  "border-line hover:border-accent/50 cursor-pointer",
               )}
             >
-              <input type="radio" className="sr-only" name={`grade-${specialization}`} disabled={!eligibility.ok} checked={grade === g} onChange={() => setGrade(g)} />
+              <input
+                type="radio"
+                className="sr-only"
+                name={`grade-${specialization}`}
+                disabled={!eligibility.ok}
+                checked={grade === g}
+                onChange={() => setGrade(g)}
+              />
               {gradeTitle(g)}
             </label>
           ))}
         </div>
-        {grades.filter((g) => !g.eligibility.ok).map((g) => (
-          <p key={g.grade} className="mt-2 text-xs text-muted">
-            {gradeTitle(g.grade)}: {(g.eligibility as { message: string }).message}
-          </p>
-        ))}
+        {grades
+          .filter((g) => !g.eligibility.ok)
+          .map((g) => (
+            <p key={g.grade} className="text-muted mt-2 text-xs">
+              {gradeTitle(g.grade)}: {(g.eligibility as { message: string }).message}
+            </p>
+          ))}
       </fieldset>
       <label htmlFor={id} className="flex items-start gap-2.5 text-sm">
-        <input id={id} type="checkbox" className="mt-0.5 size-4 accent-primary" checked={ack} onChange={(e) => setAck(e.target.checked)} />
-        <span>Я ознакомлен(а) с правилами прохождения и согласен(на) на запись журнала попытки</span>
+        <input
+          id={id}
+          type="checkbox"
+          className="accent-primary mt-0.5 size-4"
+          checked={ack}
+          onChange={(e) => setAck(e.target.checked)}
+        />
+        <span>
+          Я ознакомлен(а) с правилами прохождения и согласен(на) на запись журнала попытки
+        </span>
       </label>
       {error && <Notice tone="error">{error}</Notice>}
       <Button onClick={() => start("full")} disabled={!grade || !ack || pending}>
-        {pending ? "Готовим вариант…" : grade ? `Начать тест ${gradeTitle(grade)}` : "Нет доступных грейдов"}
+        {pending
+          ? "Готовим вариант…"
+          : grade
+            ? `Начать тест ${gradeTitle(grade)}`
+            : "Нет доступных грейдов"}
       </Button>
       {express && (
-        <div className="flex flex-wrap items-center gap-2 border-t border-accent/15 pt-4 text-sm">
-          <span className="mr-auto text-muted">
-            Экспресс · {TEST_CONFIG_EXPRESS.maxItems} заданий, до {TEST_CONFIG_EXPRESS.durationMinutes} мин
+        <div className="border-accent/15 flex flex-wrap items-center gap-2 border-t pt-4 text-sm">
+          <span className="text-muted mr-auto">
+            Экспресс · {TEST_CONFIG_EXPRESS.maxItems} заданий, до{" "}
+            {TEST_CONFIG_EXPRESS.durationMinutes} мин
           </span>
-          <select aria-label="Грейд экспресс-проверки" className="input w-auto py-1.5" value={expressGrade} onChange={(e) => setExpressGrade(e.target.value as Grade)}>
-            {grades.map(({ grade: g }) => (
+          <select
+            aria-label="Грейд экспресс-проверки"
+            className="input w-auto py-1.5"
+            value={expressGrade}
+            onChange={(e) => setExpressGrade(e.target.value as Grade)}
+          >
+            {expressGrades.map((g) => (
               <option key={g} value={g}>
                 {gradeTitle(g)}
               </option>
             ))}
           </select>
-          <Button variant="secondary" size="sm" onClick={() => start("express")} disabled={!ack || pending}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => start("express")}
+            disabled={!ack || pending}
+          >
             Пройти экспресс
           </Button>
         </div>

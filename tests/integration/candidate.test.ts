@@ -1,8 +1,16 @@
 import { eq } from "drizzle-orm";
+import { PDFDocument, StandardFonts } from "pdf-lib";
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/server/db";
-import { candidateContacts, candidateProfiles, candidateSkills, fspAchievements, users } from "@/server/db/schema";
+import {
+  candidateContacts,
+  candidateProfiles,
+  candidateSkills,
+  fspAchievements,
+  users,
+} from "@/server/db/schema";
 import { MockFspRegistry, setFspRegistryForTests } from "@/server/fsp/registry";
+import { encodePng, imageKind } from "@/server/lib/image";
 import { renderResumePdf } from "@/server/pdf/resume";
 import { parseResumeRules } from "@/server/resume/parse";
 import {
@@ -12,7 +20,10 @@ import {
   deleteAchievement,
   getMyProfile,
   linkFsp,
+  readPhoto,
+  removePhoto,
   setConsent,
+  setPhoto,
   setVisibility,
   uploadResume,
 } from "@/server/services/candidate";
@@ -35,7 +46,12 @@ describe("candidate self-service", () => {
       about: "Backend-разработчик. Опыт 3 года. Python, FastAPI, PostgreSQL, Docker, Kafka.",
       workFormat: "remote",
       salary: { from: 220000, to: 280000 },
-      contacts: { email: "olga@example.ru", phone: "+7 912 345-67-89", telegram: "@olga_dev", links: ["https://github.com/olga-dev"] },
+      contacts: {
+        email: "olga@example.ru",
+        phone: "+7 912 345-67-89",
+        telegram: "@olga_dev",
+        links: ["https://github.com/olga-dev"],
+      },
       categories: [],
       skills: [],
       achievements: [],
@@ -45,15 +61,59 @@ describe("candidate self-service", () => {
     const r = await uploadResume(profileId, { name: "cv.pdf", type: "application/pdf", data: pdf });
     expect(r.parsedBy).toBe("rules");
     expect(r.draft.city).toBe("Казань");
-    expect(r.draft.skills).toEqual(expect.arrayContaining(["python", "fastapi", "postgresql", "docker", "kafka"]));
+    expect(r.draft.skills).toEqual(
+      expect.arrayContaining(["python", "fastapi", "postgresql", "docker", "kafka"]),
+    );
     expect(r.draft.contacts.email).toBe("olga@example.ru");
-    const skills = await db().select().from(candidateSkills).where(eq(candidateSkills.profileId, profileId));
+    expect(r.photo).toBe(false);
+    const skills = await db()
+      .select()
+      .from(candidateSkills)
+      .where(eq(candidateSkills.profileId, profileId));
     expect(skills.every((s) => s.source === "resume")).toBe(true);
-    await expect(uploadResume(profileId, { name: "x.pdf", type: "application/pdf", data: Buffer.from("not a pdf") })).rejects.toMatchObject({ status: 422 });
+    await expect(
+      uploadResume(profileId, {
+        name: "x.pdf",
+        type: "application/pdf",
+        data: Buffer.from("not a pdf"),
+      }),
+    ).rejects.toMatchObject({ status: 422 });
+  });
+
+  it("a photo in the resume PDF becomes the profile photo; uploads are checked and can be removed", async () => {
+    const doc = await PDFDocument.create();
+    const page = doc.addPage([595, 842]);
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    page.drawText("Ivan Petrov. Backend developer, Python, PostgreSQL, Docker. Kazan.", {
+      x: 40,
+      y: 780,
+      size: 12,
+      font,
+    });
+    const portrait = encodePng(new Uint8Array(240 * 300 * 3).fill(90), 240, 300, 3);
+    page.drawImage(await doc.embedPng(portrait), { x: 440, y: 640, width: 96, height: 120 });
+    const { profileId } = await makeCandidate();
+    const r = await uploadResume(profileId, {
+      name: "cv.pdf",
+      type: "application/pdf",
+      data: Buffer.from(await doc.save()),
+    });
+    expect(r.photo).toBe(true);
+    const photo = await readPhoto(profileId);
+    expect(photo?.type).toBe("image/png");
+    expect(imageKind(photo!.data)).toBe("png");
+
+    await expect(setPhoto(profileId, Buffer.from("not an image"))).rejects.toMatchObject({
+      status: 422,
+    });
+    await removePhoto(profileId);
+    expect(await readPhoto(profileId)).toBeNull();
   });
 
   it("resume rules extract contacts and experience", () => {
-    const d = parseResumeRules("Иван Петров\nг. Новосибирск\nivan.petrov@mail.ru, +7 (913) 123-45-67, t.me/ivan_dev\n2019 – 2022 ООО Ромашка\n2022 – н.в. АО Вектор\nНавыки: Go, PostgreSQL, Redis, Kubernetes\nНГУ, бакалавр");
+    const d = parseResumeRules(
+      "Иван Петров\nг. Новосибирск\nivan.petrov@mail.ru, +7 (913) 123-45-67, t.me/ivan_dev\n2019 – 2022 ООО Ромашка\n2022 – н.в. АО Вектор\nНавыки: Go, PostgreSQL, Redis, Kubernetes\nНГУ, бакалавр",
+    );
     expect(d.fullName).toBe("Иван Петров");
     expect(d.city).toBe("Новосибирск");
     expect(d.contacts).toMatchObject({ email: "ivan.petrov@mail.ru", telegram: "@ivan_dev" });
@@ -66,38 +126,66 @@ describe("candidate self-service", () => {
     const a = await makeCandidate();
     const res = await linkFsp(a.profileId, "FSP-123456");
     expect(res.imported).toBeGreaterThan(0);
-    const achs = await db().select().from(fspAchievements).where(eq(fspAchievements.profileId, a.profileId));
+    const achs = await db()
+      .select()
+      .from(fspAchievements)
+      .where(eq(fspAchievements.profileId, a.profileId));
     expect(achs.every((x) => x.source === "fsp_registry" && x.trustLevel === "high")).toBe(true);
     // Idempotent re-import
     await linkFsp(a.profileId, "FSP-123456");
-    expect((await db().select().from(fspAchievements).where(eq(fspAchievements.profileId, a.profileId))).length).toBe(achs.length);
+    expect(
+      (await db().select().from(fspAchievements).where(eq(fspAchievements.profileId, a.profileId)))
+        .length,
+    ).toBe(achs.length);
     await expect(linkFsp(a.profileId, "FSP-100000")).rejects.toMatchObject({ status: 404 });
     await expect(linkFsp(a.profileId, "FSP-100999")).rejects.toMatchObject({ status: 503 });
     const b = await makeCandidate();
     await expect(linkFsp(b.profileId, "FSP-123456")).rejects.toMatchObject({ status: 409 });
     // Self-declared: low trust, deletable; registry ones are not.
-    const self = await addSelfAchievement(b.profileId, { competition: "Хакатон", discipline: "продуктовое", stage: "regional", year: 2025, place: 2 });
+    const self = await addSelfAchievement(b.profileId, {
+      competition: "Хакатон",
+      discipline: "продуктовое",
+      stage: "regional",
+      year: 2025,
+      place: 2,
+    });
     expect(self!.trustLevel).toBe("low");
     await deleteAchievement(b.profileId, self!.id);
-    await expect(deleteAchievement(a.profileId, achs[0]!.id)).rejects.toMatchObject({ status: 422 });
-    await expect(deleteAchievement(b.profileId, achs[0]!.id)).rejects.toMatchObject({ status: 404 });
+    await expect(deleteAchievement(a.profileId, achs[0]!.id)).rejects.toMatchObject({
+      status: 422,
+    });
+    await expect(deleteAchievement(b.profileId, achs[0]!.id)).rejects.toMatchObject({
+      status: 404,
+    });
   });
 
   it("hidden profile or revoked consent removes the candidate from search", async () => {
     const emp = await makeEmployer();
     const c = await makeCategorized({});
-    expect((await searchBase(emp.employerId, { specialization: "backend", stack: [] })).total).toBe(1);
+    expect((await searchBase(emp.employerId, { specialization: "backend", stack: [] })).total).toBe(
+      1,
+    );
     await setVisibility(c.profileId, "hidden");
-    expect((await searchBase(emp.employerId, { specialization: "backend", stack: [] })).total).toBe(0);
+    expect((await searchBase(emp.employerId, { specialization: "backend", stack: [] })).total).toBe(
+      0,
+    );
     await setVisibility(c.profileId, "visible");
     await setConsent(c.user.id, "pd_processing", false);
-    expect((await searchBase(emp.employerId, { specialization: "backend", stack: [] })).total).toBe(0);
+    expect((await searchBase(emp.employerId, { specialization: "backend", stack: [] })).total).toBe(
+      0,
+    );
   });
 
   it("access log shows which company saw contacts; deletion anonymises personal data", async () => {
     const emp = await makeEmployer("ООО Наблюдатель");
     const c = await makeCategorized({ fullName: "Пётр Первый", contacts: { email: "petr@x.ru" } });
-    const inv = await createInvitation(emp.employerId, emp.user.id, { profileId: c.profileId, title: "Dev", description: "описание задачи", salaryFrom: 100000, salaryTo: 150000 });
+    const inv = await createInvitation(emp.employerId, emp.user.id, {
+      profileId: c.profileId,
+      title: "Dev",
+      description: "описание задачи",
+      salaryFrom: 100000,
+      salaryTo: 150000,
+    });
     await decide(c.profileId, c.user.id, inv.id, "accept");
     const log = await contactAccessLog(c.profileId);
     expect(log[0]).toMatchObject({ action: "contacts.disclosed", company: "ООО Наблюдатель" });
@@ -106,11 +194,21 @@ describe("candidate self-service", () => {
     const [u] = await db().select().from(users).where(eq(users.id, c.user.id));
     expect(u!.email).toMatch(/^deleted-/);
     expect(u!.passwordHash).toBeNull();
-    const [p] = await db().select().from(candidateProfiles).where(eq(candidateProfiles.id, c.profileId));
+    const [p] = await db()
+      .select()
+      .from(candidateProfiles)
+      .where(eq(candidateProfiles.id, c.profileId));
     expect(p!.fullName).toBe("Удалённый пользователь");
     expect(p!.visibility).toBe("hidden");
-    expect(await db().select().from(candidateContacts).where(eq(candidateContacts.profileId, c.profileId))).toHaveLength(0);
-    expect((await searchBase(emp.employerId, { specialization: "backend", stack: [] })).total).toBe(0);
+    expect(
+      await db()
+        .select()
+        .from(candidateContacts)
+        .where(eq(candidateContacts.profileId, c.profileId)),
+    ).toHaveLength(0);
+    expect((await searchBase(emp.employerId, { specialization: "backend", stack: [] })).total).toBe(
+      0,
+    );
   });
 
   it("returns only the candidate's own profile", async () => {

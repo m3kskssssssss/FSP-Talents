@@ -25,7 +25,9 @@
   "paths": {
     "/api/v1/auth/register": {
       "post": {
-        "tags": ["Аккаунт"],
+        "tags": [
+          "Аккаунт"
+        ],
         "summary": "Регистрация кандидата или работодателя",
         "requestBody": {
           "content": {
@@ -46,7 +48,10 @@
                   },
                   "role": {
                     "type": "string",
-                    "enum": ["candidate", "employer"]
+                    "enum": [
+                      "candidate",
+                      "employer"
+                    ]
                   },
                   "fullName": {
                     "type": "string",
@@ -61,20 +66,32 @@
                     "properties": {
                       "pd_processing": {
                         "type": "boolean",
-                        "enum": [true]
+                        "enum": [
+                          true
+                        ]
                       },
                       "privacy_policy": {
                         "type": "boolean",
-                        "enum": [true]
+                        "enum": [
+                          true
+                        ]
                       },
                       "marketing": {
                         "type": "boolean"
                       }
                     },
-                    "required": ["pd_processing", "privacy_policy"]
+                    "required": [
+                      "pd_processing",
+                      "privacy_policy"
+                    ]
                   }
                 },
-                "required": ["email", "password", "role", "consents"]
+                "required": [
+                  "email",
+                  "password",
+                  "role",
+                  "consents"
+                ]
               }
             }
           }
@@ -94,7 +111,9 @@
                       "type": "string"
                     }
                   },
-                  "required": ["ok"]
+                  "required": [
+                    "ok"
+                  ]
                 }
               }
             }
@@ -117,10 +136,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -143,10 +167,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -156,7 +185,9 @@
     },
     "/api/v1/vacancies": {
       "get": {
-        "tags": ["Вакансии"],
+        "tags": [
+          "Вакансии"
+        ],
         "summary": "Открытые вакансии (или свои — mine=1 для работодателя)",
         "security": [
           {
@@ -167,7 +198,15 @@
           {
             "schema": {
               "type": "string",
-              "enum": ["backend", "frontend", "data", "qa", "mobile", "devops", "analyst"]
+              "enum": [
+                "backend",
+                "frontend",
+                "data",
+                "qa",
+                "mobile",
+                "devops",
+                "analyst"
+              ]
             },
             "required": false,
             "name": "specialization",
@@ -175,7 +214,10 @@
           },
           {
             "schema": {
-              "type": ["boolean", "null"]
+              "type": [
+                "boolean",
+                "null"
+              ]
             },
             "required": false,
             "name": "mine",
@@ -213,10 +255,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -239,10 +286,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -265,10 +317,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -276,7 +333,9 @@
         }
       },
       "post": {
-        "tags": ["Вакансии"],
+        "tags": [
+          "Вакансии"
+        ],
         "summary": "Опубликовать вакансию (вилка обязательна)",
         "security": [
           {
@@ -301,11 +360,23 @@
                   },
                   "specialization": {
                     "type": "string",
-                    "enum": ["backend", "frontend", "data", "qa", "mobile", "devops", "analyst"]
+                    "enum": [
+                      "backend",
+                      "frontend",
+                      "data",
+                      "qa",
+                      "mobile",
+                      "devops",
+                      "analyst"
+                    ]
                   },
                   "grade": {
                     "type": "string",
-                    "enum": ["junior", "middle", "senior"]
+                    "enum": [
+                      "junior",
+                      "middle",
+                      "senior"
+                    ]
                   },
                   "stack": {
                     "type": "array",
@@ -318,11 +389,22 @@
                     "default": []
                   },
                   "format": {
-                    "type": ["string", "null"],
-                    "enum": ["office", "hybrid", "remote", null]
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "office",
+                      "hybrid",
+                      "remote",
+                      null
+                    ]
                   },
                   "city": {
-                    "type": ["string", "null"],
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "maxLength": 80
                   },
                   "salaryFrom": {
@@ -379,10 +461,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -405,10 +492,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -431,10 +523,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -444,7 +541,9 @@
     },
     "/api/v1/vacancies/{id}/apply": {
       "post": {
-        "tags": ["Вакансии"],
+        "tags": [
+          "Вакансии"
+        ],
         "summary": "Отклик кандидата с категорией; открывает контакты работодателю",
         "security": [
           {
@@ -508,10 +607,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -558,10 +662,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -571,7 +680,9 @@
     },
     "/api/v1/vacancies/{id}/close": {
       "post": {
-        "tags": ["Вакансии"],
+        "tags": [
+          "Вакансии"
+        ],
         "summary": "Закрыть вакансию",
         "security": [
           {
@@ -620,10 +731,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -646,10 +762,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -672,10 +793,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -685,7 +811,9 @@
     },
     "/api/v1/vacancies/{id}/applications": {
       "get": {
-        "tags": ["Вакансии"],
+        "tags": [
+          "Вакансии"
+        ],
         "summary": "Отклики на вакансию",
         "security": [
           {
@@ -734,10 +862,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -760,10 +893,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -786,10 +924,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -799,7 +942,9 @@
     },
     "/api/v1/applications/{id}": {
       "patch": {
-        "tags": ["Вакансии"],
+        "tags": [
+          "Вакансии"
+        ],
         "summary": "Статус отклика",
         "security": [
           {
@@ -825,10 +970,16 @@
                 "properties": {
                   "status": {
                     "type": "string",
-                    "enum": ["viewed", "accepted", "declined"]
+                    "enum": [
+                      "viewed",
+                      "accepted",
+                      "declined"
+                    ]
                   }
                 },
-                "required": ["status"]
+                "required": [
+                  "status"
+                ]
               }
             }
           }
@@ -864,10 +1015,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -890,10 +1046,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -928,10 +1089,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -941,7 +1107,9 @@
     },
     "/api/v1/me/profile": {
       "get": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Собственный профиль кандидата (чужих профилей кандидату не отдаёт ни один эндпоинт)",
         "security": [
           {
@@ -979,10 +1147,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1005,10 +1178,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1031,10 +1209,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1042,7 +1225,9 @@
         }
       },
       "put": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Обновить профиль и опрос",
         "security": [
           {
@@ -1061,43 +1246,77 @@
                     "maxLength": 200
                   },
                   "city": {
-                    "type": ["string", "null"],
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "maxLength": 80
                   },
                   "about": {
-                    "type": ["string", "null"],
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "maxLength": 3000
                   },
                   "experienceYears": {
-                    "type": ["number", "null"],
+                    "type": [
+                      "number",
+                      "null"
+                    ],
                     "minimum": 0,
                     "maximum": 60
                   },
                   "salaryExpectFrom": {
-                    "type": ["integer", "null"],
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
                     "minimum": 1,
                     "maximum": 10000000
                   },
                   "salaryExpectTo": {
-                    "type": ["integer", "null"],
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
                     "minimum": 1,
                     "maximum": 10000000
                   },
                   "inviteFloor": {
-                    "type": ["integer", "null"],
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
                     "minimum": 1,
                     "maximum": 10000000
                   },
                   "workFormat": {
-                    "type": ["string", "null"],
-                    "enum": ["office", "hybrid", "remote", null]
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "office",
+                      "hybrid",
+                      "remote",
+                      null
+                    ]
                   },
                   "survey": {
-                    "type": ["object", "null"],
+                    "type": [
+                      "object",
+                      "null"
+                    ],
                     "properties": {
                       "specialization": {
                         "type": "string",
-                        "enum": ["backend", "frontend", "data", "qa"]
+                        "enum": [
+                          "backend",
+                          "frontend",
+                          "data",
+                          "qa"
+                        ]
                       },
                       "interests": {
                         "type": "array",
@@ -1114,13 +1333,17 @@
                         "maximum": 60
                       }
                     },
-                    "required": ["specialization"]
+                    "required": [
+                      "specialization"
+                    ]
                   },
                   "onboarded": {
                     "type": "boolean"
                   }
                 },
-                "required": ["fullName"]
+                "required": [
+                  "fullName"
+                ]
               }
             }
           }
@@ -1156,10 +1379,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1182,10 +1410,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1208,10 +1441,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1221,7 +1459,9 @@
     },
     "/api/v1/me/contacts": {
       "put": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Контакты (хранятся отдельно, работодатель видит их только после принятия приглашения)",
         "security": [
           {
@@ -1243,7 +1483,9 @@
                       },
                       {
                         "type": "string",
-                        "enum": [""]
+                        "enum": [
+                          ""
+                        ]
                       }
                     ]
                   },
@@ -1302,10 +1544,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1328,10 +1575,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1354,10 +1606,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1367,7 +1624,9 @@
     },
     "/api/v1/me/skills": {
       "put": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Заявленные навыки",
         "security": [
           {
@@ -1390,7 +1649,9 @@
                     "maxItems": 20
                   }
                 },
-                "required": ["skills"]
+                "required": [
+                  "skills"
+                ]
               }
             }
           }
@@ -1426,10 +1687,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1452,10 +1718,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1478,10 +1749,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1489,47 +1765,20 @@
         }
       }
     },
-    "/api/v1/me/showcase": {
-      "put": {
-        "tags": ["Кандидат"],
-        "summary": "Витрина: до 5 своих сертификатов и дипломов в порядке показа",
+    "/api/v1/me/photo": {
+      "get": {
+        "tags": [
+          "Кандидат"
+        ],
+        "summary": "Своё фото профиля (image/jpeg или image/png)",
         "security": [
           {
             "session": []
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "ids": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "maxItems": 5
-                  }
-                },
-                "required": ["ids"]
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {},
-                  "additionalProperties": {}
-                }
-              }
-            }
+            "description": "image"
           },
           "401": {
             "description": "Не авторизован",
@@ -1549,10 +1798,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1575,10 +1829,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1613,10 +1872,386 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Кандидат"
+        ],
+        "summary": "Загрузить фото (multipart, поле file: JPG/PNG до 4 МБ, метаданные EXIF удаляются)",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": {}
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Кандидат"
+        ],
+        "summary": "Удалить фото профиля",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": {}
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/showcase": {
+      "put": {
+        "tags": [
+          "Кандидат"
+        ],
+        "summary": "Витрина: до 5 своих сертификатов и дипломов в порядке показа",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "maxItems": 5
+                  }
+                },
+                "required": [
+                  "ids"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": {}
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": {}
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1626,7 +2261,9 @@
     },
     "/api/v1/me/experience": {
       "put": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Опыт работы (полный список, хранится от новых к старым)",
         "security": [
           {
@@ -1659,7 +2296,10 @@
                           "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
                         },
                         "to": {
-                          "type": ["string", "null"],
+                          "type": [
+                            "string",
+                            "null"
+                          ],
                           "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
                         },
                         "summary": {
@@ -1676,12 +2316,19 @@
                           "maxItems": 15
                         }
                       },
-                      "required": ["company", "role", "from", "to"]
+                      "required": [
+                        "company",
+                        "role",
+                        "from",
+                        "to"
+                      ]
                     },
                     "maxItems": 20
                   }
                 },
-                "required": ["items"]
+                "required": [
+                  "items"
+                ]
               }
             }
           }
@@ -1717,10 +2364,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1743,10 +2395,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1769,10 +2426,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1782,7 +2444,9 @@
     },
     "/api/v1/me/visibility": {
       "put": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Скрыть/показать профиль",
         "security": [
           {
@@ -1797,10 +2461,15 @@
                 "properties": {
                   "visibility": {
                     "type": "string",
-                    "enum": ["visible", "hidden"]
+                    "enum": [
+                      "visible",
+                      "hidden"
+                    ]
                   }
                 },
-                "required": ["visibility"]
+                "required": [
+                  "visibility"
+                ]
               }
             }
           }
@@ -1836,10 +2505,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1862,10 +2536,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1888,10 +2567,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1901,7 +2585,9 @@
     },
     "/api/v1/me/consents": {
       "post": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Дать или отозвать согласие (152-ФЗ)",
         "security": [
           {
@@ -1916,13 +2602,20 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": ["pd_processing", "privacy_policy", "marketing"]
+                    "enum": [
+                      "pd_processing",
+                      "privacy_policy",
+                      "marketing"
+                    ]
                   },
                   "granted": {
                     "type": "boolean"
                   }
                 },
-                "required": ["kind", "granted"]
+                "required": [
+                  "kind",
+                  "granted"
+                ]
               }
             }
           }
@@ -1958,10 +2651,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -1984,10 +2682,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2010,10 +2713,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2023,7 +2731,9 @@
     },
     "/api/v1/me/access-log": {
       "get": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Журнал доступа к контактам",
         "security": [
           {
@@ -2061,10 +2771,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2087,10 +2802,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2113,10 +2833,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2126,7 +2851,9 @@
     },
     "/api/v1/me/resume": {
       "post": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Загрузить PDF-резюме (multipart, поле file, ≤ 4 МБ): разбор ИИ или правилами",
         "security": [
           {
@@ -2164,10 +2891,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2190,10 +2922,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2215,7 +2952,9 @@
     },
     "/api/v1/me/resume.pdf": {
       "get": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Сгенерированное PDF-резюме из профиля",
         "security": [
           {
@@ -2244,10 +2983,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2270,10 +3014,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2296,10 +3045,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2309,7 +3063,9 @@
     },
     "/api/v1/me/fsp": {
       "post": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Привязать ФСП ID и импортировать достижения из реестра (мок). 404 — нет в реестре, 503 — реестр недоступен",
         "security": [
           {
@@ -2327,7 +3083,9 @@
                     "pattern": "^FSP-\\d{6}$"
                   }
                 },
-                "required": ["fspId"]
+                "required": [
+                  "fspId"
+                ]
               }
             }
           }
@@ -2363,10 +3121,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2389,10 +3152,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2427,10 +3195,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2452,7 +3225,9 @@
     },
     "/api/v1/me/achievements": {
       "post": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Добавить заявленное достижение (доверие low)",
         "security": [
           {
@@ -2472,11 +3247,21 @@
                   },
                   "discipline": {
                     "type": "string",
-                    "enum": ["алгоритмическое", "продуктовое", "ИБ", "робототехника", "БАС"]
+                    "enum": [
+                      "алгоритмическое",
+                      "продуктовое",
+                      "ИБ",
+                      "робототехника",
+                      "БАС"
+                    ]
                   },
                   "stage": {
                     "type": "string",
-                    "enum": ["regional", "district", "final"]
+                    "enum": [
+                      "regional",
+                      "district",
+                      "final"
+                    ]
                   },
                   "year": {
                     "type": "integer",
@@ -2484,12 +3269,20 @@
                     "maximum": 2026
                   },
                   "place": {
-                    "type": ["integer", "null"],
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
                     "minimum": 1,
                     "maximum": 1000
                   }
                 },
-                "required": ["competition", "discipline", "stage", "year"]
+                "required": [
+                  "competition",
+                  "discipline",
+                  "stage",
+                  "year"
+                ]
               }
             }
           }
@@ -2525,10 +3318,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2551,10 +3349,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2577,10 +3380,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2590,7 +3398,9 @@
     },
     "/api/v1/me/achievements/{id}": {
       "delete": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Удалить заявленное достижение",
         "security": [
           {
@@ -2639,10 +3449,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2665,10 +3480,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2691,10 +3511,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2704,7 +3529,9 @@
     },
     "/api/v1/me/certificates": {
       "post": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Сертификат (multipart: file + поля достижения): метаданные → сигналы риска → уровень доверия organizer/self",
         "security": [
           {
@@ -2742,10 +3569,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2768,10 +3600,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2793,7 +3630,9 @@
     },
     "/api/v1/me/repo-check": {
       "post": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Подтвердить хакатон репозиторием GitHub (уровень доверия repo)",
         "security": [
           {
@@ -2813,11 +3652,21 @@
                   },
                   "discipline": {
                     "type": "string",
-                    "enum": ["алгоритмическое", "продуктовое", "ИБ", "робототехника", "БАС"]
+                    "enum": [
+                      "алгоритмическое",
+                      "продуктовое",
+                      "ИБ",
+                      "робототехника",
+                      "БАС"
+                    ]
                   },
                   "stage": {
                     "type": "string",
-                    "enum": ["regional", "district", "final"]
+                    "enum": [
+                      "regional",
+                      "district",
+                      "final"
+                    ]
                   },
                   "year": {
                     "type": "integer",
@@ -2825,7 +3674,10 @@
                     "maximum": 2026
                   },
                   "place": {
-                    "type": ["integer", "null"],
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
                     "minimum": 1,
                     "maximum": 1000
                   },
@@ -2891,10 +3743,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2917,10 +3774,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2943,10 +3805,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -2968,7 +3835,9 @@
     },
     "/api/v1/me": {
       "delete": {
-        "tags": ["Кандидат"],
+        "tags": [
+          "Кандидат"
+        ],
         "summary": "Удалить аккаунт с анонимизацией",
         "security": [
           {
@@ -2983,10 +3852,14 @@
                 "properties": {
                   "confirm": {
                     "type": "string",
-                    "enum": ["УДАЛИТЬ"]
+                    "enum": [
+                      "УДАЛИТЬ"
+                    ]
                   }
                 },
-                "required": ["confirm"]
+                "required": [
+                  "confirm"
+                ]
               }
             }
           }
@@ -3022,10 +3895,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3048,10 +3926,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3074,10 +3957,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3087,7 +3975,9 @@
     },
     "/api/v1/admin/attempts": {
       "get": {
-        "tags": ["Модерация"],
+        "tags": [
+          "Модерация"
+        ],
         "summary": "Попытки по индексу доверия (сначала самые подозрительные)",
         "security": [
           {
@@ -3098,7 +3988,11 @@
           {
             "schema": {
               "type": "string",
-              "enum": ["low", "medium", "high"]
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
             },
             "required": false,
             "name": "level",
@@ -3106,7 +4000,10 @@
           },
           {
             "schema": {
-              "type": ["boolean", "null"]
+              "type": [
+                "boolean",
+                "null"
+              ]
             },
             "required": false,
             "name": "pending",
@@ -3144,10 +4041,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3170,10 +4072,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3196,10 +4103,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3209,7 +4121,9 @@
     },
     "/api/v1/admin/attempts/{id}": {
       "get": {
-        "tags": ["Модерация"],
+        "tags": [
+          "Модерация"
+        ],
         "summary": "Журнал попытки, сработавшие ловушки, похожие решения",
         "security": [
           {
@@ -3258,10 +4172,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3284,10 +4203,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3310,10 +4234,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3323,7 +4252,9 @@
     },
     "/api/v1/admin/attempts/{id}/review": {
       "post": {
-        "tags": ["Модерация"],
+        "tags": [
+          "Модерация"
+        ],
         "summary": "Решение модератора: подтвердить (категория с пометкой) или отклонить",
         "security": [
           {
@@ -3349,14 +4280,19 @@
                 "properties": {
                   "decision": {
                     "type": "string",
-                    "enum": ["approve", "reject"]
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ]
                   },
                   "note": {
                     "type": "string",
                     "maxLength": 1000
                   }
                 },
-                "required": ["decision"]
+                "required": [
+                  "decision"
+                ]
               }
             }
           }
@@ -3392,10 +4328,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3418,10 +4359,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3444,10 +4390,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3457,7 +4408,9 @@
     },
     "/api/v1/admin/reports": {
       "get": {
-        "tags": ["Модерация"],
+        "tags": [
+          "Модерация"
+        ],
         "summary": "Жалобы на работодателей с их репутацией; ?status=open|confirmed|dismissed",
         "security": [
           {
@@ -3495,10 +4448,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3521,10 +4479,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3547,10 +4510,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3560,7 +4528,9 @@
     },
     "/api/v1/admin/reports/{id}": {
       "post": {
-        "tags": ["Модерация"],
+        "tags": [
+          "Модерация"
+        ],
         "summary": "Решение по жалобе: подтвердить (компания получает статус риска и минимальную квоту) или отклонить",
         "security": [
           {
@@ -3586,14 +4556,19 @@
                 "properties": {
                   "decision": {
                     "type": "string",
-                    "enum": ["confirmed", "dismissed"]
+                    "enum": [
+                      "confirmed",
+                      "dismissed"
+                    ]
                   },
                   "note": {
                     "type": "string",
                     "maxLength": 1000
                   }
                 },
-                "required": ["decision"]
+                "required": [
+                  "decision"
+                ]
               }
             }
           }
@@ -3629,10 +4604,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3655,10 +4635,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3693,10 +4678,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3706,7 +4696,9 @@
     },
     "/api/v1/admin/templates": {
       "get": {
-        "tags": ["Модерация"],
+        "tags": [
+          "Модерация"
+        ],
         "summary": "Банк шаблонов: IRT, экспозиция, детектор слива",
         "security": [
           {
@@ -3744,10 +4736,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3770,10 +4767,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3796,10 +4798,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3809,7 +4816,9 @@
     },
     "/api/v1/admin/templates/{id}": {
       "patch": {
-        "tags": ["Модерация"],
+        "tags": [
+          "Модерация"
+        ],
         "summary": "Статус шаблона active / flagged / retired",
         "security": [
           {
@@ -3834,10 +4843,16 @@
                 "properties": {
                   "status": {
                     "type": "string",
-                    "enum": ["active", "flagged", "retired"]
+                    "enum": [
+                      "active",
+                      "flagged",
+                      "retired"
+                    ]
                   }
                 },
-                "required": ["status"]
+                "required": [
+                  "status"
+                ]
               }
             }
           }
@@ -3873,10 +4888,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3899,10 +4919,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3925,10 +4950,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -3938,7 +4968,9 @@
     },
     "/api/v1/admin/plagiarism": {
       "get": {
-        "tags": ["Модерация"],
+        "tags": [
+          "Модерация"
+        ],
         "summary": "Кластеры похожих решений (n-граммы токенов)",
         "security": [
           {
@@ -3976,10 +5008,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4002,10 +5039,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4028,10 +5070,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4041,7 +5088,9 @@
     },
     "/api/v1/needs/parse": {
       "post": {
-        "tags": ["Подбор"],
+        "tags": [
+          "Подбор"
+        ],
         "summary": "Разобрать текст вакансии в черновик потребности (ИИ с фолбэком на правила). Ничего не сохраняет",
         "security": [
           {
@@ -4060,7 +5109,9 @@
                     "maxLength": 20000
                   }
                 },
-                "required": ["text"]
+                "required": [
+                  "text"
+                ]
               }
             }
           }
@@ -4096,10 +5147,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4122,10 +5178,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4148,10 +5209,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4161,7 +5227,9 @@
     },
     "/api/v1/needs": {
       "get": {
-        "tags": ["Подбор"],
+        "tags": [
+          "Подбор"
+        ],
         "summary": "Потребности работодателя",
         "security": [
           {
@@ -4199,10 +5267,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4225,10 +5298,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4251,10 +5329,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4262,7 +5345,9 @@
         }
       },
       "post": {
-        "tags": ["Подбор"],
+        "tags": [
+          "Подбор"
+        ],
         "summary": "Создать потребность. Без вилки зарплаты — 422",
         "security": [
           {
@@ -4282,11 +5367,23 @@
                   },
                   "specialization": {
                     "type": "string",
-                    "enum": ["backend", "frontend", "data", "qa", "mobile", "devops", "analyst"]
+                    "enum": [
+                      "backend",
+                      "frontend",
+                      "data",
+                      "qa",
+                      "mobile",
+                      "devops",
+                      "analyst"
+                    ]
                   },
                   "grade": {
                     "type": "string",
-                    "enum": ["junior", "middle", "senior"]
+                    "enum": [
+                      "junior",
+                      "middle",
+                      "senior"
+                    ]
                   },
                   "stack": {
                     "type": "array",
@@ -4299,24 +5396,45 @@
                     "default": []
                   },
                   "format": {
-                    "type": ["string", "null"],
-                    "enum": ["office", "hybrid", "remote", null]
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "office",
+                      "hybrid",
+                      "remote",
+                      null
+                    ]
                   },
                   "city": {
-                    "type": ["string", "null"],
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "maxLength": 80
                   },
                   "teamAbout": {
-                    "type": ["string", "null"],
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "maxLength": 3000
                   },
                   "rawText": {
-                    "type": ["string", "null"],
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "maxLength": 20000
                   },
                   "parsedBy": {
                     "type": "string",
-                    "enum": ["llm", "form", "rules"],
+                    "enum": [
+                      "llm",
+                      "form",
+                      "rules"
+                    ],
                     "default": "form"
                   },
                   "salaryFrom": {
@@ -4330,7 +5448,13 @@
                     "maximum": 10000000
                   }
                 },
-                "required": ["title", "specialization", "grade", "salaryFrom", "salaryTo"]
+                "required": [
+                  "title",
+                  "specialization",
+                  "grade",
+                  "salaryFrom",
+                  "salaryTo"
+                ]
               }
             }
           }
@@ -4366,10 +5490,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4392,10 +5521,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4418,10 +5552,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4431,7 +5570,9 @@
     },
     "/api/v1/needs/{id}": {
       "get": {
-        "tags": ["Подбор"],
+        "tags": [
+          "Подбор"
+        ],
         "summary": "Потребность",
         "security": [
           {
@@ -4480,10 +5621,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4506,10 +5652,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4544,10 +5695,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4557,7 +5713,9 @@
     },
     "/api/v1/needs/{id}/search": {
       "post": {
-        "tags": ["Подбор"],
+        "tags": [
+          "Подбор"
+        ],
         "summary": "Подбор: жёсткий фильтр по категории из теста + скоринг; сохраняет исходную подборку (снимок)",
         "security": [
           {
@@ -4591,7 +5749,10 @@
                       "type": "number"
                     }
                   },
-                  "required": ["searchId", "total"]
+                  "required": [
+                    "searchId",
+                    "total"
+                  ]
                 }
               }
             }
@@ -4614,10 +5775,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4640,10 +5806,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4666,10 +5837,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4679,7 +5855,9 @@
     },
     "/api/v1/searches": {
       "post": {
-        "tags": ["Подбор"],
+        "tags": [
+          "Подбор"
+        ],
         "summary": "Поиск по базе без потребности",
         "security": [
           {
@@ -4694,13 +5872,25 @@
                 "properties": {
                   "specialization": {
                     "type": "string",
-                    "enum": ["backend", "frontend", "data", "qa", "mobile", "devops", "analyst"]
+                    "enum": [
+                      "backend",
+                      "frontend",
+                      "data",
+                      "qa",
+                      "mobile",
+                      "devops",
+                      "analyst"
+                    ]
                   },
                   "grades": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "enum": ["junior", "middle", "senior"]
+                      "enum": [
+                        "junior",
+                        "middle",
+                        "senior"
+                      ]
                     },
                     "maxItems": 3
                   },
@@ -4715,25 +5905,44 @@
                     "default": []
                   },
                   "salaryFrom": {
-                    "type": ["integer", "null"],
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
                     "minimum": 1,
                     "maximum": 10000000
                   },
                   "salaryTo": {
-                    "type": ["integer", "null"],
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
                     "minimum": 1,
                     "maximum": 10000000
                   },
                   "format": {
-                    "type": ["string", "null"],
-                    "enum": ["office", "hybrid", "remote", null]
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "office",
+                      "hybrid",
+                      "remote",
+                      null
+                    ]
                   },
                   "city": {
-                    "type": ["string", "null"],
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "maxLength": 80
                   }
                 },
-                "required": ["specialization"]
+                "required": [
+                  "specialization"
+                ]
               }
             }
           }
@@ -4754,7 +5963,10 @@
                       "type": "number"
                     }
                   },
-                  "required": ["searchId", "total"]
+                  "required": [
+                    "searchId",
+                    "total"
+                  ]
                 }
               }
             }
@@ -4777,10 +5989,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4803,10 +6020,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4829,10 +6051,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4840,7 +6067,9 @@
         }
       },
       "get": {
-        "tags": ["Подбор"],
+        "tags": [
+          "Подбор"
+        ],
         "summary": "История подборок",
         "security": [
           {
@@ -4878,10 +6107,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4904,10 +6138,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4930,10 +6169,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -4943,7 +6187,9 @@
     },
     "/api/v1/searches/{id}": {
       "get": {
-        "tags": ["Подбор"],
+        "tags": [
+          "Подбор"
+        ],
         "summary": "Результаты подборки; фильтры применяются поверх снимка, без фильтров — исходная подборка. Контактов в ответе нет",
         "security": [
           {
@@ -4965,7 +6211,11 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "enum": ["junior", "middle", "senior"]
+                "enum": [
+                  "junior",
+                  "middle",
+                  "senior"
+                ]
               }
             },
             "required": false,
@@ -4987,7 +6237,10 @@
           },
           {
             "schema": {
-              "type": ["boolean", "null"]
+              "type": [
+                "boolean",
+                "null"
+              ]
             },
             "required": false,
             "name": "confirmedOnly",
@@ -4995,7 +6248,10 @@
           },
           {
             "schema": {
-              "type": ["boolean", "null"]
+              "type": [
+                "boolean",
+                "null"
+              ]
             },
             "required": false,
             "name": "onlyFsp",
@@ -5003,7 +6259,10 @@
           },
           {
             "schema": {
-              "type": ["number", "null"],
+              "type": [
+                "number",
+                "null"
+              ],
               "minimum": 0,
               "maximum": 30
             },
@@ -5023,7 +6282,11 @@
           {
             "schema": {
               "type": "string",
-              "enum": ["office", "hybrid", "remote"]
+              "enum": [
+                "office",
+                "hybrid",
+                "remote"
+              ]
             },
             "required": false,
             "name": "format",
@@ -5031,7 +6294,10 @@
           },
           {
             "schema": {
-              "type": ["boolean", "null"]
+              "type": [
+                "boolean",
+                "null"
+              ]
             },
             "required": false,
             "name": "includeNear",
@@ -5039,7 +6305,10 @@
           },
           {
             "schema": {
-              "type": ["boolean", "null"]
+              "type": [
+                "boolean",
+                "null"
+              ]
             },
             "required": false,
             "name": "includeUnconfirmed",
@@ -5088,10 +6357,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5114,10 +6388,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5152,10 +6431,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5165,7 +6449,9 @@
     },
     "/api/v1/searches/{id}/rephrase": {
       "post": {
-        "tags": ["Подбор"],
+        "tags": [
+          "Подбор"
+        ],
         "summary": "Перефразировать доводы ИИ без новых фактов (фолбэк — шаблоны)",
         "security": [
           {
@@ -5199,7 +6485,9 @@
                     "maxItems": 10
                   }
                 },
-                "required": ["profileIds"]
+                "required": [
+                  "profileIds"
+                ]
               }
             }
           }
@@ -5235,10 +6523,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5261,10 +6554,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5287,10 +6585,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5300,7 +6603,9 @@
     },
     "/api/v1/shortlist": {
       "get": {
-        "tags": ["Подбор"],
+        "tags": [
+          "Подбор"
+        ],
         "summary": "Избранное",
         "security": [
           {
@@ -5338,10 +6643,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5364,10 +6674,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5390,10 +6705,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5403,7 +6723,9 @@
     },
     "/api/v1/shortlist/{profileId}": {
       "put": {
-        "tags": ["Подбор"],
+        "tags": [
+          "Подбор"
+        ],
         "summary": "Добавить в избранное",
         "security": [
           {
@@ -5452,10 +6774,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5478,10 +6805,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5504,10 +6836,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5515,7 +6852,9 @@
         }
       },
       "delete": {
-        "tags": ["Подбор"],
+        "tags": [
+          "Подбор"
+        ],
         "summary": "Убрать из избранного",
         "security": [
           {
@@ -5564,10 +6903,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5590,10 +6934,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5616,10 +6965,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5629,7 +6983,9 @@
     },
     "/api/v1/invitations": {
       "post": {
-        "tags": ["Приглашения"],
+        "tags": [
+          "Приглашения"
+        ],
         "summary": "Пригласить кандидата. Вилка обязательна (иначе 422); дубль открытого приглашения — 409; лимит в сутки — 429",
         "security": [
           {
@@ -5647,7 +7003,10 @@
                     "format": "uuid"
                   },
                   "needId": {
-                    "type": ["string", "null"],
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "format": "uuid"
                   },
                   "title": {
@@ -5661,8 +7020,16 @@
                     "maxLength": 4000
                   },
                   "format": {
-                    "type": ["string", "null"],
-                    "enum": ["office", "hybrid", "remote", null]
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "office",
+                      "hybrid",
+                      "remote",
+                      null
+                    ]
                   },
                   "salaryFrom": {
                     "type": "integer",
@@ -5675,7 +7042,13 @@
                     "maximum": 10000000
                   }
                 },
-                "required": ["profileId", "title", "description", "salaryFrom", "salaryTo"]
+                "required": [
+                  "profileId",
+                  "title",
+                  "description",
+                  "salaryFrom",
+                  "salaryTo"
+                ]
               }
             }
           }
@@ -5711,10 +7084,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5737,10 +7115,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5775,10 +7158,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5798,7 +7186,9 @@
         }
       },
       "get": {
-        "tags": ["Приглашения"],
+        "tags": [
+          "Приглашения"
+        ],
         "summary": "Приглашения: кандидат видит свои, работодатель — отправленные",
         "security": [
           {
@@ -5836,10 +7226,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5862,10 +7257,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5888,10 +7288,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5901,7 +7306,9 @@
     },
     "/api/v1/invitations/{id}": {
       "get": {
-        "tags": ["Приглашения"],
+        "tags": [
+          "Приглашения"
+        ],
         "summary": "Приглашение и история статусов (кандидат: открытие переводит sent → viewed)",
         "security": [
           {
@@ -5950,10 +7357,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -5976,10 +7388,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6014,10 +7431,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6027,7 +7449,9 @@
     },
     "/api/v1/invitations/{id}/decision": {
       "post": {
-        "tags": ["Приглашения"],
+        "tags": [
+          "Приглашения"
+        ],
         "summary": "Кандидат принимает или отклоняет. Недопустимый переход — 409",
         "security": [
           {
@@ -6053,14 +7477,19 @@
                 "properties": {
                   "decision": {
                     "type": "string",
-                    "enum": ["accept", "decline"]
+                    "enum": [
+                      "accept",
+                      "decline"
+                    ]
                   },
                   "reason": {
                     "type": "string",
                     "maxLength": 1000
                   }
                 },
-                "required": ["decision"]
+                "required": [
+                  "decision"
+                ]
               }
             }
           }
@@ -6096,10 +7525,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6122,10 +7556,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6160,10 +7599,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6173,7 +7617,9 @@
     },
     "/api/v1/invitations/{id}/report": {
       "post": {
-        "tags": ["Приглашения"],
+        "tags": [
+          "Приглашения"
+        ],
         "summary": "Жалоба кандидата на приглашение (фиктивная вакансия, несоответствие условий, спам). Открытое приглашение заодно отклоняется. Повтор — 409",
         "security": [
           {
@@ -6199,14 +7645,22 @@
                 "properties": {
                   "reason": {
                     "type": "string",
-                    "enum": ["fake_vacancy", "salary_mismatch", "spam", "inappropriate", "other"]
+                    "enum": [
+                      "fake_vacancy",
+                      "salary_mismatch",
+                      "spam",
+                      "inappropriate",
+                      "other"
+                    ]
                   },
                   "note": {
                     "type": "string",
                     "maxLength": 1000
                   }
                 },
-                "required": ["reason"]
+                "required": [
+                  "reason"
+                ]
               }
             }
           }
@@ -6242,10 +7696,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6268,10 +7727,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6318,10 +7782,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6331,7 +7800,9 @@
     },
     "/api/v1/invitations/{id}/withdraw": {
       "post": {
-        "tags": ["Приглашения"],
+        "tags": [
+          "Приглашения"
+        ],
         "summary": "Работодатель отзывает приглашение",
         "security": [
           {
@@ -6380,10 +7851,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6406,10 +7882,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6444,10 +7925,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6457,7 +7943,9 @@
     },
     "/api/v1/candidates/{profileId}": {
       "get": {
-        "tags": ["Приглашения"],
+        "tags": [
+          "Приглашения"
+        ],
         "summary": "Профиль кандидата для работодателя; contacts = null до принятия приглашения",
         "security": [
           {
@@ -6506,10 +7994,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6532,10 +8025,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6570,10 +8068,149 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/candidates/{profileId}/photo": {
+      "get": {
+        "tags": [
+          "Приглашения"
+        ],
+        "summary": "Фото кандидата для работодателя: открывается вместе с контактами, иначе 404",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "profileId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "image"
+          },
+          "401": {
+            "description": "Не авторизован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": {}
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6583,7 +8220,9 @@
     },
     "/api/v1/notifications": {
       "get": {
-        "tags": ["Приглашения"],
+        "tags": [
+          "Приглашения"
+        ],
         "summary": "Уведомления пользователя",
         "security": [
           {
@@ -6621,10 +8260,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6647,10 +8291,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6673,10 +8322,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6686,7 +8340,9 @@
     },
     "/api/v1/notifications/read": {
       "post": {
-        "tags": ["Приглашения"],
+        "tags": [
+          "Приглашения"
+        ],
         "summary": "Отметить уведомления прочитанными",
         "security": [
           {
@@ -6724,10 +8380,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6750,10 +8411,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6776,10 +8442,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6789,7 +8460,9 @@
     },
     "/api/v1/tests": {
       "get": {
-        "tags": ["Тестирование"],
+        "tags": [
+          "Тестирование"
+        ],
         "summary": "Доступные тесты, правила пересдачи и история попыток",
         "security": [
           {
@@ -6827,10 +8500,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6853,10 +8531,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6879,10 +8562,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6892,7 +8580,9 @@
     },
     "/api/v1/tests/attempts": {
       "post": {
-        "tags": ["Тестирование"],
+        "tags": [
+          "Тестирование"
+        ],
         "summary": "Начать попытку (выбранный грейд). 409 — кулдаун 14 дней или нужен результат ≥ 25/30 на грейде ниже",
         "security": [
           {
@@ -6907,23 +8597,41 @@
                 "properties": {
                   "specialization": {
                     "type": "string",
-                    "enum": ["backend", "frontend", "data", "qa"]
+                    "enum": [
+                      "backend",
+                      "frontend",
+                      "data",
+                      "qa"
+                    ]
                   },
                   "grade": {
                     "type": "string",
-                    "enum": ["junior", "middle", "senior"]
+                    "enum": [
+                      "junior",
+                      "middle",
+                      "senior"
+                    ]
                   },
                   "mode": {
                     "type": "string",
-                    "enum": ["full", "express"],
+                    "enum": [
+                      "full",
+                      "express"
+                    ],
                     "default": "full"
                   },
                   "acknowledgeMonitoring": {
                     "type": "boolean",
-                    "enum": [true]
+                    "enum": [
+                      true
+                    ]
                   }
                 },
-                "required": ["specialization", "grade", "acknowledgeMonitoring"]
+                "required": [
+                  "specialization",
+                  "grade",
+                  "acknowledgeMonitoring"
+                ]
               }
             }
           }
@@ -6941,7 +8649,9 @@
                       "format": "uuid"
                     }
                   },
-                  "required": ["attemptId"]
+                  "required": [
+                    "attemptId"
+                  ]
                 }
               }
             }
@@ -6964,10 +8674,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -6990,10 +8705,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7028,10 +8748,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7041,7 +8766,9 @@
     },
     "/api/v1/tests/attempts/{id}": {
       "get": {
-        "tags": ["Тестирование"],
+        "tags": [
+          "Тестирование"
+        ],
         "summary": "Состояние попытки и текущее задание (без эталонов)",
         "security": [
           {
@@ -7090,10 +8817,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7116,10 +8848,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7154,10 +8891,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7167,7 +8909,9 @@
     },
     "/api/v1/tests/attempts/{id}/items/{itemId}/hidden": {
       "post": {
-        "tags": ["Тестирование"],
+        "tags": [
+          "Тестирование"
+        ],
         "summary": "Получить скрытые входы, сгенерированные в момент запроса (seed попытки + nonce)",
         "security": [
           {
@@ -7225,10 +8969,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7251,10 +9000,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7289,10 +9043,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7302,7 +9061,9 @@
     },
     "/api/v1/tests/attempts/{id}/items/{itemId}/answer": {
       "post": {
-        "tags": ["Тестирование"],
+        "tags": [
+          "Тестирование"
+        ],
         "summary": "Отправить ответ: выходы на скрытых входах и код / значение / выбранные варианты",
         "security": [
           {
@@ -7350,11 +9111,16 @@
                         "properties": {
                           "kind": {
                             "type": "string",
-                            "enum": ["code"]
+                            "enum": [
+                              "code"
+                            ]
                           },
                           "language": {
                             "type": "string",
-                            "enum": ["python", "javascript"]
+                            "enum": [
+                              "python",
+                              "javascript"
+                            ]
                           },
                           "code": {
                             "type": "string",
@@ -7369,39 +9135,55 @@
                                   "properties": {
                                     "ok": {
                                       "type": "boolean",
-                                      "enum": [true]
+                                      "enum": [
+                                        true
+                                      ]
                                     },
                                     "value": {}
                                   },
-                                  "required": ["ok"]
+                                  "required": [
+                                    "ok"
+                                  ]
                                 },
                                 {
                                   "type": "object",
                                   "properties": {
                                     "ok": {
                                       "type": "boolean",
-                                      "enum": [false]
+                                      "enum": [
+                                        false
+                                      ]
                                     },
                                     "error": {
                                       "type": "string",
                                       "maxLength": 2000
                                     }
                                   },
-                                  "required": ["ok", "error"]
+                                  "required": [
+                                    "ok",
+                                    "error"
+                                  ]
                                 }
                               ]
                             },
                             "maxItems": 200
                           }
                         },
-                        "required": ["kind", "language", "code", "outputs"]
+                        "required": [
+                          "kind",
+                          "language",
+                          "code",
+                          "outputs"
+                        ]
                       },
                       {
                         "type": "object",
                         "properties": {
                           "kind": {
                             "type": "string",
-                            "enum": ["sql"]
+                            "enum": [
+                              "sql"
+                            ]
                           },
                           "code": {
                             "type": "string",
@@ -7428,7 +9210,10 @@
                                     "maxItems": 5000
                                   }
                                 },
-                                "required": ["columns", "rows"]
+                                "required": [
+                                  "columns",
+                                  "rows"
+                                ]
                               },
                               {
                                 "type": "object",
@@ -7438,33 +9223,46 @@
                                     "maxLength": 2000
                                   }
                                 },
-                                "required": ["error"]
+                                "required": [
+                                  "error"
+                                ]
                               }
                             ]
                           }
                         },
-                        "required": ["kind", "code", "result"]
+                        "required": [
+                          "kind",
+                          "code",
+                          "result"
+                        ]
                       },
                       {
                         "type": "object",
                         "properties": {
                           "kind": {
                             "type": "string",
-                            "enum": ["calc"]
+                            "enum": [
+                              "calc"
+                            ]
                           },
                           "value": {
                             "type": "string",
                             "maxLength": 100
                           }
                         },
-                        "required": ["kind", "value"]
+                        "required": [
+                          "kind",
+                          "value"
+                        ]
                       },
                       {
                         "type": "object",
                         "properties": {
                           "kind": {
                             "type": "string",
-                            "enum": ["quiz"]
+                            "enum": [
+                              "quiz"
+                            ]
                           },
                           "selected": {
                             "type": "array",
@@ -7475,7 +9273,10 @@
                             "maxItems": 10
                           }
                         },
-                        "required": ["kind", "selected"]
+                        "required": [
+                          "kind",
+                          "selected"
+                        ]
                       }
                     ]
                   }
@@ -7515,10 +9316,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7541,10 +9347,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7579,10 +9390,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7592,7 +9408,9 @@
     },
     "/api/v1/tests/attempts/{id}/events": {
       "post": {
-        "tags": ["Тестирование"],
+        "tags": [
+          "Тестирование"
+        ],
         "summary": "Журнал попытки (уходы со вкладки, вставки и т. п.)",
         "security": [
           {
@@ -7660,12 +9478,16 @@
                           "type": "integer"
                         }
                       },
-                      "required": ["type"]
+                      "required": [
+                        "type"
+                      ]
                     },
                     "maxItems": 100
                   }
                 },
-                "required": ["events"]
+                "required": [
+                  "events"
+                ]
               }
             }
           }
@@ -7701,10 +9523,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7727,10 +9554,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7753,10 +9585,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7766,7 +9603,9 @@
     },
     "/api/v1/tests/attempts/{id}/finish": {
       "post": {
-        "tags": ["Тестирование"],
+        "tags": [
+          "Тестирование"
+        ],
         "summary": "Завершить попытку досрочно",
         "security": [
           {
@@ -7815,10 +9654,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7841,10 +9685,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }
@@ -7867,10 +9716,15 @@
                         },
                         "details": {}
                       },
-                      "required": ["code", "message"]
+                      "required": [
+                        "code",
+                        "message"
+                      ]
                     }
                   },
-                  "required": ["error"]
+                  "required": [
+                    "error"
+                  ]
                 }
               }
             }

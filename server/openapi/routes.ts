@@ -217,6 +217,14 @@ export function apiRoutes(): ApiRoute[] {
     },
     {
       method: "get",
+      path: "/api/v1/candidates/{profileId}/photo",
+      tags: I,
+      summary: "Фото кандидата для работодателя: открывается вместе с контактами, иначе 404",
+      request: { params: z.object({ profileId: z.uuid() }) },
+      responses: { 200: { description: "image" }, 404: ok },
+    },
+    {
+      method: "get",
       path: "/api/v1/notifications",
       tags: I,
       summary: "Уведомления пользователя",
@@ -263,6 +271,27 @@ export function apiRoutes(): ApiRoute[] {
       tags: C,
       summary: "Заявленные навыки",
       request: body(skillsSchema),
+      responses: { 200: ok },
+    },
+    {
+      method: "get",
+      path: "/api/v1/me/photo",
+      tags: C,
+      summary: "Своё фото профиля (image/jpeg или image/png)",
+      responses: { 200: { description: "image" }, 404: ok },
+    },
+    {
+      method: "post",
+      path: "/api/v1/me/photo",
+      tags: C,
+      summary: "Загрузить фото (multipart, поле file: JPG/PNG до 4 МБ, метаданные EXIF удаляются)",
+      responses: { 200: ok, 422: ok },
+    },
+    {
+      method: "delete",
+      path: "/api/v1/me/photo",
+      tags: C,
+      summary: "Удалить фото профиля",
       responses: { 200: ok },
     },
     {

@@ -169,6 +169,11 @@ export const candidateProfiles = pgTable(
     fspId: text("fsp_id"),
     /** Onboarding survey: preferred specialization, interests, etc. */
     survey: jsonb("survey").$type<Record<string, unknown>>(),
+    /**
+     * Profile photo (storage key). It identifies the person, so employers get
+     * it only together with the contacts, after an accepted invitation.
+     */
+    photoKey: text("photo_key"),
     /** Showcase: up to five fsp_achievements ids the candidate pinned to the profile, in display order. */
     showcase: jsonb("showcase").$type<string[]>().notNull().default([]),
     /** Past jobs, newest first. Employers see them as is, so no contacts belong here. */

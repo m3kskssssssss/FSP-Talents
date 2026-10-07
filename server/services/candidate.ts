@@ -23,7 +23,9 @@ import { certificates } from "../db/schema";
 import { FspRegistryUnavailable, getFspRegistry } from "../fsp/registry";
 import { AppError, notFound, unprocessable } from "../lib/errors";
 import { skillTitle } from "../matching/skills";
+import { imageKind, stripMetadata } from "../lib/image";
 import { parseResumeText } from "../resume/parse";
+import { extractResumePhoto } from "../resume/photo";
 import type {
   contactsSchema,
   profileUpdateSchema,
@@ -274,6 +276,7 @@ export async function deleteAccount(userId: string, profileId: string) {
         salaryExpectTo: null,
         showcase: [],
         workHistory: [],
+        photoKey: null,
         updatedAt: new Date(),
       })
       .where(eq(candidateProfiles.id, profileId));
@@ -297,14 +300,12 @@ export async function deleteAccount(userId: string, profileId: string) {
       );
     for (const inv of open) {
       await tx.update(invitations).set({ status: "expired" }).where(eq(invitations.id, inv.id));
-      await tx
-        .insert(invitationEvents)
-        .values({
-          invitationId: inv.id,
-          fromStatus: inv.status,
-          toStatus: "expired",
-          note: "Аккаунт кандидата удалён",
-        });
+      await tx.insert(invitationEvents).values({
+        invitationId: inv.id,
+        fromStatus: inv.status,
+        toStatus: "expired",
+        note: "Аккаунт кандидата удалён",
+      });
     }
     await tx
       .update(consents)
@@ -440,11 +441,13 @@ export async function uploadResume(
     .values({ profileId, fileKey: key, parseStatus: "pending" })
     .returning();
   let text = "";
+  let photo: Buffer | null = null;
   try {
     const { extractText, getDocumentProxy } = await import("unpdf");
     const pdf = await getDocumentProxy(new Uint8Array(file.data));
     const res = await extractText(pdf, { mergePages: true });
     text = Array.isArray(res.text) ? res.text.join("\n") : res.text;
+    photo = await extractResumePhoto(pdf, pdf.numPages);
   } catch {
     await db().update(resumes).set({ parseStatus: "failed" }).where(eq(resumes.id, row!.id));
     throw unprocessable("Не удалось прочитать PDF. Заполните профиль вручную.");
@@ -462,8 +465,58 @@ export async function uploadResume(
     .where(eq(resumes.id, row!.id));
   // Skills from the resume affect ranking only and are always marked as "claimed".
   await setSkills(profileId, draft.skills, "resume");
-  return { resumeId: row!.id, parsedBy, draft: { ...withoutContacts, contacts } };
+  // A photo found in the resume becomes the profile photo right away; the candidate can replace or remove it.
+  if (photo) await setPhoto(profileId, photo);
+  return {
+    resumeId: row!.id,
+    parsedBy,
+    draft: { ...withoutContacts, contacts },
+    photo: photo !== null,
+  };
 }
+
+// ---------------------------------------------------------------- photo
+
+/** JPG or PNG up to 4 MB; metadata (EXIF with GPS, camera serial) is stripped before storing. */
+export async function setPhoto(profileId: string, data: Buffer) {
+  if (data.length > MAX_UPLOAD_BYTES) throw unprocessable("Файл больше 4 МБ");
+  const kind = imageKind(data);
+  if (!kind) throw unprocessable("Нужна фотография в формате JPG или PNG");
+  const key = await getStorage().put(
+    `photos/${profileId}`,
+    `photo.${kind === "jpeg" ? "jpg" : "png"}`,
+    stripMetadata(data, kind),
+    `image/${kind}`,
+  );
+  await db()
+    .update(candidateProfiles)
+    .set({ photoKey: key, updatedAt: new Date() })
+    .where(eq(candidateProfiles.id, profileId));
+  return { ok: true };
+}
+
+export async function removePhoto(profileId: string) {
+  await db()
+    .update(candidateProfiles)
+    .set({ photoKey: null, updatedAt: new Date() })
+    .where(eq(candidateProfiles.id, profileId));
+  return { ok: true };
+}
+
+/** The stored photo bytes and type, or null when the profile has none. */
+export async function readPhoto(profileId: string) {
+  const [p] = await db()
+    .select({ key: candidateProfiles.photoKey })
+    .from(candidateProfiles)
+    .where(eq(candidateProfiles.id, profileId));
+  if (!p?.key) return null;
+  const data = await getStorage().get(p.key);
+  return { data, type: imageKind(data) === "png" ? "image/png" : "image/jpeg" };
+}
+
+/** Photo URL for <img>; the version part changes whenever the photo does, so caches never show an old one. */
+export const photoUrl = (base: string, key: string | null) =>
+  key ? `${base}?v=${key.slice(-16).replace(/[^\w-]/g, "")}` : null;
 
 // ---------------------------------------------------------------- evidence: certificates and repositories
 

@@ -226,8 +226,11 @@ export async function startAttempt(
         ),
       );
     const elig = checkEligibility(toPast(history), grade, new Date(), category);
-    // Express (demo) checks only respect "one attempt at a time".
-    if (!elig.ok && (mode === "full" || elig.code === "in_progress"))
+    // Express (demo) checks skip cooldowns but still: one attempt at a time, nothing below the category.
+    if (
+      !elig.ok &&
+      (mode === "full" || elig.code === "in_progress" || elig.code === "below_category")
+    )
       throw conflict(elig.message, { code: elig.code, availableAt: elig.availableAt });
     const seed = randomToken(24);
     const rng = new Rng(seed);

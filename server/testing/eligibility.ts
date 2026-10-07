@@ -17,12 +17,24 @@ export interface CurrentCategory {
 
 export type Eligibility =
   | { ok: true }
-  | { ok: false; code: "in_progress" | "cooldown" | "needs_confident_lower" | "grade_change_cooldown"; message: string; availableAt?: Date };
+  | {
+      ok: false;
+      code:
+        | "in_progress"
+        | "cooldown"
+        | "needs_confident_lower"
+        | "grade_change_cooldown"
+        | "below_category";
+      message: string;
+      availableAt?: Date;
+    };
 
 /**
  * Retake rules (confirmed with the product owner):
  *  - the same grade can be retried once per `retrySameGradeDays` (14 days);
- *  - a lower grade than one already attempted is available immediately;
+ *  - a lower grade than one already attempted is available immediately,
+ *    but never below the active category: such a test could neither raise
+ *    nor take away the category, so it is not offered at all;
  *  - a higher grade than any attempted before requires a confident result
  *    (>= 25/30) on the grade right below it;
  *  - the very first attempt in a specialization: any grade.
@@ -32,9 +44,26 @@ export type Eligibility =
  * opens `gradeChangeCooldownDays` after that category was assigned.
  * Downgrades are never forced: failing does not remove an existing category.
  */
-export function checkEligibility(history: PastAttempt[], grade: Grade, now = new Date(), current?: CurrentCategory | null): Eligibility {
+export function checkEligibility(
+  history: PastAttempt[],
+  grade: Grade,
+  now = new Date(),
+  current?: CurrentCategory | null,
+): Eligibility {
   if (history.some((a) => a.status === "in_progress")) {
-    return { ok: false, code: "in_progress", message: "У вас есть незавершённая попытка — продолжите её." };
+    return {
+      ok: false,
+      code: "in_progress",
+      message: "У вас есть незавершённая попытка — продолжите её.",
+    };
+  }
+  const idx = gradeIndex(grade);
+  if (current && idx < gradeIndex(current.grade)) {
+    return {
+      ok: false,
+      code: "below_category",
+      message: `У вас уже категория ${GRADE_TITLES[current.grade]} — тест на ${GRADE_TITLES[grade]} её не изменит.`,
+    };
   }
   const done = history.filter((a) => a.status !== "in_progress");
   if (!done.length) return { ok: true };
@@ -55,11 +84,12 @@ export function checkEligibility(history: PastAttempt[], grade: Grade, now = new
     }
   }
 
-  const idx = gradeIndex(grade);
   if (current && idx > gradeIndex(current.grade)) {
     const firstDone = Math.min(...done.map((a) => (a.finishedAt ?? a.startedAt).getTime()));
     const calibrating = now.getTime() < firstDone + TEST_CONFIG.calibrationDays * DAY_MS;
-    const availableAt = new Date(current.assignedAt.getTime() + TEST_CONFIG.gradeChangeCooldownDays * DAY_MS);
+    const availableAt = new Date(
+      current.assignedAt.getTime() + TEST_CONFIG.gradeChangeCooldownDays * DAY_MS,
+    );
     if (!calibrating && availableAt > now) {
       return {
         ok: false,
