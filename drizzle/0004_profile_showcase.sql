@@ -1,0 +1,2 @@
+ALTER TABLE "candidate_profiles" ADD COLUMN "showcase" jsonb DEFAULT '[]'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "candidate_profiles" ADD COLUMN "work_history" jsonb DEFAULT '[]'::jsonb NOT NULL;

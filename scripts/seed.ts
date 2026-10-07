@@ -25,7 +25,11 @@ import {
   users,
 } from "../server/db/schema";
 import { DAY_MS } from "../server/lib/time";
-import { confirmedSkills, generatePopulation, type SynthCandidate } from "../server/synth/population";
+import {
+  confirmedSkills,
+  generatePopulation,
+  type SynthCandidate,
+} from "../server/synth/population";
 import { getTemplate } from "../server/testing/bank";
 import { instanceParams } from "../server/testing/engine";
 import { Rng } from "../server/testing/rng";
@@ -42,25 +46,55 @@ async function chunked<T>(rows: T[], size: number, fn: (part: T[]) => Promise<un
 }
 
 async function reset() {
-  const rows = await db().execute<{ tablename: string }>(sql`SELECT tablename FROM pg_tables WHERE schemaname = 'public'`);
+  const rows = await db().execute<{ tablename: string }>(
+    sql`SELECT tablename FROM pg_tables WHERE schemaname = 'public'`,
+  );
   const names = rows.map((r) => `"${r.tablename}"`).join(", ");
   if (names) await db().execute(sql.raw(`TRUNCATE ${names} RESTART IDENTITY CASCADE`));
   console.log("database wiped");
 }
 
-
 type Sig = { code: string; title: string; points: number; count: number };
 /** Trust signals of a synthetic attempt, consistent with its journal and trap hits. */
 function signalsFor(c: SynthCandidate, a: SynthCandidate["attempts"][number]): Sig[] {
   if (a.trust === "high") return [];
-  const sig: Sig[] = [{ code: "tab_leave", title: "Уходы со вкладки / потеря фокуса", points: 14, count: 9 }];
+  const sig: Sig[] = [
+    { code: "tab_leave", title: "Уходы со вкладки / потеря фокуса", points: 14, count: 9 },
+  ];
   if (a.trust === "low") {
-    const markers = c.spec === "backend" ? a.items.filter((it) => !it.templateId.startsWith("synthetic-") && getTemplate(it.templateId).kind === "code").length : 0;
-    if (markers) sig.push({ code: "marker", title: "Персональный маркер попытки найден в решении", points: Math.min(90, markers * 65), count: markers });
-    sig.push({ code: "twin", title: "Ответ посчитан по скрытому значению-двойнику", points: 40, count: 1 });
-    sig.push({ code: "bulk_insert", title: "Вставка крупных блоков кода в редактор", points: 24, count: 3 });
+    const markers =
+      c.spec === "backend"
+        ? a.items.filter(
+            (it) =>
+              !it.templateId.startsWith("synthetic-") && getTemplate(it.templateId).kind === "code",
+          ).length
+        : 0;
+    if (markers)
+      sig.push({
+        code: "marker",
+        title: "Персональный маркер попытки найден в решении",
+        points: Math.min(90, markers * 65),
+        count: markers,
+      });
+    sig.push({
+      code: "twin",
+      title: "Ответ посчитан по скрытому значению-двойнику",
+      points: 40,
+      count: 1,
+    });
+    sig.push({
+      code: "bulk_insert",
+      title: "Вставка крупных блоков кода в редактор",
+      points: 24,
+      count: 3,
+    });
   } else {
-    sig.push({ code: "fullscreen_exit", title: "Выходы из полноэкранного режима", points: 20, count: 6 });
+    sig.push({
+      code: "fullscreen_exit",
+      title: "Выходы из полноэкранного режима",
+      points: 20,
+      count: 6,
+    });
   }
   return sig;
 }
@@ -70,7 +104,13 @@ async function insertCandidate(c: SynthCandidate, email: string, passwordHash: s
   return db().transaction(async (tx) => {
     const [u] = await tx
       .insert(users)
-      .values({ email, role: "candidate", passwordHash, emailVerifiedAt: daysAgo(400), createdAt: daysAgo(420) })
+      .values({
+        email,
+        role: "candidate",
+        passwordHash,
+        emailVerifiedAt: daysAgo(400),
+        createdAt: daysAgo(420),
+      })
       .returning({ id: users.id });
     const userId = u!.id;
     await tx.insert(consents).values([
@@ -91,7 +131,9 @@ async function insertCandidate(c: SynthCandidate, email: string, passwordHash: s
         inviteFloor: Number(c.key.replace(/\D/g, "")) % 5 === 0 ? c.salaryFrom : null,
         workFormat: c.format,
         visibility: c.visible ? "visible" : "hidden",
-        fspId: c.achievements.some((a) => a.source === "fsp_registry") ? `FSP-${c.key.slice(4)}` : null,
+        fspId: c.achievements.some((a) => a.source === "fsp_registry")
+          ? `FSP-${c.key.slice(4)}`
+          : null,
         survey: { specialization: c.spec },
         onboardedAt: daysAgo(400),
         lastActiveAt: daysAgo(c.lastActiveDaysAgo),
@@ -108,8 +150,20 @@ async function insertCandidate(c: SynthCandidate, email: string, passwordHash: s
         links: [`https://github.com/${c.key}-demo`],
       },
     });
-    const skills = c.declaredSkills.map((skill) => ({ profileId, skill, source: "declared" as const }));
-    let best: { attemptId: string; grade: Grade; score: number; theta: number; se: number; trust: "high" | "medium" | "low"; at: Date } | null = null;
+    const skills = c.declaredSkills.map((skill) => ({
+      profileId,
+      skill,
+      source: "declared" as const,
+    }));
+    let best: {
+      attemptId: string;
+      grade: Grade;
+      score: number;
+      theta: number;
+      se: number;
+      trust: "high" | "medium" | "low";
+      at: Date;
+    } | null = null;
     for (const a of c.attempts) {
       const startedAt = daysAgo(a.daysAgo);
       const [row] = await tx
@@ -135,12 +189,30 @@ async function insertCandidate(c: SynthCandidate, email: string, passwordHash: s
         .returning({ id: testAttempts.id });
       if (a.trust !== "high") {
         // Journal consistent with the stored trust signals.
-        const ev: { type: "blur" | "visibility_hidden" | "paste" | "bulk_insert" | "fullscreen_exit"; n: number }[] =
+        const ev: {
+          type: "blur" | "visibility_hidden" | "paste" | "bulk_insert" | "fullscreen_exit";
+          n: number;
+        }[] =
           a.trust === "low"
-            ? [{ type: "blur", n: 5 }, { type: "visibility_hidden", n: 4 }, { type: "paste", n: 4 }, { type: "bulk_insert", n: 3 }, { type: "fullscreen_exit", n: 2 }]
-            : [{ type: "blur", n: 6 }, { type: "visibility_hidden", n: 3 }, { type: "paste", n: 1 }];
+            ? [
+                { type: "blur", n: 5 },
+                { type: "visibility_hidden", n: 4 },
+                { type: "paste", n: 4 },
+                { type: "bulk_insert", n: 3 },
+                { type: "fullscreen_exit", n: 2 },
+              ]
+            : [
+                { type: "blur", n: 6 },
+                { type: "visibility_hidden", n: 3 },
+                { type: "paste", n: 1 },
+              ];
         const evRows = ev.flatMap((e, j) =>
-          Array.from({ length: e.n }, (_, k) => ({ attemptId: row!.id, type: e.type, payload: e.type === "bulk_insert" || e.type === "paste" ? { len: 180 + 97 * k } : null, at: new Date(startedAt.getTime() + (j * 5 + k * 3 + 2) * 60_000) })),
+          Array.from({ length: e.n }, (_, k) => ({
+            attemptId: row!.id,
+            type: e.type,
+            payload: e.type === "bulk_insert" || e.type === "paste" ? { len: 180 + 97 * k } : null,
+            at: new Date(startedAt.getTime() + (j * 5 + k * 3 + 2) * 60_000),
+          })),
         );
         await tx.insert(attemptEvents).values(evRows);
       }
@@ -168,12 +240,24 @@ async function insertCandidate(c: SynthCandidate, email: string, passwordHash: s
             timeMs: 60_000 + k * 7_000,
             code: leakedCode(it.templateId, k),
             answer: leakedCode(it.templateId, k) ? { kind: "code", language: "javascript" } : null,
-            trapHits: leakedCode(it.templateId, k) ? ["marker"] : a.trust === "low" && k === 2 ? ["twin"] : [],
+            trapHits: leakedCode(it.templateId, k)
+              ? ["marker"]
+              : a.trust === "low" && k === 2
+                ? ["twin"]
+                : [],
           })),
         );
       }
       if (a.result !== "failed" && a.trust !== "low" && (!best || a.score > best.score)) {
-        best = { attemptId: row!.id, grade: a.grade, score: a.score, theta: a.theta, se: a.se, trust: a.trust, at: new Date(startedAt.getTime() + 40 * 60_000) };
+        best = {
+          attemptId: row!.id,
+          grade: a.grade,
+          score: a.score,
+          theta: a.theta,
+          se: a.se,
+          trust: a.trust,
+          at: new Date(startedAt.getTime() + 40 * 60_000),
+        };
       }
     }
     if (best) {
@@ -188,7 +272,8 @@ async function insertCandidate(c: SynthCandidate, email: string, passwordHash: s
         attemptId: best.attemptId,
         assignedAt: best.at,
       });
-      for (const skill of confirmedSkills(c)) skills.push({ profileId, skill, source: "test_confirmed" as never });
+      for (const skill of confirmedSkills(c))
+        skills.push({ profileId, skill, source: "test_confirmed" as never });
     }
     if (skills.length) await tx.insert(candidateSkills).values(skills).onConflictDoNothing();
     if (c.achievements.length) {
@@ -202,7 +287,12 @@ async function insertCandidate(c: SynthCandidate, email: string, passwordHash: s
           place: a.place,
           rank: a.rank,
           source: a.source,
-          trustLevel: a.source === "fsp_registry" ? ("high" as const) : a.source === "self" ? ("low" as const) : ("medium" as const),
+          trustLevel:
+            a.source === "fsp_registry"
+              ? ("high" as const)
+              : a.source === "self"
+                ? ("low" as const)
+                : ("medium" as const),
           evidence: { synthetic: true },
           externalId: `${c.key}-${k}`,
         })),
@@ -212,17 +302,23 @@ async function insertCandidate(c: SynthCandidate, email: string, passwordHash: s
   });
 }
 
-async function upsertUser(email: string, role: "candidate" | "employer" | "admin", passwordHash: string) {
+async function upsertUser(
+  email: string,
+  role: "candidate" | "employer" | "admin",
+  passwordHash: string,
+) {
   const [existing] = await db().select().from(users).where(eq(users.email, email));
   if (existing) return { id: existing.id, created: false };
   const [u] = await db()
     .insert(users)
     .values({ email, role, passwordHash, emailVerifiedAt: now })
     .returning({ id: users.id });
-  await db().insert(consents).values([
-    { userId: u!.id, kind: "pd_processing", version: CONSENT_VERSIONS.pd_processing },
-    { userId: u!.id, kind: "privacy_policy", version: CONSENT_VERSIONS.privacy_policy },
-  ]);
+  await db()
+    .insert(consents)
+    .values([
+      { userId: u!.id, kind: "pd_processing", version: CONSENT_VERSIONS.pd_processing },
+      { userId: u!.id, kind: "privacy_policy", version: CONSENT_VERSIONS.privacy_policy },
+    ]);
   return { id: u!.id, created: true };
 }
 
@@ -232,10 +328,43 @@ async function seedDemo(passwordHash: string) {
   if (cand.created) {
     const [p] = await db()
       .insert(candidateProfiles)
-      .values({ userId: cand.id, fullName: "Анна Новикова", city: "Казань", about: "Python-разработчица, 2 года коммерческой разработки, люблю чистые API.", experienceYears: 2, salaryExpectFrom: 180000, salaryExpectTo: 230000, workFormat: "remote", survey: { specialization: "backend" } })
+      .values({
+        userId: cand.id,
+        fullName: "Анна Новикова",
+        city: "Казань",
+        about: "Python-разработчица, 2 года коммерческой разработки, люблю чистые API.",
+        experienceYears: 2,
+        salaryExpectFrom: 180000,
+        salaryExpectTo: 230000,
+        workFormat: "remote",
+        survey: { specialization: "backend" },
+        workHistory: [
+          {
+            company: "ИП Гарипов",
+            role: "Junior Python-разработчик",
+            from: `${now.getFullYear() - 2}-09`,
+            to: null,
+            summary: "Телеграм-боты и интеграции с 1С, FastAPI.",
+            stack: ["Python", "FastAPI", "PostgreSQL"],
+          },
+        ],
+      })
       .returning({ id: candidateProfiles.id });
-    await db().insert(candidateContacts).values({ profileId: p!.id, data: { email: "candidate@demo.ru", phone: "+7 900 111-22-33", telegram: "@anna_demo" } });
-    await db().insert(candidateSkills).values(["python", "django", "postgresql", "docker"].map((skill) => ({ profileId: p!.id, skill, source: "declared" as const })));
+    await db()
+      .insert(candidateContacts)
+      .values({
+        profileId: p!.id,
+        data: { email: "candidate@demo.ru", phone: "+7 900 111-22-33", telegram: "@anna_demo" },
+      });
+    await db()
+      .insert(candidateSkills)
+      .values(
+        ["python", "django", "postgresql", "docker"].map((skill) => ({
+          profileId: p!.id,
+          skill,
+          source: "declared" as const,
+        })),
+      );
   }
 
   // strong@demo.ru: category Backend · Middle, FSP registry achievements, confirmed skills.
@@ -243,35 +372,209 @@ async function seedDemo(passwordHash: string) {
   if (strong.created) {
     const [p] = await db()
       .insert(candidateProfiles)
-      .values({ userId: strong.id, fullName: "Максим Соколов", city: "Москва", about: "Backend на Python и Go, высоконагруженные сервисы, призёр Чемпионата России по спортивному программированию.", experienceYears: 4, salaryExpectFrom: 260000, salaryExpectTo: 320000, workFormat: "hybrid", fspId: "FSP-000777", survey: { specialization: "backend" }, onboardedAt: now })
+      .values({
+        userId: strong.id,
+        fullName: "Максим Соколов",
+        city: "Москва",
+        about:
+          "Backend на Python и Go, высоконагруженные сервисы, призёр Чемпионата России по спортивному программированию.",
+        experienceYears: 4,
+        salaryExpectFrom: 260000,
+        salaryExpectTo: 320000,
+        workFormat: "hybrid",
+        fspId: "FSP-000777",
+        survey: { specialization: "backend" },
+        onboardedAt: now,
+      })
       .returning({ id: candidateProfiles.id });
     const profileId = p!.id;
-    await db().insert(candidateContacts).values({ profileId, data: { email: "strong@demo.ru", phone: "+7 900 777-77-77", telegram: "@max_sokolov_demo", links: ["https://github.com/max-sokolov-demo"] } });
+    await db()
+      .insert(candidateContacts)
+      .values({
+        profileId,
+        data: {
+          email: "strong@demo.ru",
+          phone: "+7 900 777-77-77",
+          telegram: "@max_sokolov_demo",
+          links: ["https://github.com/max-sokolov-demo"],
+        },
+      });
     const startedAt = daysAgo(12);
     const [a] = await db()
       .insert(testAttempts)
-      .values({ profileId, specialization: "backend", targetGrade: "middle", status: "finished", startedAt, deadlineAt: new Date(startedAt.getTime() + 3600_000), finishedAt: new Date(startedAt.getTime() + 41 * 60_000), theta: 1.25, se: 0.31, score: 26.4, result: "passed_confident", trustIndex: 94, trustLevel: "high", trustSignals: { signals: [], answered: 13 }, seed: "demo-strong", marker: "demo_strong" })
+      .values({
+        profileId,
+        specialization: "backend",
+        targetGrade: "middle",
+        status: "finished",
+        startedAt,
+        deadlineAt: new Date(startedAt.getTime() + 3600_000),
+        finishedAt: new Date(startedAt.getTime() + 41 * 60_000),
+        theta: 1.25,
+        se: 0.31,
+        score: 26.4,
+        result: "passed_confident",
+        trustIndex: 94,
+        trustLevel: "high",
+        trustSignals: { signals: [], answered: 13 },
+        seed: "demo-strong",
+        marker: "demo_strong",
+      })
       .returning({ id: testAttempts.id });
-    await db().insert(categories).values({ profileId, specialization: "backend", grade: "middle", score: 26.4, theta: 1.25, se: 0.31, trustLevel: "high", attemptId: a!.id, assignedAt: new Date(startedAt.getTime() + 41 * 60_000) });
-    await db().insert(candidateSkills).values([
-      ...["python", "sql", "rest", "алгоритмы"].map((skill) => ({ profileId, skill, source: "test_confirmed" as const })),
-      ...["go", "postgresql", "redis", "kafka", "docker", "kubernetes"].map((skill) => ({ profileId, skill, source: "declared" as const })),
-    ]);
-    await db().insert(fspAchievements).values([
-      { profileId, competition: "Чемпионат России по спортивному программированию", discipline: "алгоритмическое", stage: "final" as const, year: now.getFullYear() - 1, place: 3, sportsCategory: "КМС", source: "fsp_registry" as const, trustLevel: "high" as const, externalId: "demo-1", evidence: { registryId: "FSP-000777/2025/1" } },
-      { profileId, competition: "Кубок России по продуктовому программированию", discipline: "продуктовое", stage: "district" as const, year: now.getFullYear(), place: 1, source: "fsp_registry" as const, trustLevel: "high" as const, externalId: "demo-2", evidence: { registryId: "FSP-000777/2026/2" } },
-      { profileId, competition: "Всероссийский хакатон ФСП", discipline: "продуктовое", stage: "regional" as const, year: now.getFullYear() - 2, place: null, rank: 41, source: "self" as const, trustLevel: "low" as const, externalId: "demo-3" },
-    ]);
+    await db()
+      .insert(categories)
+      .values({
+        profileId,
+        specialization: "backend",
+        grade: "middle",
+        score: 26.4,
+        theta: 1.25,
+        se: 0.31,
+        trustLevel: "high",
+        attemptId: a!.id,
+        assignedAt: new Date(startedAt.getTime() + 41 * 60_000),
+      });
+    await db()
+      .insert(candidateSkills)
+      .values([
+        ...["python", "sql", "rest", "алгоритмы"].map((skill) => ({
+          profileId,
+          skill,
+          source: "test_confirmed" as const,
+        })),
+        ...["go", "postgresql", "redis", "kafka", "docker", "kubernetes"].map((skill) => ({
+          profileId,
+          skill,
+          source: "declared" as const,
+        })),
+      ]);
+    const pinned = await db()
+      .insert(fspAchievements)
+      .values([
+        {
+          profileId,
+          competition: "Чемпионат России по спортивному программированию",
+          discipline: "алгоритмическое",
+          stage: "final" as const,
+          year: now.getFullYear() - 1,
+          place: 3,
+          sportsCategory: "КМС",
+          source: "fsp_registry" as const,
+          trustLevel: "high" as const,
+          externalId: "demo-1",
+          evidence: { registryId: "FSP-000777/2025/1" },
+        },
+        {
+          profileId,
+          competition: "Кубок России по продуктовому программированию",
+          discipline: "продуктовое",
+          stage: "district" as const,
+          year: now.getFullYear(),
+          place: 1,
+          source: "fsp_registry" as const,
+          trustLevel: "high" as const,
+          externalId: "demo-2",
+          evidence: { registryId: "FSP-000777/2026/2" },
+        },
+        {
+          profileId,
+          competition: "Всероссийский хакатон ФСП",
+          discipline: "продуктовое",
+          stage: "regional" as const,
+          year: now.getFullYear() - 2,
+          place: null,
+          rank: 41,
+          source: "self" as const,
+          trustLevel: "low" as const,
+          externalId: "demo-3",
+        },
+      ])
+      .returning({ id: fspAchievements.id });
+    const y = now.getFullYear();
+    await db()
+      .update(candidateProfiles)
+      .set({
+        showcase: pinned.slice(0, 2).map((a) => a.id),
+        workHistory: [
+          {
+            company: "ООО «Сетевые решения»",
+            role: "Backend-разработчик",
+            from: `${y - 2}-03`,
+            to: null,
+            summary:
+              "Платёжный шлюз на Go: снизил p99 с 420 до 90 мс, перевёл расчёты комиссий на Kafka.",
+            stack: ["Go", "PostgreSQL", "Kafka", "Kubernetes"],
+          },
+          {
+            company: "Студия «Код и кофе»",
+            role: "Python-разработчик",
+            from: `${y - 4}-07`,
+            to: `${y - 2}-02`,
+            summary: "REST API для сервисов доставки на Django, покрытие тестами с 30 до 85%.",
+            stack: ["Python", "Django", "Redis"],
+          },
+        ],
+      })
+      .where(eq(candidateProfiles.id, profileId));
   }
 
   const emp = await upsertUser("employer@demo.ru", "employer", passwordHash);
   if (emp.created) {
-    const [e] = await db().insert(employers).values({ userId: emp.id, companyName: "ООО «Кванта Софт»", inn: "7700000000", about: "Продуктовая компания: платёжная платформа для малого бизнеса, 40 инженеров.", site: "https://kvanta.example", city: "Москва", verifiedStatus: "verified" }).returning({ id: employers.id });
-    await db().insert(needs).values([
-      { employerId: e!.id, title: "Python-разработчик в платёжную команду", specialization: "backend" as const, grade: "middle" as const, stack: ["python", "postgresql", "redis", "docker"], salaryFrom: 230000, salaryTo: 300000, format: "hybrid" as const, city: "Москва", teamAbout: "Команда платёжного шлюза: 6 разработчиков, свой SRE, релизы дважды в неделю.", parsedBy: "form" as const },
-      { employerId: e!.id, title: "Frontend-разработчик (React)", specialization: "frontend" as const, grade: "middle" as const, stack: ["react", "typescript", "nextjs"], salaryFrom: 200000, salaryTo: 270000, format: "remote" as const, city: null, teamAbout: "Личный кабинет продавца.", parsedBy: "form" as const },
-      { employerId: e!.id, title: "Junior аналитик данных", specialization: "data" as const, grade: "junior" as const, stack: ["python", "sql", "pandas"], salaryFrom: 90000, salaryTo: 130000, format: "remote" as const, city: null, teamAbout: "Аналитика платежей и антифрод.", parsedBy: "form" as const },
-    ]);
+    const [e] = await db()
+      .insert(employers)
+      .values({
+        userId: emp.id,
+        companyName: "ООО «Кванта Софт»",
+        inn: "7700000000",
+        about: "Продуктовая компания: платёжная платформа для малого бизнеса, 40 инженеров.",
+        site: "https://kvanta.example",
+        city: "Москва",
+        verifiedStatus: "verified",
+      })
+      .returning({ id: employers.id });
+    await db()
+      .insert(needs)
+      .values([
+        {
+          employerId: e!.id,
+          title: "Python-разработчик в платёжную команду",
+          specialization: "backend" as const,
+          grade: "middle" as const,
+          stack: ["python", "postgresql", "redis", "docker"],
+          salaryFrom: 230000,
+          salaryTo: 300000,
+          format: "hybrid" as const,
+          city: "Москва",
+          teamAbout: "Команда платёжного шлюза: 6 разработчиков, свой SRE, релизы дважды в неделю.",
+          parsedBy: "form" as const,
+        },
+        {
+          employerId: e!.id,
+          title: "Frontend-разработчик (React)",
+          specialization: "frontend" as const,
+          grade: "middle" as const,
+          stack: ["react", "typescript", "nextjs"],
+          salaryFrom: 200000,
+          salaryTo: 270000,
+          format: "remote" as const,
+          city: null,
+          teamAbout: "Личный кабинет продавца.",
+          parsedBy: "form" as const,
+        },
+        {
+          employerId: e!.id,
+          title: "Junior аналитик данных",
+          specialization: "data" as const,
+          grade: "junior" as const,
+          stack: ["python", "sql", "pandas"],
+          salaryFrom: 90000,
+          salaryTo: 130000,
+          format: "remote" as const,
+          city: null,
+          teamAbout: "Аналитика платежей и антифрод.",
+          parsedBy: "form" as const,
+        },
+      ]);
   }
   await upsertUser("admin@demo.ru", "admin", passwordHash);
 }
@@ -280,28 +583,69 @@ async function main() {
   if (process.argv.includes("--reset")) await reset();
   await syncTemplates(true);
   const passwordHash = await hashPassword(DEMO_PASSWORD);
-  const [{ n }] = (await db().select({ n: sql<number>`count(*)::int` }).from(users).where(like(users.email, `%@${SYNTH_DOMAIN}`))) as [{ n: number }];
+  const [{ n }] = (await db()
+    .select({ n: sql<number>`count(*)::int` })
+    .from(users)
+    .where(like(users.email, `%@${SYNTH_DOMAIN}`))) as [{ n: number }];
   if (n > 0) {
     console.log(`synthetic data already present (${n} users) — use --reset to regenerate`);
   } else {
     const t0 = Date.now();
     const pop = generatePopulation({ now });
-    for (const c of pop.candidates) await insertCandidate(c, `${c.key}@${SYNTH_DOMAIN}`, passwordHash);
+    for (const c of pop.candidates)
+      await insertCandidate(c, `${c.key}@${SYNTH_DOMAIN}`, passwordHash);
     console.log(`candidates: ${pop.candidates.length}`);
     let needCount = 0;
     await chunked(pop.employers, 5, async (part) => {
       for (const e of part) {
-        const [u] = await db().insert(users).values({ email: `${e.key}@${SYNTH_DOMAIN}`, role: "employer", passwordHash, emailVerifiedAt: now }).returning({ id: users.id });
-        await db().insert(consents).values([
-          { userId: u!.id, kind: "pd_processing", version: CONSENT_VERSIONS.pd_processing },
-          { userId: u!.id, kind: "privacy_policy", version: CONSENT_VERSIONS.privacy_policy },
-        ]);
-        const [er] = await db().insert(employers).values({ userId: u!.id, companyName: e.companyName, about: e.about, city: e.city, verifiedStatus: "verified" }).returning({ id: employers.id });
-        await db().insert(needs).values(e.needs.map((nd) => ({ employerId: er!.id, title: nd.title, specialization: nd.spec, grade: nd.grade, stack: nd.stack, salaryFrom: nd.salaryFrom, salaryTo: nd.salaryTo, format: nd.format, city: nd.city, teamAbout: nd.teamAbout, parsedBy: "form" as const })));
+        const [u] = await db()
+          .insert(users)
+          .values({
+            email: `${e.key}@${SYNTH_DOMAIN}`,
+            role: "employer",
+            passwordHash,
+            emailVerifiedAt: now,
+          })
+          .returning({ id: users.id });
+        await db()
+          .insert(consents)
+          .values([
+            { userId: u!.id, kind: "pd_processing", version: CONSENT_VERSIONS.pd_processing },
+            { userId: u!.id, kind: "privacy_policy", version: CONSENT_VERSIONS.privacy_policy },
+          ]);
+        const [er] = await db()
+          .insert(employers)
+          .values({
+            userId: u!.id,
+            companyName: e.companyName,
+            about: e.about,
+            city: e.city,
+            verifiedStatus: "verified",
+          })
+          .returning({ id: employers.id });
+        await db()
+          .insert(needs)
+          .values(
+            e.needs.map((nd) => ({
+              employerId: er!.id,
+              title: nd.title,
+              specialization: nd.spec,
+              grade: nd.grade,
+              stack: nd.stack,
+              salaryFrom: nd.salaryFrom,
+              salaryTo: nd.salaryTo,
+              format: nd.format,
+              city: nd.city,
+              teamAbout: nd.teamAbout,
+              parsedBy: "form" as const,
+            })),
+          );
         needCount += e.needs.length;
       }
     });
-    console.log(`employers: ${pop.employers.length}, needs: ${needCount} (${Math.round((Date.now() - t0) / 1000)} s)`);
+    console.log(
+      `employers: ${pop.employers.length}, needs: ${needCount} (${Math.round((Date.now() - t0) / 1000)} s)`,
+    );
   }
   await seedDemo(passwordHash);
   await seedInvitations();

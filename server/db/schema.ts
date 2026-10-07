@@ -19,7 +19,11 @@ const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull(
 const ts = (name: string) => timestamp(name, { withTimezone: true });
 
 export const roleEnum = pgEnum("role", ["candidate", "employer", "admin"]);
-export const consentKindEnum = pgEnum("consent_kind", ["pd_processing", "privacy_policy", "marketing"]);
+export const consentKindEnum = pgEnum("consent_kind", [
+  "pd_processing",
+  "privacy_policy",
+  "marketing",
+]);
 export const specializationEnum = pgEnum("specialization", [
   "backend",
   "frontend",
@@ -37,7 +41,12 @@ export const parseStatusEnum = pgEnum("parse_status", ["pending", "done", "faile
 export const categoryStatusEnum = pgEnum("category_status", ["active", "superseded"]);
 export const taskKindEnum = pgEnum("task_kind", ["code", "sql", "quiz", "calc"]);
 export const templateStatusEnum = pgEnum("template_status", ["active", "flagged", "retired"]);
-export const attemptStatusEnum = pgEnum("attempt_status", ["in_progress", "finished", "expired", "abandoned"]);
+export const attemptStatusEnum = pgEnum("attempt_status", [
+  "in_progress",
+  "finished",
+  "expired",
+  "abandoned",
+]);
 export const attemptResultEnum = pgEnum("attempt_result", ["passed_confident", "passed", "failed"]);
 /** express = short demo check for the jury (DEMO_MODE only), see TEST_CONFIG.express. */
 export const attemptModeEnum = pgEnum("attempt_mode", ["full", "express"]);
@@ -64,9 +73,19 @@ export const invitationStatusEnum = pgEnum("invitation_status", [
   "expired",
 ]);
 export const vacancyStatusEnum = pgEnum("vacancy_status", ["open", "closed"]);
-export const applicationStatusEnum = pgEnum("application_status", ["sent", "viewed", "accepted", "declined"]);
+export const applicationStatusEnum = pgEnum("application_status", [
+  "sent",
+  "viewed",
+  "accepted",
+  "declined",
+]);
 export const fspStageEnum = pgEnum("fsp_stage", ["regional", "district", "final"]);
-export const achievementSourceEnum = pgEnum("achievement_source", ["fsp_registry", "organizer", "repo", "self"]);
+export const achievementSourceEnum = pgEnum("achievement_source", [
+  "fsp_registry",
+  "organizer",
+  "repo",
+  "self",
+]);
 export const tokenKindEnum = pgEnum("token_kind", ["verify_email", "reset_password"]);
 
 // ---------------------------------------------------------------- identity
@@ -115,6 +134,17 @@ export const consents = pgTable(
 
 // ---------------------------------------------------------------- candidates
 
+export type WorkItem = {
+  company: string;
+  role: string;
+  /** "YYYY-MM" */
+  from: string;
+  /** "YYYY-MM"; null — still working there */
+  to: string | null;
+  summary?: string;
+  stack?: string[];
+};
+
 export const candidateProfiles = pgTable(
   "candidate_profiles",
   {
@@ -139,6 +169,10 @@ export const candidateProfiles = pgTable(
     fspId: text("fsp_id"),
     /** Onboarding survey: preferred specialization, interests, etc. */
     survey: jsonb("survey").$type<Record<string, unknown>>(),
+    /** Showcase: up to five fsp_achievements ids the candidate pinned to the profile, in display order. */
+    showcase: jsonb("showcase").$type<string[]>().notNull().default([]),
+    /** Past jobs, newest first. Employers see them as is, so no contacts belong here. */
+    workHistory: jsonb("work_history").$type<WorkItem[]>().notNull().default([]),
     onboardedAt: ts("onboarded_at"),
     lastActiveAt: ts("last_active_at").notNull().defaultNow(),
     createdAt: createdAt(),
@@ -225,7 +259,10 @@ export const taskTemplates = pgTable(
     kind: taskKindEnum("kind").notNull(),
     language: text("language"),
     title: text("title").notNull(),
-    skills: text("skills").array().notNull().default(sql`'{}'::text[]`),
+    skills: text("skills")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     difficultyB: real("difficulty_b").notNull(),
     discriminationA: real("discrimination_a").notNull(),
     paramsSchema: jsonb("params_schema").$type<Record<string, unknown>>(),
@@ -355,7 +392,10 @@ export const needs = pgTable(
     rawText: text("raw_text"),
     specialization: specializationEnum("specialization").notNull(),
     grade: gradeEnum("grade").notNull(),
-    stack: text("stack").array().notNull().default(sql`'{}'::text[]`),
+    stack: text("stack")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     salaryFrom: integer("salary_from").notNull(),
     salaryTo: integer("salary_to").notNull(),
     format: workFormatEnum("format"),
@@ -367,7 +407,12 @@ export const needs = pgTable(
   (t) => [index("needs_employer_idx").on(t.employerId, t.createdAt)],
 );
 
-export type SnapshotEntry = { profileId: string; match: number; near?: boolean; unconfirmed?: boolean };
+export type SnapshotEntry = {
+  profileId: string;
+  match: number;
+  near?: boolean;
+  unconfirmed?: boolean;
+};
 
 export const searches = pgTable(
   "searches",
@@ -430,7 +475,13 @@ export const invitations = pgTable(
   ],
 );
 
-export const reportReasonEnum = pgEnum("report_reason", ["fake_vacancy", "salary_mismatch", "spam", "inappropriate", "other"]);
+export const reportReasonEnum = pgEnum("report_reason", [
+  "fake_vacancy",
+  "salary_mismatch",
+  "spam",
+  "inappropriate",
+  "other",
+]);
 export const reportStatusEnum = pgEnum("report_status", ["open", "confirmed", "dismissed"]);
 
 /** Candidate complaints about an invitation; part of employer reputation (protection from fake vacancies). */
@@ -486,7 +537,10 @@ export const vacancies = pgTable(
     description: text("description").notNull(),
     specialization: specializationEnum("specialization").notNull(),
     grade: gradeEnum("grade").notNull(),
-    stack: text("stack").array().notNull().default(sql`'{}'::text[]`),
+    stack: text("stack")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     salaryFrom: integer("salary_from").notNull(),
     salaryTo: integer("salary_to").notNull(),
     format: workFormatEnum("format"),

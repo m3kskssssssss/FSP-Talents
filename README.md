@@ -92,8 +92,7 @@ CI (GitHub Actions) на каждый push:
 1. Импортируйте репозиторий в Vercel (фреймворк определится сам).
 2. Storage → интеграция **Neon** (выставит `DATABASE_URL`) и **Blob** (`BLOB_READ_WRITE_TOKEN`).
 3. Задайте `AUTH_SECRET`, `APP_URL`, `DEMO_MODE=true`, `LLM_API_KEY` и при желании `RESEND_API_KEY`.
-4. Сборка использует `vercel-build`: сначала миграции, потом `next build`.
-5. Наполните базу один раз с локальной машины: `DATABASE_URL=<neon url> npm run db:seed`.
+4. Сборка использует `vercel-build`: миграции, затем **полный сброс базы и заново сид** (`seed.ts --reset`), потом `next build`. Каждый деплой начинается с чистых демо-данных — всё, что пользователи создали на стенде, стирается.
 
 ## Документация
 

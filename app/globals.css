@@ -118,26 +118,137 @@
 
 @layer components {
   .label-mono {
-    @apply font-mono text-[11px] tracking-[0.12em] text-accent uppercase;
+    @apply text-accent font-mono text-[11px] tracking-[0.12em] uppercase;
   }
   .blank {
-    @apply rounded-[var(--radius-blank)] border border-accent/45 bg-surface;
+    @apply border-accent/45 bg-surface rounded-[var(--radius-blank)] border;
   }
   .h-display {
-    @apply font-sans font-medium tracking-tight text-accent;
+    @apply text-accent font-sans font-medium tracking-tight;
   }
   .input {
-    @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[15px] text-fg placeholder:text-muted/80 transition-colors hover:border-accent/50 focus:border-accent focus:outline-none;
+    @apply border-line bg-surface text-fg placeholder:text-muted/80 hover:border-accent/50 focus:border-accent w-full rounded-xl border px-3.5 py-2.5 text-[15px] transition-colors focus:outline-none;
   }
   .input[aria-invalid="true"] {
     @apply border-danger;
   }
   .link {
-    @apply text-accent underline decoration-accent/30 underline-offset-4 hover:decoration-accent;
+    @apply text-accent decoration-accent/30 hover:decoration-accent underline underline-offset-4;
   }
   /* rows of one list share a frame instead of each row being its own card */
   .list-frame {
-    @apply divide-y divide-accent/15 overflow-hidden rounded-[var(--radius-blank)] border border-accent/45 bg-surface;
+    @apply divide-accent/15 border-accent/45 bg-surface divide-y overflow-hidden rounded-[var(--radius-blank)] border;
+  }
+}
+
+/* ---------------------------------------------------------------- motion
+ * Decorative motion, see DESIGN.md §5. Entrances run once; scroll reveals use
+ * scroll-driven animations where the browser has them and simply show the
+ * content where it does not. All of it is off under prefers-reduced-motion. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes ping {
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+@keyframes float {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@layer components {
+  /* entrance on load; stagger with style={{ "--d": "120ms" }} */
+  .rise {
+    animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0ms) both;
+  }
+  .pattern-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw 1.6s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+  }
+  .pattern-pop {
+    animation: pop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) 0.7s both;
+  }
+  .float {
+    animation: float 6s ease-in-out infinite;
+  }
+  .ping {
+    animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  /* endless ticker: render the items twice, the track slides by half its width */
+  .marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee 48s linear infinite;
+  }
+  .marquee-frame:hover .marquee {
+    animation-play-state: paused;
+  }
+  .marquee-frame {
+    mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+  }
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 45%;
+    }
+    .grow-bar {
+      transform-origin: left;
+      animation: grow-x linear both;
+      animation-timeline: view();
+      animation-range: entry 20% cover 35%;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rise,
+    .reveal,
+    .grow-bar,
+    .pattern-draw,
+    .pattern-pop,
+    .float,
+    .ping,
+    .marquee {
+      animation: none !important;
+    }
+    .pattern-draw {
+      stroke-dasharray: none;
+      stroke-dashoffset: 0;
+    }
+    .motion-only {
+      display: none;
+    }
   }
 }
 

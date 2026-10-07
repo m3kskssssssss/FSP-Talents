@@ -24,19 +24,45 @@ export const profileUpdateSchema = z
     ),
     onboarded: z.boolean().optional(),
   })
-  .refine((v) => !v.salaryExpectFrom || !v.salaryExpectTo || v.salaryExpectFrom <= v.salaryExpectTo, { message: "«от» больше «до»", path: ["salaryExpectTo"] });
+  .refine(
+    (v) => !v.salaryExpectFrom || !v.salaryExpectTo || v.salaryExpectFrom <= v.salaryExpectTo,
+    { message: "«от» больше «до»", path: ["salaryExpectTo"] },
+  );
 
 export const contactsSchema = z.object({
-  email: z.email("Некорректный email").max(200).optional().or(z.literal("").transform(() => undefined)),
-  phone: z.string().trim().max(40).regex(/^[+\d\s()-]*$/, "Только цифры, пробелы, + ( ) -").optional(),
-  telegram: z.string().trim().max(40).regex(/^@?[\w]{0,32}$/, "Например, @username").optional(),
+  email: z
+    .email("Некорректный email")
+    .max(200)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  phone: z
+    .string()
+    .trim()
+    .max(40)
+    .regex(/^[+\d\s()-]*$/, "Только цифры, пробелы, + ( ) -")
+    .optional(),
+  telegram: z
+    .string()
+    .trim()
+    .max(40)
+    .regex(/^@?[\w]{0,32}$/, "Например, @username")
+    .optional(),
   links: z.array(z.url("Некорректная ссылка").max(300)).max(5).optional(),
 });
 
 export const skillsSchema = z.object({ skills: stackSchema });
 export const visibilitySchema = z.object({ visibility: z.enum(["visible", "hidden"]) });
-export const consentSchema = z.object({ kind: z.enum(["pd_processing", "privacy_policy", "marketing"]), granted: z.boolean() });
-export const fspLinkSchema = z.object({ fspId: z.string().trim().toUpperCase().regex(/^FSP-\d{6}$/, "Формат ФСП ID: FSP-123456") });
+export const consentSchema = z.object({
+  kind: z.enum(["pd_processing", "privacy_policy", "marketing"]),
+  granted: z.boolean(),
+});
+export const fspLinkSchema = z.object({
+  fspId: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^FSP-\d{6}$/, "Формат ФСП ID: FSP-123456"),
+});
 export const selfAchievementSchema = z.object({
   competition: z.string().trim().min(3).max(200),
   discipline: z.enum(["алгоритмическое", "продуктовое", "ИБ", "робототехника", "БАС"]),
@@ -44,7 +70,9 @@ export const selfAchievementSchema = z.object({
   year: z.number().int().min(2015).max(new Date().getFullYear()),
   place: z.number().int().min(1).max(1000).nullable().optional(),
 });
-export const deleteAccountSchema = z.object({ confirm: z.literal("УДАЛИТЬ", { error: "Введите слово УДАЛИТЬ" }) });
+export const deleteAccountSchema = z.object({
+  confirm: z.literal("УДАЛИТЬ", { error: "Введите слово УДАЛИТЬ" }),
+});
 
 const achievementInfo = {
   competition: z.string().trim().min(3).max(200),
@@ -53,13 +81,43 @@ const achievementInfo = {
   year: z.coerce.number().int().min(2015).max(new Date().getFullYear()),
   place: z.coerce.number().int().min(1).max(1000).nullable().optional(),
 };
-export const certificateInfoSchema = z.object({ ...achievementInfo, eventDate: z.iso.date().optional() });
+export const certificateInfoSchema = z.object({
+  ...achievementInfo,
+  eventDate: z.iso.date().optional(),
+});
 export const repoCheckSchema = z
   .object({
     ...achievementInfo,
-    repo: z.string().trim().regex(/^[\w.-]+\/[\w.-]+$/, "Формат: owner/repo"),
-    login: z.string().trim().regex(/^[\w-]{1,39}$/, "Логин GitHub"),
+    repo: z
+      .string()
+      .trim()
+      .regex(/^[\w.-]+\/[\w.-]+$/, "Формат: owner/repo"),
+    login: z
+      .string()
+      .trim()
+      .regex(/^[\w-]{1,39}$/, "Логин GitHub"),
     from: z.iso.date(),
     to: z.iso.date(),
   })
   .refine((v) => v.from <= v.to, { message: "Дата начала позже даты окончания", path: ["to"] });
+
+export const SHOWCASE_MAX = 5;
+export const showcaseSchema = z.object({
+  ids: z
+    .array(z.uuid())
+    .max(SHOWCASE_MAX, `На витрине не больше ${SHOWCASE_MAX} сертификатов`)
+    .refine((ids) => new Set(ids).size === ids.length, "Сертификат выбран дважды"),
+});
+
+const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Формат: ГГГГ-ММ");
+export const workItemSchema = z
+  .object({
+    company: z.string().trim().min(1, "Укажите компанию").max(120),
+    role: z.string().trim().min(1, "Укажите должность").max(120),
+    from: month,
+    to: month.nullable(),
+    summary: z.string().trim().max(1000).optional(),
+    stack: z.array(z.string().trim().min(1).max(40)).max(15).optional(),
+  })
+  .refine((v) => !v.to || v.from <= v.to, { message: "Начало позже окончания", path: ["to"] });
+export const workHistorySchema = z.object({ items: z.array(workItemSchema).max(20) });
