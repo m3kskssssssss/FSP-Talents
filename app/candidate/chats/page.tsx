@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ChatApp } from "@/components/chat/chat-app";
 import { PageTitle } from "@/components/ui/blank";
 import { requireCandidate } from "@/server/http/guard";
@@ -17,7 +18,10 @@ export default async function ChatsPage({
     <div>
       <PageTitle title="Чаты">
         Переписка с компаниями. Чат открывается, когда вы принимаете приглашение или компания
-        принимает ваш отклик.
+        принимает ваш отклик.{" "}
+        <Link href="/candidate/interviews" className="text-accent hover:underline">
+          Все собеседования
+        </Link>
       </PageTitle>
       <ChatApp key={chat ?? "list"} role="candidate" initialChatId={chat ?? null} />
     </div>

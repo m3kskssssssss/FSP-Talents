@@ -1,4 +1,9 @@
 import { chatMessageSchema } from "../schemas/chats";
+import {
+  interviewCodeSchema,
+  interviewCreateSchema,
+  interviewFinishSchema,
+} from "../schemas/interviews";
 import type { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import {
@@ -247,6 +252,65 @@ export function apiRoutes(): ApiRoute[] {
         "Отправить сообщение (до 4000 символов). Чат открывается при принятии приглашения или отклика",
       request: { params: idParams, ...body(chatMessageSchema) },
       responses: { 200: ok, 404: ok, 422: ok },
+    },
+    {
+      method: "post",
+      path: "/api/v1/chats/{id}/interviews",
+      tags: I,
+      summary: "Работодатель назначает видеособеседование в чате; кандидат получает уведомление",
+      request: { params: idParams, ...body(interviewCreateSchema) },
+      responses: { 200: ok, 404: ok, 422: ok },
+    },
+    {
+      method: "get",
+      path: "/api/v1/interviews",
+      tags: I,
+      summary: "Мои собеседования (кандидат или работодатель)",
+      responses: { 200: ok },
+    },
+    {
+      method: "get",
+      path: "/api/v1/interviews/{id}",
+      tags: I,
+      summary:
+        "Собеседование: время, задание, общий код; оценку и заметки видит только работодатель",
+      request: { params: idParams },
+      responses: { 200: ok, 404: ok },
+    },
+    {
+      method: "post",
+      path: "/api/v1/interviews/{id}/token",
+      tags: I,
+      summary:
+        "Токен LiveKit для комнаты собеседования: за 15 минут до начала и до часа после конца",
+      request: { params: idParams },
+      responses: { 200: ok, 403: ok, 404: ok, 409: ok, 503: ok },
+    },
+    {
+      method: "put",
+      path: "/api/v1/interviews/{id}/code",
+      tags: I,
+      summary:
+        "Сохранить общий редактор кода (живая синхронизация идёт через канал данных LiveKit)",
+      request: { params: idParams, ...body(interviewCodeSchema) },
+      responses: { 200: ok, 404: ok, 409: ok, 422: ok },
+    },
+    {
+      method: "post",
+      path: "/api/v1/interviews/{id}/cancel",
+      tags: I,
+      summary: "Отменить собеседование (любая сторона)",
+      request: { params: idParams },
+      responses: { 200: ok, 404: ok, 409: ok },
+    },
+    {
+      method: "post",
+      path: "/api/v1/interviews/{id}/finish",
+      tags: I,
+      summary:
+        "Работодатель завершает собеседование с оценкой 1–5 и заметками (кандидату не видны)",
+      request: { params: idParams, ...body(interviewFinishSchema) },
+      responses: { 200: ok, 404: ok, 409: ok, 422: ok },
     },
     {
       method: "get",

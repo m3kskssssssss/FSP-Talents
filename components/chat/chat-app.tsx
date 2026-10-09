@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { LocalTime } from "@/components/interviews/local-time";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import { EmptyState } from "@/components/ui/empty";
 import { ApiError, api } from "@/lib/api-client";
@@ -17,6 +18,7 @@ type ChatItem = {
   last: { body: string; author: string } | null;
 };
 type Message = { id: string; author: Role | "system"; body: string; createdAt: string };
+type NextInterview = { id: string; scheduledAt: string } | null;
 
 const LIST_POLL_MS = 15_000;
 const THREAD_POLL_MS = 4_000;
@@ -168,6 +170,7 @@ function Thread({
   onSent: () => void;
 }) {
   const [messages, setMessages] = useState<Message[] | null>(null);
+  const [interview, setInterview] = useState<NextInterview>(null);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -176,8 +179,11 @@ function Thread({
 
   const load = useCallback(async () => {
     try {
-      const r = await api<{ messages: Message[] }>(`/api/v1/chats/${chat.id}/messages`);
+      const r = await api<{ messages: Message[]; interview: NextInterview }>(
+        `/api/v1/chats/${chat.id}/messages`,
+      );
       setMessages(r.messages);
+      setInterview(r.interview);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Не удалось загрузить сообщения");
     }
@@ -232,11 +238,47 @@ function Thread({
             <path d="M10 3 5 8l5 5" />
           </svg>
         </button>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{chat.with}</p>
           <p className="text-accent truncate text-xs">{chat.title}</p>
         </div>
+        {role === "employer" && (
+          <ButtonLink
+            href={`/employer/interviews/new?chat=${chat.id}`}
+            variant="secondary"
+            size="sm"
+            className="shrink-0"
+            title="Назначить видеособеседование"
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              className="size-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="3" y="6" width="13" height="12" rx="2" />
+              <path d="m16 10 5-3v10l-5-3" />
+            </svg>
+            <span className="max-sm:sr-only">Собеседование</span>
+          </ButtonLink>
+        )}
       </header>
+      {interview && (
+        <Link
+          href={`/${role}/interviews/${interview.id}`}
+          className="border-accent/15 bg-accent-soft hover:text-accent flex items-center gap-2 border-b px-3 py-2 text-sm transition-colors sm:px-4"
+        >
+          <span className="label-mono shrink-0">Видеособеседование</span>
+          <LocalTime value={interview.scheduledAt} className="min-w-0 truncate font-mono text-xs" />
+          <span aria-hidden="true" className="text-accent ml-auto">
+            →
+          </span>
+        </Link>
+      )}
       <div
         ref={scroller}
         className="bg-subtle/60 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 py-4 sm:px-4"

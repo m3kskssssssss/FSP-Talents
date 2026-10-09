@@ -30,6 +30,10 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_URL: z.string().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
   GITHUB_TOKEN: z.string().optional(),
+  /** Video interviews (LiveKit Cloud): wss URL of the project and an API key pair. */
+  LIVEKIT_URL: z.string().optional(),
+  LIVEKIT_API_KEY: z.string().optional(),
+  LIVEKIT_API_SECRET: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

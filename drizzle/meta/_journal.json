@@ -50,6 +50,13 @@
       "when": 1791355213361,
       "tag": "0006_chats",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791571307239,
+      "tag": "0007_interviews",
+      "breakpoints": true
     }
   ]
 }

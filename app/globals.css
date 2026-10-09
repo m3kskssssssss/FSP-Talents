@@ -287,3 +287,21 @@
   line-height: 0;
   color: transparent;
 }
+
+/* ---------------------------------------------------------------- video interviews */
+/* LiveKit's default theme, recoloured with the brand tokens. The call area is
+   dark in both site themes, like the code surface next to it. */
+.interview-video[data-lk-theme] {
+  --lk-bg: var(--color-code);
+  --lk-bg2: color-mix(in oklab, var(--color-code-fg) 8%, var(--color-code));
+  --lk-bg3: color-mix(in oklab, var(--color-code-fg) 14%, var(--color-code));
+  --lk-bg4: color-mix(in oklab, var(--color-code-fg) 20%, var(--color-code));
+  --lk-bg5: color-mix(in oklab, var(--color-code-fg) 26%, var(--color-code));
+  --lk-fg: var(--color-code-fg);
+  --lk-accent-bg: var(--color-primary);
+  --lk-accent-fg: var(--color-on-primary);
+  --lk-accent2: var(--color-primary-hover);
+  --lk-font-family: var(--font-golos), system-ui, sans-serif;
+  --lk-font-size: 15px;
+  --lk-border-radius: 0.75rem;
+}

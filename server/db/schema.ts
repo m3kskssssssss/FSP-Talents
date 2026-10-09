@@ -561,6 +561,36 @@ export const chatMessages = pgTable(
   (t) => [index("chat_messages_chat_idx").on(t.chatId, t.createdAt)],
 );
 
+// ---------------------------------------------------------------- interviews
+
+export const interviewStatusEnum = pgEnum("interview_status", ["scheduled", "cancelled", "done"]);
+
+/**
+ * A video interview inside a chat: the employer schedules it, both sides join
+ * a LiveKit room (`interview-<id>`) and share a code editor. `code` keeps the
+ * editor content so a late joiner sees it; `rating`/`notes` are the
+ * employer's private verdict and never reach the candidate.
+ */
+export const interviews = pgTable(
+  "interviews",
+  {
+    id: id(),
+    chatId: uuid("chat_id")
+      .notNull()
+      .references(() => chats.id, { onDelete: "cascade" }),
+    scheduledAt: ts("scheduled_at").notNull(),
+    durationMin: integer("duration_min").notNull().default(60),
+    status: interviewStatusEnum("status").notNull().default("scheduled"),
+    task: text("task"),
+    language: text("language").notNull().default("python"),
+    code: text("code").notNull().default(""),
+    rating: integer("rating"),
+    notes: text("notes"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("interviews_chat_idx").on(t.chatId, t.scheduledAt)],
+);
+
 export const invitationEvents = pgTable(
   "invitation_events",
   {

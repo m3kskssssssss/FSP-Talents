@@ -2,6 +2,7 @@ import { and, asc, count, desc, eq, gt, inArray, ne, or, sql } from "drizzle-orm
 import { db, type DbOrTx } from "../db";
 import { candidateProfiles, chatMessages, chats, employers } from "../db/schema";
 import { notFound } from "../lib/errors";
+import { nextInterviewInChat } from "./interviews";
 import { notify } from "./notifications";
 
 /** Who is talking: the employer side or the candidate side of a chat. */
@@ -124,7 +125,11 @@ export async function getMessages(p: Party, chatId: string) {
     .update(chats)
     .set(p.role === "employer" ? { employerReadAt: new Date() } : { candidateReadAt: new Date() })
     .where(eq(chats.id, chatId));
-  return { chat: { id: c.id, title: c.title }, messages };
+  return {
+    chat: { id: c.id, title: c.title },
+    messages,
+    interview: await nextInterviewInChat(chatId),
+  };
 }
 
 /**

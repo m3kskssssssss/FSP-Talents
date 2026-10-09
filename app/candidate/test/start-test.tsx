@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DesktopOnlyNotice, useIsDesktop } from "@/components/layout/desktop-only";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import { Notice } from "@/components/ui/field";
@@ -39,6 +40,8 @@ export function StartTest({
   const [ack, setAck] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const desktop = useIsDesktop();
+  const blocked = desktop === false;
 
   async function start(mode: "full" | "express" = "full") {
     const g = mode === "express" ? expressGrade : grade;
@@ -108,8 +111,14 @@ export function StartTest({
           Я ознакомлен(а) с правилами прохождения и согласен(на) на запись журнала попытки
         </span>
       </label>
+      {blocked && (
+        <DesktopOnlyNotice>
+          Тест проходится с компьютера: там удобно писать код, а условия одинаковы для всех.
+          Откройте эту страницу на ПК.
+        </DesktopOnlyNotice>
+      )}
       {error && <Notice tone="error">{error}</Notice>}
-      <Button onClick={() => start("full")} disabled={!grade || !ack || pending}>
+      <Button onClick={() => start("full")} disabled={!grade || !ack || pending || blocked}>
         {pending
           ? "Готовим вариант…"
           : grade
@@ -138,7 +147,7 @@ export function StartTest({
             variant="secondary"
             size="sm"
             onClick={() => start("express")}
-            disabled={!ack || pending}
+            disabled={!ack || pending || blocked}
           >
             Пройти экспресс
           </Button>
