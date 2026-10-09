@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gt, inArray, ne, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, inArray, or, sql } from "drizzle-orm";
 import { db, type DbOrTx } from "../db";
 import { candidateProfiles, chatMessages, chats, employers } from "../db/schema";
 import { notFound } from "../lib/errors";
@@ -47,11 +47,15 @@ async function ownedChat(p: Party, chatId: string) {
   return c;
 }
 
-/** Messages the other side wrote after I last opened the chat. */
+/**
+ * Messages the other side wrote after I last opened the chat. System lines
+ * ("chat opened", "interview scheduled") arrive with their own notification
+ * and do not count, otherwise they would also swallow the first real ping.
+ */
 const unreadFor = (p: Party) =>
   and(
     eq(chatMessages.chatId, chats.id),
-    ne(chatMessages.author, p.role),
+    eq(chatMessages.author, p.role === "employer" ? "candidate" : "employer"),
     or(sql`${myReadAt(p)} IS NULL`, gt(chatMessages.createdAt, myReadAt(p))),
   );
 
