@@ -13,6 +13,8 @@
 | `@codemirror/state` | 6.7.6 | MIT | runtime | CodeMirror |
 | `@codemirror/view` | 6.43.13 | MIT | runtime | CodeMirror |
 | `@lezer/highlight` | 1.2.5 | MIT | runtime | CodeMirror (подсветка синтаксиса) |
+| `@livekit/components-react` | 2.9.24 | Apache-2.0 | runtime |  |
+| `@livekit/components-styles` | 1.2.0 | Apache-2.0 | runtime |  |
 | `@node-rs/argon2` | 2.2.1 | MIT | runtime | Хеширование паролей (argon2id) |
 | `@react-pdf/renderer` | 4.9.0 | MIT | runtime | Генерация PDF-резюме |
 | `@upstash/ratelimit` | 2.2.0 | MIT | runtime | Rate limit (если задан Upstash) |
@@ -22,6 +24,8 @@
 | `codemirror` | 6.0.2 | MIT | runtime | Редактор кода в тесте |
 | `drizzle-orm` | 0.45.3 | Apache-2.0 | runtime | ORM для PostgreSQL |
 | `exifr` | 7.1.3 | MIT | runtime | EXIF изображений сертификатов |
+| `livekit-client` | 2.22.4 | Apache-2.0 | runtime |  |
+| `livekit-server-sdk` | 2.19.1 | Apache-2.0 | runtime |  |
 | `next` | 15.5.27 | MIT | runtime | Фреймворк: UI (App Router) и API (route handlers) |
 | `next-auth` | 5.0.0-beta.32 | ISC | runtime | Аутентификация (Auth.js v5): пароль, роли, Keycloak OIDC |
 | `nodemailer` | 8.0.11 | MIT-0 | runtime | Почта через SMTP (Mailpit локально) |

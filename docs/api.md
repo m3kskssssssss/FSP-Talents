@@ -31,6 +31,7 @@
 | Модерация | `GET /admin/attempts`, `GET /admin/attempts/{id}`, `POST /admin/attempts/{id}/review`, `GET /admin/templates`, `PATCH /admin/templates/{id}`, `GET /admin/plagiarism` |
 | Регулярные задачи | `GET/POST /challenges`, `POST /challenges/{id}/close`, `GET /challenges/submissions`, `POST /challenges/submissions/{id}/grade`, `GET /me/challenges`, `POST /me/challenges/{id}/answer`, `POST /me/challenges/{id}/skip` |
 | Чаты | `GET /chats`, `GET/POST /chats/{id}/messages`, `GET /me/unread` |
+| Видеоинтервью | `POST /chats/{id}/interviews`, `GET /interviews`, `GET /interviews/{id}`, `POST /interviews/{id}/token`, `PUT /interviews/{id}/code`, `POST /interviews/{id}/cancel`, `POST /interviews/{id}/finish` |
 | Уведомления | `GET /notifications`, `POST /notifications/read` |
 
 Чего в API нет намеренно: кандидат не может получить чужой профиль ни по одному пути, а эндпоинт текущего задания никогда не возвращает эталоны, решатели и следующие задания.

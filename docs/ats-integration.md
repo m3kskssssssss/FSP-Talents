@@ -23,7 +23,7 @@ flowchart LR
   Q --> A2[Адаптер Talantix]
   Q --> A3[Generic webhook]
   A1 & A2 & A3 -->|REST API ATS| ATS[ATS работодателя]
-  ATS -->|webhook смены этапа| H[/api/v1/integrations/{provider}/webhook/]
+  ATS -->|webhook смены этапа| H["POST /api/v1/integrations/:provider/webhook"]
   H --> P
 ```
 
