@@ -14,6 +14,8 @@
 
 **Документация одним PDF:** [`docs/FSP-Talents-documentation.pdf`](docs/FSP-Talents-documentation.pdf) — архитектура, механики тестирования и подбора, валидация, интеграция с ФСП, API, библиотеки, запуск.
 
+**Презентация (PDF):** [`docs/FSP-Talents-presentation.pdf`](docs/FSP-Talents-presentation.pdf)
+
 ## Быстрый старт (Docker)
 
 ```bash
