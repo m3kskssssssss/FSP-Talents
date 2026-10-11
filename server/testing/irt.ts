@@ -110,6 +110,34 @@ export function decide(theta: number, grade: Grade): { score: number; result: At
   return { score, result };
 }
 
+/** Why an attempt got its score: the IRT scale, or one of the evidence limits below. */
+export type ScoreBasis = "irt" | "no_correct" | "incomplete";
+
+/**
+ * Final score of an attempt. The EAP estimate leans on a prior centred near the
+ * chosen grade, so with little or no evidence it still maps to points (no
+ * answers -> 18/30, six wrong -> ~8/30). Points must be earned instead:
+ *  - not a single correct answer (none given, all skipped or wrong) -> 0;
+ *  - fewer than `minScoredItems` answers -> only the correct answers count,
+ *    and the attempt fails (the scale needs more evidence than that).
+ * `answers` are the scores in [0,1] of the answered items.
+ */
+export function attemptScore(theta: number, grade: Grade, answers: number[]): { score: number; result: AttemptResult; basis: ScoreBasis } {
+  const { basis, earned } = scoreBasis(answers);
+  if (basis === "no_correct") return { score: 0, result: "failed", basis };
+  const d = decide(theta, grade);
+  if (basis === "incomplete") return { score: Math.min(d.score, earned), result: "failed", basis };
+  return { ...d, basis };
+}
+
+/** Which rule of attemptScore applies, and the points actually earned. */
+export function scoreBasis(answers: number[]): { basis: ScoreBasis; earned: number } {
+  const earned = Math.round(answers.reduce((s, x) => s + x, 0) * 10) / 10;
+  if (earned === 0) return { basis: "no_correct", earned };
+  if (answers.length < TEST_CONFIG.minScoredItems) return { basis: "incomplete", earned };
+  return { basis: "irt", earned };
+}
+
 /** Standardised person-fit statistic lz (Drasgow et al.). Large negative = aberrant pattern. */
 export function personFitLz(theta: number, responses: Response[]) {
   let l0 = 0;

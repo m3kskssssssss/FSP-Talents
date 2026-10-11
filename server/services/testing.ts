@@ -38,7 +38,7 @@ import {
   type PublicItem,
 } from "../testing/engine";
 import { leakVerdict } from "../testing/calibration";
-import { decide, p2pl } from "../testing/irt";
+import { attemptScore, p2pl, scoreBasis, type ScoreBasis } from "../testing/irt";
 import { Rng } from "../testing/rng";
 import { computeTrust } from "../testing/trust";
 import type { TaskKind } from "../testing/types";
@@ -360,6 +360,9 @@ export interface AttemptState {
     trustLevel: AttemptRow["trustLevel"];
     trustIndex: number | null;
     categoryAssigned: boolean;
+    /** Which scoring rule applied (see attemptScore) and the points earned by correct answers. */
+    basis: ScoreBasis;
+    earned: number;
   };
 }
 
@@ -400,6 +403,7 @@ export async function getAttempt(profileId: string, attemptId: string): Promise<
       trustLevel: a.trustLevel,
       trustIndex: a.trustIndex,
       categoryAssigned: Boolean(cat),
+      ...scoreBasis(rows.filter((r) => r.answeredAt).map((r) => r.partialScore ?? 0)),
     };
   }
   return {
@@ -602,7 +606,11 @@ async function finalize(tx: Tx, a: AttemptRow, status: "finished" | "expired" | 
   );
   const adm = administered(answered, meta);
   const est = estimate(a.targetGrade, adm);
-  const { score, result } = decide(est.theta, a.targetGrade);
+  const { score, result } = attemptScore(
+    est.theta,
+    a.targetGrade,
+    answered.map((r) => r.partialScore ?? 0),
+  );
   const events = await tx.select().from(attemptEvents).where(eq(attemptEvents.attemptId, a.id));
   const trust = computeTrust({
     events,
@@ -616,9 +624,6 @@ async function finalize(tx: Tx, a: AttemptRow, status: "finished" | "expired" | 
     theta: est.theta,
     responses: toResponses(adm),
   });
-  // Too few answers (e.g. abandoned at the start) -> result is not meaningful.
-  const enough = answered.length >= Math.min(5, TEST_CONFIG.minItems);
-  const finalResult = enough ? result : "failed";
   await tx
     .update(testAttempts)
     .set({
@@ -626,15 +631,15 @@ async function finalize(tx: Tx, a: AttemptRow, status: "finished" | "expired" | 
       finishedAt: new Date(),
       theta: est.theta,
       se: est.se,
-      score: enough ? score : Math.min(score, TEST_CONFIG.passScore - 1),
-      result: finalResult,
+      score,
+      result,
       trustIndex: trust.index,
       trustLevel: trust.level,
       trustSignals: { signals: trust.signals, answered: answered.length },
     })
     .where(eq(testAttempts.id, a.id));
 
-  if (finalResult !== "failed" && trust.level !== "low") {
+  if (result !== "failed" && trust.level !== "low") {
     await assignCategory(tx, a, { score, theta: est.theta, se: est.se, trustLevel: trust.level });
   }
   // Skills confirmed by correct answers (hard rule #5: stack from tests outranks declared).
@@ -664,7 +669,7 @@ async function finalize(tx: Tx, a: AttemptRow, status: "finished" | "expired" | 
     action: "test.finalized",
     entity: "test_attempt",
     entityId: a.id,
-    meta: { status, result: finalResult, trust: trust.level },
+    meta: { status, result, trust: trust.level },
   });
 }
 

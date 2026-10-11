@@ -2,7 +2,7 @@ import { GRADES, TEST_CONFIG, type Grade, type WorkFormat } from "../config";
 import type { CandidateInput, FspAchievementInput } from "../matching/score";
 import { BANK } from "../testing/bank";
 import { estimate, selectNext, shouldStop, type Administered, type BankItem } from "../testing/cat";
-import { decide, p2pl } from "../testing/irt";
+import { attemptScore, p2pl } from "../testing/irt";
 import { Rng } from "../testing/rng";
 import {
   CITY_WEIGHTS,
@@ -148,7 +148,7 @@ export function simulateAttempt(
     adm.push({ ...it, x: rng.float() < p ? 1 : 0 });
   }
   const est = estimate(grade, adm);
-  const d = decide(est.theta, grade);
+  const d = attemptScore(est.theta, grade, adm.map((a) => a.x!));
   return {
     grade,
     daysAgo: 0,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { TEST_CONFIG } from "@/server/config";
 import { estimate, selectNext, shouldStop, type Administered, type BankItem } from "@/server/testing/cat";
-import { decide, eap, info2pl, p2pl, personFitLz, scaledScore, thetaForScore } from "@/server/testing/irt";
+import { attemptScore, decide, eap, info2pl, p2pl, personFitLz, scaledScore, thetaForScore } from "@/server/testing/irt";
 import { Rng } from "@/server/testing/rng";
 import { BANK } from "@/server/testing/bank";
 
@@ -81,5 +81,46 @@ describe("CAT", () => {
       return s / 40;
     };
     expect(avg(1.5)).toBeGreaterThan(avg(-1.5) + 1.5);
+  });
+});
+
+describe("attempt score", () => {
+  const grades = ["junior", "middle", "senior"] as const;
+
+  it("no answers, all skipped or all wrong -> 0, whatever the estimate says", () => {
+    for (const g of grades) {
+      const cut = TEST_CONFIG.cutTheta[g];
+      // With no evidence the estimate stays at the cut, which alone would map to 18/30.
+      expect(attemptScore(cut, g, [])).toEqual({ score: 0, result: "failed", basis: "no_correct" });
+      expect(attemptScore(cut - 1.5, g, Array(6).fill(0))).toEqual({ score: 0, result: "failed", basis: "no_correct" });
+      expect(attemptScore(cut - 2, g, Array(18).fill(0))).toEqual({ score: 0, result: "failed", basis: "no_correct" });
+    }
+  });
+
+  it("an attempt ended before the minimum counts only correct answers and fails", () => {
+    for (const g of grades) {
+      const high = TEST_CONFIG.cutTheta[g] + 2;
+      expect(attemptScore(high, g, [1, 1, 1])).toEqual({ score: 3, result: "failed", basis: "incomplete" });
+      expect(attemptScore(high, g, [0.5])).toEqual({ score: 0.5, result: "failed", basis: "incomplete" });
+      expect(attemptScore(high, g, Array(TEST_CONFIG.minScoredItems - 1).fill(1)).score).toBe(TEST_CONFIG.minScoredItems - 1);
+    }
+  });
+
+  it("enough answers with at least one correct -> the IRT scale", () => {
+    for (const g of grades) {
+      const t = TEST_CONFIG.cutTheta[g] + 0.5;
+      const answers = [1, 0, 1, 1, 0, 1];
+      expect(attemptScore(t, g, answers)).toEqual({ ...decide(t, g), basis: "irt" });
+    }
+  });
+
+  it("is never above the IRT score", () => {
+    const rng = new Rng("attempt-score");
+    for (let i = 0; i < 300; i++) {
+      const g = grades[i % 3]!;
+      const theta = rng.normal() * 2;
+      const answers = Array.from({ length: rng.int(0, 18) }, () => (rng.bool(0.5) ? 1 : 0));
+      expect(attemptScore(theta, g, answers).score).toBeLessThanOrEqual(decide(theta, g).score);
+    }
   });
 });

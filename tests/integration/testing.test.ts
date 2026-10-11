@@ -1,5 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
+import { TEST_CONFIG } from "@/server/config";
 import { db } from "@/server/db";
 import { attemptItems, candidateSkills, categories, taskTemplates, testAttempts } from "@/server/db/schema";
 import { getTemplate } from "@/server/testing/bank";
@@ -172,11 +173,65 @@ describe("testing service", () => {
     expect(t!.flagReason).toMatch(/выше прогноза IRT/);
   });
 
-  it("early finish closes the attempt", async () => {
+  it("early finish without answers: 0 points, failed, no category", async () => {
+    for (const mode of ["full", "express"] as const) {
+      for (const grade of ["junior", "middle", "senior"] as const) {
+        const { user, profileId } = await makeCandidate();
+        const { attemptId } = await startAttempt(user.id, profileId, "backend", grade, mode);
+        const st = await finishEarly(profileId, attemptId);
+        expect(st.status).toBe("abandoned");
+        expect(st.answered).toBe(0);
+        expect(st.result).toMatchObject({ score: 0, result: "failed", basis: "no_correct", categoryAssigned: false });
+      }
+    }
+  });
+
+  it("expired without answers: 0 points", async () => {
     const { user, profileId } = await makeCandidate();
-    const { attemptId } = await startAttempt(user.id, profileId, "backend", "senior");
-    const st = await finishEarly(profileId, attemptId);
-    expect(st.status).toBe("abandoned");
-    expect(st.result!.result).toBe("failed");
+    const { attemptId } = await startAttempt(user.id, profileId, "backend", "middle", "express");
+    await db().update(testAttempts).set({ deadlineAt: new Date(Date.now() - 1000) }).where(eq(testAttempts.id, attemptId));
+    const st = await getAttempt(profileId, attemptId);
+    expect(st.status).toBe("expired");
+    expect(st.result).toMatchObject({ score: 0, result: "failed", basis: "no_correct" });
+  });
+
+  it("all items skipped or all wrong: 0 points", async () => {
+    const skipped = await makeCandidate();
+    const s = await startAttempt(skipped.user.id, skipped.profileId, "backend", "middle", "express");
+    let st = await getAttempt(skipped.profileId, s.attemptId);
+    while (st.status === "in_progress" && st.current) st = await submitAnswer(skipped.profileId, s.attemptId, st.current.itemId, { skipped: true });
+    expect(st.answered).toBe(6);
+    expect(st.result).toMatchObject({ score: 0, result: "failed", basis: "no_correct" });
+
+    for (const mode of ["full", "express"] as const) {
+      const wrong = await makeCandidate();
+      const w = await startAttempt(wrong.user.id, wrong.profileId, "backend", "junior", mode);
+      const fin = await play(wrong.profileId, w.attemptId, () => false);
+      expect(fin.answered).toBeGreaterThanOrEqual(6);
+      expect(fin.result).toMatchObject({ score: 0, result: "failed", basis: "no_correct", categoryAssigned: false });
+    }
+  });
+
+  it("early finish after a few correct answers counts only those answers", async () => {
+    const { user, profileId } = await makeCandidate();
+    const { attemptId } = await startAttempt(user.id, profileId, "backend", "middle", "express");
+    let st = await getAttempt(profileId, attemptId);
+    for (let i = 0; i < 2; i++) {
+      const item = await currentSeed(st.current!.itemId);
+      const answer = await referenceAnswer(getTemplate(item.templateId), item.seed, "none");
+      st = await submitAnswer(profileId, attemptId, item.id, { answer, timeMs: 60_000 });
+    }
+    st = await finishEarly(profileId, attemptId);
+    expect(st.answered).toBe(2);
+    expect(st.result).toMatchObject({ score: 2, result: "failed", basis: "incomplete", earned: 2, categoryAssigned: false });
+  });
+
+  it("a weak but non-zero full attempt is scored on the IRT scale", async () => {
+    const { user, profileId } = await makeCandidate();
+    const { attemptId } = await startAttempt(user.id, profileId, "backend", "middle");
+    const fin = await play(profileId, attemptId, (pos) => pos % 4 === 0);
+    expect(fin.result!.basis).toBe("irt");
+    expect(fin.result!.score).toBeGreaterThan(0);
+    expect(fin.result!.score).toBeLessThan(TEST_CONFIG.passScore);
   });
 });

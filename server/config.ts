@@ -36,6 +36,8 @@ export const TEST_CONFIG = {
   durationMinutes: 60,
   minItems: 10,
   maxItems: 18,
+  /** Fewer answers than this (an attempt ended early) are scored by correct answers only, see attemptScore. */
+  minScoredItems: 5,
   /** Stop when the standard error of theta drops below this value. */
   seStop: 0.42,
   /** Early stop when the pass/fail decision is this many SE away from the cut. */
