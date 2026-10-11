@@ -21,6 +21,6 @@ test("register, verify email in demo mode, login", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Пароль").fill("Passw0rd1");
-  await page.getByRole("button", { name: "Войти" }).click();
+  await page.getByRole("button", { name: "Войти", exact: true }).click();
   await expect(page).toHaveURL(/\/candidate/);
 });

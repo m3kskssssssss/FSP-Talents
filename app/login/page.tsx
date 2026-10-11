@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageTitle } from "@/components/ui/blank";
 import { buttonClass } from "@/components/ui/button";
+import { DemoAccounts } from "@/components/layout/demo-accounts";
 import { keycloakEnabled } from "@/server/auth";
 import { env } from "@/server/env";
 import { keycloakAction } from "./actions";
@@ -21,14 +22,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </button>
         </form>
       )}
-      {env().DEMO_MODE && (
-        <div className="mt-6 rounded-xl border border-dashed border-accent/40 p-4 text-sm text-muted">
-          <p className="label-mono mb-2">Демо-аккаунты</p>
-          <p>
-            candidate@demo.ru · strong@demo.ru · employer@demo.ru · admin@demo.ru — пароль <span className="font-mono">Demo12345</span>
-          </p>
-        </div>
-      )}
+      {env().DEMO_MODE && <DemoAccounts className="mt-8" />}
     </div>
   );
 }
