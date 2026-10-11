@@ -4,6 +4,11 @@ import {
   interviewCreateSchema,
   interviewFinishSchema,
 } from "../schemas/interviews";
+import {
+  challengeAnswerSchema,
+  challengeCreateSchema,
+  challengeGradeSchema,
+} from "../schemas/challenges";
 import type { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import {
@@ -163,6 +168,7 @@ export function apiRoutes(): ApiRoute[] {
     },
   ];
   const I = ["Приглашения"];
+  const R = ["Регулярные задачи"];
   const inv: ApiRoute[] = [
     {
       method: "post",
@@ -311,6 +317,69 @@ export function apiRoutes(): ApiRoute[] {
         "Работодатель завершает собеседование с оценкой 1–5 и заметками (кандидату не видны)",
       request: { params: idParams, ...body(interviewFinishSchema) },
       responses: { 200: ok, 404: ok, 409: ok, 422: ok },
+    },
+    {
+      method: "get",
+      path: "/api/v1/challenges",
+      tags: R,
+      summary: "Мои регулярные задачи (работодатель): статус и статистика ответов",
+      responses: { 200: ok, 403: ok },
+    },
+    {
+      method: "post",
+      path: "/api/v1/challenges",
+      tags: R,
+      summary:
+        "Создать короткую задачу для специализации (и грейда). exact — проверка по эталону, open — «предложите подход», оценивает работодатель",
+      request: body(challengeCreateSchema),
+      responses: { 200: ok, 403: ok, 422: ok },
+    },
+    {
+      method: "post",
+      path: "/api/v1/challenges/{id}/close",
+      tags: R,
+      summary: "Закрыть задачу: новым кандидатам она больше не выдаётся",
+      request: { params: idParams },
+      responses: { 200: ok, 404: ok },
+    },
+    {
+      method: "get",
+      path: "/api/v1/challenges/submissions",
+      tags: R,
+      summary: "Ответы кандидатов на мои задачи (без контактов, имя замаскировано); ждущие оценки — первыми",
+      responses: { 200: ok, 403: ok },
+    },
+    {
+      method: "post",
+      path: "/api/v1/challenges/submissions/{id}/grade",
+      tags: R,
+      summary: "Оценить ответ на открытую задачу от 0 до 3 с комментарием",
+      request: { params: idParams, ...body(challengeGradeSchema) },
+      responses: { 200: ok, 404: ok, 409: ok, 422: ok },
+    },
+    {
+      method: "get",
+      path: "/api/v1/me/challenges",
+      tags: R,
+      summary:
+        "Текущая задача и история (кандидат). Если прошёл период и есть категория, система выдаёт следующую задачу",
+      responses: { 200: ok, 403: ok },
+    },
+    {
+      method: "post",
+      path: "/api/v1/me/challenges/{id}/answer",
+      tags: R,
+      summary: "Ответить на задачу: exact проверяется сразу, open уходит работодателю на оценку",
+      request: { params: idParams, ...body(challengeAnswerSchema) },
+      responses: { 200: ok, 404: ok, 409: ok, 422: ok, 429: ok },
+    },
+    {
+      method: "post",
+      path: "/api/v1/me/challenges/{id}/skip",
+      tags: R,
+      summary: "Пропустить задачу без штрафа (следующая — через период)",
+      request: { params: idParams },
+      responses: { 200: ok, 404: ok, 409: ok },
     },
     {
       method: "get",

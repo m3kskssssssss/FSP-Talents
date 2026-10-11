@@ -77,6 +77,16 @@ export const TEST_CONFIG = {
   hiddenWindowSeconds: 120,
 } as const;
 
+/** Regular employer challenges between full tests. */
+export const CHALLENGE_CONFIG = {
+  /** A new challenge is offered at most once per this many days. */
+  periodDays: 14,
+  /** A graded result counts as a fresh signal for this long. */
+  signalDays: 90,
+  /** Score (0..3) from which the result is shown to employers as a plus. */
+  goodScore: 2,
+} as const;
+
 export const INVITATION_CONFIG = {
   perEmployerPerDay: 30,
   expiresAfterDays: 14,

@@ -392,3 +392,130 @@ export async function seedChats() {
   }
   console.log(`chats: ${seen.size}`);
 }
+
+/**
+ * Regular challenges of the demo employer: graded answers of a few Backend ·
+ * Middle candidates (the "fresh signal" in the demo need's selection), two
+ * answers waiting for the employer's grade, and an old one for strong@demo.ru,
+ * so opening "Задачи" offers a new task right away.
+ */
+export async function seedChallenges() {
+  const { categories, challengeAssignments, challenges } = await import("../server/db/schema");
+  const [{ n }] = (await db()
+    .select({ n: sql<number>`count(*)::int` })
+    .from(challenges)) as [{ n: number }];
+  if (n > 0) return;
+  const [demoEmp] = await db()
+    .select({ id: employers.id })
+    .from(employers)
+    .innerJoin(users, eq(users.id, employers.userId))
+    .where(eq(users.email, "employer@demo.ru"));
+  if (!demoEmp) return;
+  const now = Date.now();
+  const rows = await db()
+    .insert(challenges)
+    .values([
+      {
+        employerId: demoEmp.id,
+        title: "Дубли платежей",
+        statement:
+          "Таблица payments(id, user_id, amount) содержит строки (1, 10, 500), (2, 10, 500), (3, 11, 900), (4, 12, 100), (5, 12, 100), (6, 12, 250).\nСколько строк вернёт запрос:\nSELECT user_id FROM payments GROUP BY user_id HAVING count(*) > 1;\nВ ответе — одно число.",
+        specialization: "backend" as const,
+        grade: null,
+        kind: "exact" as const,
+        expectedAnswer: "2",
+        createdAt: new Date(now - 40 * DAY_MS),
+      },
+      {
+        employerId: demoEmp.id,
+        title: "Кеш курсов валют",
+        statement:
+          "Платёжный шлюз на каждый платёж ходит во внешний сервис за курсом валют (p99 — 800 мс, лимит 50 запросов в секунду). Нагрузка — 400 платежей в секунду.\nПредложите, как кешировать курсы: где хранить, как обновлять, что делать при недоступности сервиса и как не списать деньги по устаревшему курсу. Достаточно 5–10 предложений.",
+        specialization: "backend" as const,
+        grade: "middle" as const,
+        kind: "open" as const,
+        expectedAnswer: null,
+        createdAt: new Date(now - 35 * DAY_MS),
+      },
+      {
+        employerId: demoEmp.id,
+        title: "Ретраи без двойного списания",
+        statement:
+          "Клиент повторяет запрос на оплату после таймаута. Как сделать так, чтобы деньги не списались дважды? Опишите схему на уровне API и базы данных.",
+        specialization: "backend" as const,
+        grade: null,
+        kind: "open" as const,
+        expectedAnswer: null,
+        createdAt: new Date(now - 30 * DAY_MS),
+      },
+      {
+        employerId: demoEmp.id,
+        title: "Медленная таблица заказов",
+        statement:
+          "Страница со списком из 5 000 заказов тормозит при вводе в поле поиска. Предложите, что проверить и как ускорить: рендеринг, фильтрация, запросы.",
+        specialization: "frontend" as const,
+        grade: null,
+        kind: "open" as const,
+        expectedAnswer: null,
+        createdAt: new Date(now - 28 * DAY_MS),
+      },
+    ])
+    .returning({ id: challenges.id, title: challenges.title });
+  const byTitle = new Map(rows.map((r) => [r.title, r.id]));
+  const pool = await db()
+    .select({ profileId: categories.profileId })
+    .from(categories)
+    .where(
+      and(
+        eq(categories.status, "active"),
+        eq(categories.specialization, "backend"),
+        eq(categories.grade, "middle"),
+      ),
+    )
+    .orderBy(categories.profileId)
+    .limit(10);
+  const rng = new Rng("challenges");
+  const approach = [
+    "Держать курсы в Redis с TTL 30 с и обновлять фоновым воркером раз в 10 с, а не по запросу платежа: так во внешний сервис уходит 0,1 запроса в секунду. В платёж записывать курс и время его получения. Если курс старше 2 минут — не проводить платёж по нему, а ставить в очередь на повтор. При недоступности сервиса — circuit breaker и алерт.",
+    "Ключ идемпотентности от клиента в заголовке, уникальный индекс в таблице платежей. Повтор с тем же ключом возвращает сохранённый ответ, а не создаёт списание. Статусы платежа через конечный автомат, списание — в транзакции с записью ключа.",
+  ];
+  const values = pool.map((p, i) => {
+    const waiting = i < 2;
+    const exact = i % 3 === 2;
+    const offeredAt = new Date(now - (waiting ? 3 : 4 + i * 2) * DAY_MS);
+    const submittedAt = new Date(offeredAt.getTime() + 5 * 3600_000);
+    const score = exact ? (rng.float() < 0.8 ? 3 : 0) : 2 + Math.round(rng.float());
+    return {
+      challengeId: byTitle.get(exact ? "Дубли платежей" : i % 2 ? "Ретраи без двойного списания" : "Кеш курсов валют")!,
+      profileId: p.profileId,
+      status: waiting ? ("submitted" as const) : ("graded" as const),
+      answer: exact ? (score ? "2" : "3") : approach[i % 2]!,
+      score: waiting ? null : score,
+      feedback: waiting ? null : exact ? (score ? "Ответ совпал с эталоном" : "Ответ не совпал с эталоном") : "Хороший разбор, обсудим на интервью.",
+      offeredAt,
+      submittedAt,
+      gradedAt: waiting ? null : new Date(submittedAt.getTime() + DAY_MS),
+    };
+  });
+  const [strong] = await db()
+    .select({ profileId: candidateProfiles.id })
+    .from(candidateProfiles)
+    .innerJoin(users, eq(users.id, candidateProfiles.userId))
+    .where(eq(users.email, "strong@demo.ru"));
+  if (strong) {
+    const offeredAt = new Date(now - 20 * DAY_MS);
+    values.push({
+      challengeId: byTitle.get("Дубли платежей")!,
+      profileId: strong.profileId,
+      status: "graded",
+      answer: "2",
+      score: 3,
+      feedback: "Ответ совпал с эталоном",
+      offeredAt,
+      submittedAt: new Date(offeredAt.getTime() + 2 * 3600_000),
+      gradedAt: new Date(offeredAt.getTime() + 2 * 3600_000),
+    });
+  }
+  await db().insert(challengeAssignments).values(values).onConflictDoNothing();
+  console.log(`challenges: ${rows.length}, answers: ${values.length}`);
+}

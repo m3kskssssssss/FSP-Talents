@@ -16,6 +16,7 @@ const navByRole = {
   candidate: [
     { href: "/candidate", label: "Кабинет" },
     { href: "/candidate/test", label: "Тесты" },
+    { href: "/candidate/challenges", label: "Задачи" },
     { href: "/candidate/invitations", label: "Приглашения" },
     { href: "/candidate/vacancies", label: "Вакансии" },
     { href: "/candidate/fsp", label: "ФСП" },
@@ -30,6 +31,7 @@ const navByRole = {
     { href: "/employer/shortlist", label: "Избранное" },
     { href: "/employer/invitations", label: "Приглашения" },
     { href: "/employer/vacancies", label: "Вакансии" },
+    { href: "/employer/challenges", label: "Задачи" },
     { href: "/employer/chats", label: "Чаты" },
     { href: "/blog", label: "Блог" },
   ],

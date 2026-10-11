@@ -7,8 +7,12 @@ export const categoryTitle = (s: string, g: string) => `${specTitle(s)} · ${gra
 
 const rub = new Intl.NumberFormat("ru-RU");
 export const money = (n: number | null | undefined) => (n == null ? "—" : `${rub.format(n)} ₽`);
+// All salaries on the platform are gross (before personal income tax); the label says so everywhere.
+export const SALARY_BASIS = "до НДФЛ";
 export const salaryRange = (from: number | null | undefined, to: number | null | undefined) =>
-  from == null && to == null ? "не указаны" : from === to ? money(from) : `${rub.format(from ?? 0)} – ${money(to)}`;
+  from == null && to == null
+    ? "не указаны"
+    : `${from === to ? money(from) : `${rub.format(from ?? 0)} – ${money(to)}`} ${SALARY_BASIS}`;
 
 export const date = (d: Date | string | null | undefined) =>
   d ? new Date(d).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" }) : "—";

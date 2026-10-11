@@ -19,6 +19,8 @@ import { notFound } from "../lib/errors";
 import { counterfactualHints } from "../matching/counterfactual";
 import { scoreCandidate, type CandidateInput, type MatchResult, type NeedInput } from "../matching/score";
 import { skillTitle } from "../matching/skills";
+import { maskName } from "../lib/names";
+import { challengeSignals, signalPro } from "./challenges";
 
 // ---------------------------------------------------------------- pool loading
 
@@ -288,12 +290,7 @@ export interface CandidateCard {
   invitation: { id: string; status: string } | null;
 }
 
-/** "Анна Новикова" -> "Анна Н." until the candidate opens contacts. */
-export function maskName(full: string) {
-  const parts = full.trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "Кандидат";
-  return parts.length === 1 ? parts[0]! : `${parts[0]} ${parts[1]![0]}.`;
-}
+export { maskName };
 
 export function toCard(c: PoolCandidate, r: MatchResult, extra: { match: number; near: boolean; shortlisted: boolean; invitation: CandidateCard["invitation"] }): CandidateCard {
   const confirmed = c.achievements.filter((a) => a.source !== "self");
@@ -380,12 +377,15 @@ export async function searchResults(employerId: string, searchId: string, filter
   const snap = s.baseSnapshot;
   const pool = await loadPool({ profileIds: snap.map((e) => e.profileId), spec: (need?.specialization ?? q.specialization) as Specialization, unconfirmed: true });
   const byId = new Map(pool.map((c) => [c.profileId, c]));
-  const rel = await relations(employerId, pool.map((c) => c.profileId));
+  const [rel, signals] = await Promise.all([relations(employerId, pool.map((c) => c.profileId)), challengeSignals(pool.map((c) => c.profileId), now)]);
   const all: CandidateCard[] = [];
   for (const e of snap) {
     const c = byId.get(e.profileId);
     if (!c) continue;
     const r = scoreCandidate(needInput, c, now);
+    const signal = signals.get(c.profileId);
+    // A fresh challenge result is shown as a reason; it does not move the snapshot order.
+    if (signal) r.pros = [...r.pros, signalPro(signal, now)];
     const card = toCard(c, r, { match: e.match, near: Boolean(e.near), shortlisted: rel.sl.has(c.profileId), invitation: rel.inv.get(c.profileId) ?? null });
     if (passes(card, filters, c)) all.push(card);
   }

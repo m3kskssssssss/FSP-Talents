@@ -52,10 +52,10 @@ export function VacancyForm() {
           <option value="senior">Senior</option>
         </select>
       </Field>
-      <Field label="Зарплата от, ₽ (обязательно)" htmlFor="v-sf" error={errors.salaryFrom}>
+      <Field label="Зарплата от, ₽ до НДФЛ (обязательно)" htmlFor="v-sf" error={errors.salaryFrom}>
         <input id="v-sf" className="input font-mono" inputMode="numeric" value={v.salaryFrom} onChange={(e) => set({ salaryFrom: e.target.value })} />
       </Field>
-      <Field label="Зарплата до, ₽ (обязательно)" htmlFor="v-st" error={errors.salaryTo}>
+      <Field label="Зарплата до, ₽ до НДФЛ (обязательно)" htmlFor="v-st" error={errors.salaryTo}>
         <input id="v-st" className="input font-mono" inputMode="numeric" value={v.salaryTo} onChange={(e) => set({ salaryTo: e.target.value })} />
       </Field>
       <div className="sm:col-span-2">

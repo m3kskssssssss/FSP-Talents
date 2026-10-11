@@ -591,6 +591,72 @@ export const interviews = pgTable(
   (t) => [index("interviews_chat_idx").on(t.chatId, t.scheduledAt)],
 );
 
+// ---------------------------------------------------------------- employer challenges
+
+/** exact — the employer gave a reference answer, the system checks it; open — "suggest an approach", the employer grades it. */
+export const challengeKindEnum = pgEnum("challenge_kind", ["exact", "open"]);
+export const challengeStatusEnum = pgEnum("challenge_status", ["active", "closed"]);
+export const assignmentStatusEnum = pgEnum("assignment_status", [
+  "offered",
+  "submitted",
+  "graded",
+  "skipped",
+]);
+
+/**
+ * Short regular task written by an employer for a specialization (and
+ * optionally a grade). The system hands it to candidates of that category one
+ * at a time, so the result keeps the profile fresh between full tests.
+ */
+export const challenges = pgTable(
+  "challenges",
+  {
+    id: id(),
+    employerId: uuid("employer_id")
+      .notNull()
+      .references(() => employers.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    statement: text("statement").notNull(),
+    specialization: specializationEnum("specialization").notNull(),
+    /** null — for every grade of the specialization. */
+    grade: gradeEnum("grade"),
+    kind: challengeKindEnum("kind").notNull(),
+    /** Reference answer for `exact`; server-only, never sent to candidates. */
+    expectedAnswer: text("expected_answer"),
+    status: challengeStatusEnum("status").notNull().default("active"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("challenges_lookup_idx").on(t.status, t.specialization),
+    index("challenges_employer_idx").on(t.employerId, t.createdAt),
+  ],
+);
+
+export const challengeAssignments = pgTable(
+  "challenge_assignments",
+  {
+    id: id(),
+    challengeId: uuid("challenge_id")
+      .notNull()
+      .references(() => challenges.id, { onDelete: "cascade" }),
+    profileId: uuid("profile_id")
+      .notNull()
+      .references(() => candidateProfiles.id, { onDelete: "cascade" }),
+    status: assignmentStatusEnum("status").notNull().default("offered"),
+    answer: text("answer"),
+    /** 0..3: 3 — solved, 2 — mostly, 1 — weak, 0 — wrong. */
+    score: integer("score"),
+    feedback: text("feedback"),
+    offeredAt: ts("offered_at").notNull().defaultNow(),
+    submittedAt: ts("submitted_at"),
+    gradedAt: ts("graded_at"),
+  },
+  (t) => [
+    uniqueIndex("challenge_assignments_once").on(t.challengeId, t.profileId),
+    index("challenge_assignments_profile_idx").on(t.profileId, t.offeredAt),
+  ],
+);
+
 export const invitationEvents = pgTable(
   "invitation_events",
   {

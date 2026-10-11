@@ -197,7 +197,7 @@ export function ProfileForm({
             <option value="office">Офис</option>
           </select>
         </Field>
-        <Field label="Ожидания от, ₽" htmlFor="sf" error={errors.salaryExpectFrom}>
+        <Field label="Ожидания от, ₽ до НДФЛ"htmlFor="sf" error={errors.salaryExpectFrom}>
           <input
             id="sf"
             className="input font-mono"
@@ -206,7 +206,7 @@ export function ProfileForm({
             onChange={(e) => set({ salaryExpectFrom: e.target.value })}
           />
         </Field>
-        <Field label="Ожидания до, ₽" htmlFor="st" error={errors.salaryExpectTo}>
+        <Field label="Ожидания до, ₽ до НДФЛ"htmlFor="st" error={errors.salaryExpectTo}>
           <input
             id="st"
             className="input font-mono"

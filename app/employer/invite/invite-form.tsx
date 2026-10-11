@@ -45,7 +45,7 @@ export function InviteForm({ profileId, needId, defaults, inviteFloor = null }: 
         <textarea id="desc" className="input min-h-32" value={v.description} onChange={(e) => set({ description: e.target.value })} required aria-invalid={!!errors.description} />
       </Field>
       <fieldset className="grid gap-4 sm:grid-cols-2">
-        <legend className="mb-1.5 text-sm font-medium">Вилка зарплаты, ₽ в месяц — обязательно</legend>
+        <legend className="mb-1.5 text-sm font-medium">Вилка зарплаты, ₽ в месяц до вычета НДФЛ — обязательно</legend>
         <Field label="От" htmlFor="sf" error={errors.salaryFrom}>
           <input id="sf" className="input font-mono" inputMode="numeric" value={v.salaryFrom} onChange={(e) => set({ salaryFrom: e.target.value })} required aria-invalid={!!errors.salaryFrom} />
         </Field>

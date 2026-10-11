@@ -159,7 +159,7 @@ export function NeedForm() {
             <StackInput id="stack" value={d.stack} onChange={(stack) => set({ stack })} />
           </Field>
           <fieldset className="grid gap-4 sm:grid-cols-2">
-            <legend className="mb-1.5 text-sm font-medium">Вилка зарплаты, ₽ в месяц (обязательно)</legend>
+            <legend className="mb-1.5 text-sm font-medium">Вилка зарплаты, ₽ в месяц до вычета НДФЛ (обязательно)</legend>
             <Field label="От" htmlFor="sf" error={errors.salaryFrom}>
               <input id="sf" className="input font-mono" inputMode="numeric" value={d.salaryFrom} onChange={(e) => set({ salaryFrom: e.target.value })} required aria-invalid={!!errors.salaryFrom} />
             </Field>
