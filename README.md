@@ -76,7 +76,7 @@ npm run dev                     # http://localhost:3000
 
 ```bash
 npm run typecheck && npm run lint
-npm test              # Vitest: 480+ проверок (банк заданий, IRT/CAT, скоринг, сервисы на реальной БД)
+npm test              # Vitest: 540+ проверок (банк заданий, IRT/CAT, скоринг, сервисы на реальной БД)
                       # нужна БД TEST_DATABASE_URL (по умолчанию postgres://fsp:fsp@localhost:5432/fsp_test)
 npm run e2e           # Playwright против запущенного приложения (E2E_BASE_URL, E2E_DATABASE_URL)
 npm run validate      # метрики подбора и теста → docs/validation.md + графики (≈ 40 с, без БД)
