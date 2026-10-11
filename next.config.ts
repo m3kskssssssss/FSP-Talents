@@ -15,7 +15,10 @@ const isolation = [
 const nextConfig: NextConfig = {
   output: process.env.STANDALONE === "1" ? "standalone" : undefined,
   serverExternalPackages: ["@node-rs/argon2", "postgres", "unpdf", "@react-pdf/renderer", "sql.js"],
-  outputFileTracingIncludes: { "/**": ["./node_modules/sql.js/dist/sql-wasm.wasm", "./server/pdf/fonts/**"] },
+  // pdfkit loads its default font (Helvetica) via the "#standard-fonts/*" import map, which the tracer misses.
+  outputFileTracingIncludes: {
+    "/**": ["./node_modules/sql.js/dist/sql-wasm.wasm", "./server/pdf/fonts/**", "./node_modules/pdfkit/js/standard-fonts/**"],
+  },
   typedRoutes: false,
   async headers() {
     return [
