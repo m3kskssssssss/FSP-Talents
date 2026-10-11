@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, Notice } from "@/components/ui/field";
 import { cn } from "@/components/ui/cn";
-import { api, ApiError, fieldErrors } from "@/lib/api-client";
+import { api, ApiError, fieldErrors, localHref } from "@/lib/api-client";
 
 type Role = "candidate" | "employer";
 
@@ -54,7 +54,7 @@ export function RegisterForm({ initialRole }: { initialRole: Role }) {
         {done.verifyUrl && (
           <Notice>
             Демо-режим: письмо не отправляется на реальный адрес.{" "}
-            <a className="link" href={done.verifyUrl}>
+            <a className="link" href={localHref(done.verifyUrl)}>
               Подтвердить email
             </a>
           </Notice>

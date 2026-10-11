@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, Notice } from "@/components/ui/field";
-import { api } from "@/lib/api-client";
+import { api, localHref } from "@/lib/api-client";
 import { loginAction, type LoginState } from "./actions";
 
 export function LoginForm({ next }: { next?: string }) {
@@ -42,7 +42,7 @@ export function LoginForm({ next }: { next?: string }) {
         <Notice>
           Письмо отправлено.{" "}
           {resent !== "sent" && (
-            <a className="link" href={resent}>
+            <a className="link" href={localHref(resent)}>
               Подтвердить (демо-режим)
             </a>
           )}

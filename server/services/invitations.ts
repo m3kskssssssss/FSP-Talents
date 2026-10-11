@@ -16,7 +16,7 @@ import {
   users,
   vacancies,
 } from "../db/schema";
-import { env } from "../env";
+import { appUrl } from "../env";
 import { conflict, notFound, tooMany, unprocessable } from "../lib/errors";
 import { addDays } from "../lib/time";
 import { formatMoney } from "../lib/money";
@@ -198,7 +198,7 @@ export async function createInvitation(
     await sendMailSafe({
       to: cu.email,
       subject: `Приглашение от ${inv.company} — ФСП Таланты`,
-      text: `${inv.company} приглашает вас на позицию «${input.title}».\nВилка: ${formatMoney(input.salaryFrom)} – ${formatMoney(input.salaryTo)}.\n\nОткрыть: ${env().APP_URL}/candidate/invitations/${inv.row.id}\nКонтакты станут доступны компании только если вы примете приглашение.`,
+      text: `${inv.company} приглашает вас на позицию «${input.title}».\nВилка: ${formatMoney(input.salaryFrom)} – ${formatMoney(input.salaryTo)}.\n\nОткрыть: ${appUrl()}/candidate/invitations/${inv.row.id}\nКонтакты станут доступны компании только если вы примете приглашение.`,
     });
   }
   return inv.row;
@@ -342,7 +342,7 @@ export async function decide(
         decision === "accept"
           ? "Кандидат принял приглашение — ФСП Таланты"
           : "Кандидат отклонил приглашение — ФСП Таланты",
-      text: `Позиция «${inv.title}»: ${decision === "accept" ? "приглашение принято, контакты доступны в карточке кандидата" : "приглашение отклонено"}.\n${env().APP_URL}/employer/invitations/${inv.id}`,
+      text: `Позиция «${inv.title}»: ${decision === "accept" ? "приглашение принято, контакты доступны в карточке кандидата" : "приглашение отклонено"}.\n${appUrl()}/employer/invitations/${inv.id}`,
     });
   }
   return res.updated;

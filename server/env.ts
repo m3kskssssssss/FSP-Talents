@@ -8,7 +8,11 @@ const bool = z
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   DATABASE_URL: z.string().default("postgres://fsp:fsp@localhost:5432/fsp"),
-  APP_URL: z.string().default("http://localhost:3000"),
+  /** Base URL for links in emails; see appUrl() for the fallback. */
+  APP_URL: z.string().optional(),
+  /** Set by Vercel: production domain and per-deployment domain, without scheme. */
+  VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),
+  VERCEL_URL: z.string().optional(),
   AUTH_SECRET: z.string().optional(),
   DEMO_MODE: bool,
   AUTH_KEYCLOAK_ENABLED: bool,
@@ -44,6 +48,18 @@ let cached: Env | null = null;
 export function env(): Env {
   if (!cached) cached = envSchema.parse(process.env);
   return cached;
+}
+
+/**
+ * Public base URL without a trailing slash. On Vercel a missing or localhost
+ * APP_URL would send users to their own machine, so the project domain wins.
+ */
+export function appUrl(): string {
+  const e = env();
+  const vercelHost = e.VERCEL_PROJECT_PRODUCTION_URL || e.VERCEL_URL;
+  const explicit = e.APP_URL && !(vercelHost && /\/\/(localhost|127\.0\.0\.1)\b/.test(e.APP_URL)) ? e.APP_URL : undefined;
+  const url = explicit ?? (vercelHost ? `https://${vercelHost}` : "http://localhost:3000");
+  return url.replace(/\/+$/, "");
 }
 
 /** Test helper: drop cached env after mutating process.env. */

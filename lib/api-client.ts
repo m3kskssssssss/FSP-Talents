@@ -31,3 +31,9 @@ export function fieldErrors(e: unknown): Record<string, string> {
   for (const d of e.details) if (d.path && !out[d.path]) out[d.path] = d.message;
   return out;
 }
+
+/** Path and query of an absolute link, so a demo link opens on the current host. */
+export function localHref(url: string): string {
+  const u = new URL(url, "http://x");
+  return u.pathname + u.search + u.hash;
+}

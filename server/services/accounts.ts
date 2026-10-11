@@ -9,7 +9,7 @@ import {
   employers,
   users,
 } from "../db/schema";
-import { env } from "../env";
+import { appUrl, env } from "../env";
 import { hashPassword, verifyPassword } from "../auth/password";
 import { randomToken, sha256 } from "../lib/crypto";
 import { AppError, conflict, unprocessable } from "../lib/errors";
@@ -44,7 +44,7 @@ export async function register(input: RegisterInput) {
     const token = await issueEmailToken(tx, userId, "verify_email");
     return { userId, token };
   });
-  const verifyUrl = `${env().APP_URL}/verify-email?token=${encodeURIComponent(token)}`;
+  const verifyUrl = `${appUrl()}/verify-email?token=${encodeURIComponent(token)}`;
   const delivered = await sendMailSafe({
     to: input.email,
     subject: "Подтвердите email — ФСП Таланты",
@@ -87,7 +87,7 @@ export async function resendVerification(email: string) {
   // Same response whether or not the user exists: do not leak registrations.
   if (!u || u.emailVerifiedAt) return { verifyUrl: undefined };
   const token = await issueEmailToken(db(), u.id, "verify_email");
-  const verifyUrl = `${env().APP_URL}/verify-email?token=${encodeURIComponent(token)}`;
+  const verifyUrl = `${appUrl()}/verify-email?token=${encodeURIComponent(token)}`;
   await sendMailSafe({ to: email, subject: "Подтвердите email — ФСП Таланты", text: `Ссылка: ${verifyUrl}` });
   return { verifyUrl: env().DEMO_MODE ? verifyUrl : undefined };
 }
