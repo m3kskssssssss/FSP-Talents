@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { InterviewList } from "@/components/interviews/interview-list";
 import { PageTitle } from "@/components/ui/blank";
-import { requireCandidate } from "@/server/http/guard";
+import { requireCandidate } from "@/server/http/page-guard";
 import { listInterviews } from "@/server/services/interviews";
 
 export const metadata: Metadata = { title: "Собеседования" };

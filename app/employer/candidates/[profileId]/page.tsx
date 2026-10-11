@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Blank } from "@/components/ui/blank";
 import { buttonClass } from "@/components/ui/button";
 import { categoryTitle, date, formatTitle, salaryRange } from "@/lib/format";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 import { chatIdFor } from "@/server/services/chats";
 import { candidateForEmployer } from "@/server/services/invitations";
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { Blank, PageTitle } from "@/components/ui/blank";
 import { categoryTitle, formatTitle, salaryRange } from "@/lib/format";
-import { requireCandidate } from "@/server/http/guard";
+import { requireCandidate } from "@/server/http/page-guard";
 import { skillTitle } from "@/server/matching/skills";
 import { listOpenVacancies, myApplications } from "@/server/services/vacancies";
 import { ApplyButton } from "./apply";

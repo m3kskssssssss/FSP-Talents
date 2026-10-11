@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { PageTitle } from "@/components/ui/blank";
 import { specTitle } from "@/lib/format";
-import { requireActor } from "@/server/http/guard";
+import { requireActor } from "@/server/http/page-guard";
 import { templateStats } from "@/server/services/moderation";
 import { StatusSwitch } from "./status-switch";
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ScheduleForm } from "@/components/interviews/schedule-form";
 import { PageTitle } from "@/components/ui/blank";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 import { uuidSchema } from "@/server/schemas/common";
 import { listChats } from "@/server/services/chats";
 

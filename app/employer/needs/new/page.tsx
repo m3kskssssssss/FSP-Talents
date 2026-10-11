@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PageTitle } from "@/components/ui/blank";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 import { NeedForm } from "./need-form";
 
 export const metadata: Metadata = { title: "Новая потребность" };

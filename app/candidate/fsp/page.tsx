@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PageTitle } from "@/components/ui/blank";
-import { requireCandidate } from "@/server/http/guard";
+import { requireCandidate } from "@/server/http/page-guard";
 import { getMyProfile } from "@/server/services/candidate";
 import { FspManager } from "./manager";
 

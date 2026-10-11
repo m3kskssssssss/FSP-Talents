@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Blank, PageTitle } from "@/components/ui/blank";
-import { requireActor } from "@/server/http/guard";
+import { requireActor } from "@/server/http/page-guard";
 import { plagiarismReport } from "@/server/services/moderation";
 
 export const metadata: Metadata = { title: "Похожие решения" };

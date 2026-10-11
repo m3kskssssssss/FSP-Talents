@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PageTitle } from "@/components/ui/blank";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 import { BaseSearchForm } from "./base-search-form";
 
 export const metadata: Metadata = { title: "Поиск по базе" };

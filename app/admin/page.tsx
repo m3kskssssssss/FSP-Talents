@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageTitle } from "@/components/ui/blank";
 import { cn } from "@/components/ui/cn";
 import { categoryTitle, dateTime } from "@/lib/format";
-import { requireActor } from "@/server/http/guard";
+import { requireActor } from "@/server/http/page-guard";
 import { listAttempts } from "@/server/services/moderation";
 import { chipState } from "@/components/ui/chip";
 

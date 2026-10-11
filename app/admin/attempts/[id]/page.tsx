@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Blank, PageTitle } from "@/components/ui/blank";
 import { Notice } from "@/components/ui/field";
 import { categoryTitle, dateTime } from "@/lib/format";
-import { requireActor } from "@/server/http/guard";
+import { requireActor } from "@/server/http/page-guard";
 import { attemptDetail } from "@/server/services/moderation";
 import { Review } from "./review";
 

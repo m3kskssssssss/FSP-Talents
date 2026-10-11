@@ -5,7 +5,7 @@ import { DesktopOnlyNotice } from "@/components/layout/desktop-only";
 import { PageTitle } from "@/components/ui/blank";
 import { isMobileRequest } from "@/server/http/device";
 import { TestRunner } from "@/components/test/runner";
-import { requireCandidate } from "@/server/http/guard";
+import { requireCandidate } from "@/server/http/page-guard";
 import { getAttempt } from "@/server/services/testing";
 
 export const metadata: Metadata = { title: "Тест", robots: { index: false } };

@@ -5,7 +5,7 @@ import { PageTitle } from "@/components/ui/blank";
 import { cn } from "@/components/ui/cn";
 import { Notice } from "@/components/ui/field";
 import { dateTime, salaryRange } from "@/lib/format";
-import { requireActor } from "@/server/http/guard";
+import { requireActor } from "@/server/http/page-guard";
 import { REPUTATION_TITLES } from "@/server/invitations/reputation";
 import { listReports, REPORT_REASONS } from "@/server/services/reputation";
 import { Resolve } from "./resolve";

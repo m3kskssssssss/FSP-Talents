@@ -5,7 +5,7 @@ import { PageTitle } from "@/components/ui/blank";
 import { EmptyState } from "@/components/ui/empty";
 import { ButtonLink } from "@/components/ui/button";
 import { categoryTitle, date, salaryRange } from "@/lib/format";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 import { listNeeds } from "@/server/services/needs";
 
 export const metadata: Metadata = { title: "Потребности" };

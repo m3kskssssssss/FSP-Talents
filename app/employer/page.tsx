@@ -7,7 +7,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { categoryTitle, salaryRange } from "@/lib/format";
 import { db } from "@/server/db";
 import { employers, invitations, shortlist } from "@/server/db/schema";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 import { listNeeds } from "@/server/services/needs";
 
 export const metadata: Metadata = { title: "Кабинет работодателя" };

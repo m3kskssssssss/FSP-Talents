@@ -5,7 +5,7 @@ import { Blank, PageTitle } from "@/components/ui/blank";
 import { buttonClass } from "@/components/ui/button";
 import { categoryTitle, dateTime, gradeTitle, specTitle } from "@/lib/format";
 import { TEST_CONFIG } from "@/server/config";
-import { requireCandidate } from "@/server/http/guard";
+import { requireCandidate } from "@/server/http/page-guard";
 import { availability } from "@/server/services/testing";
 import { StartTest } from "./start-test";
 

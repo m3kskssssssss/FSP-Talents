@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageTitle } from "@/components/ui/blank";
 import { Notice } from "@/components/ui/field";
 import { categoryTitle } from "@/lib/format";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 import { candidateForEmployer } from "@/server/services/invitations";
 import { getNeed } from "@/server/services/needs";
 import { InviteForm } from "./invite-form";

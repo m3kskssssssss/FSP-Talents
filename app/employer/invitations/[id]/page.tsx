@@ -4,7 +4,7 @@ import { History, StatusBadge } from "@/components/invitations/status";
 import { Blank, PageTitle } from "@/components/ui/blank";
 import { buttonClass } from "@/components/ui/button";
 import { formatTitle, salaryRange } from "@/lib/format";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 import { isOpen } from "@/server/invitations/fsm";
 import { candidateForEmployer, getForEmployer } from "@/server/services/invitations";
 import { WithdrawButton } from "./withdraw";

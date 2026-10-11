@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChatApp } from "@/components/chat/chat-app";
 import { PageTitle } from "@/components/ui/blank";
-import { requireCandidate } from "@/server/http/guard";
+import { requireCandidate } from "@/server/http/page-guard";
 
 export const metadata: Metadata = { title: "Чаты" };
 export const dynamic = "force-dynamic";

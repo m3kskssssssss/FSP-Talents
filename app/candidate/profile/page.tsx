@@ -5,7 +5,7 @@ import { toProfileValues } from "@/components/candidate/values";
 import { Blank } from "@/components/ui/blank";
 import { buttonClass } from "@/components/ui/button";
 import { formatTitle, salaryRange } from "@/lib/format";
-import { requireCandidate } from "@/server/http/guard";
+import { requireCandidate } from "@/server/http/page-guard";
 import { getMyProfile, photoUrl } from "@/server/services/candidate";
 import { ProfileEditor } from "./editor";
 import { ExperienceEditor } from "./experience-editor";

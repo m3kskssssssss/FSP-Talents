@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Blank, PageTitle } from "@/components/ui/blank";
 import { categoryTitle, date, salaryRange } from "@/lib/format";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 import { listEmployerVacancies } from "@/server/services/vacancies";
 import { VacancyForm } from "./vacancy-form";
 

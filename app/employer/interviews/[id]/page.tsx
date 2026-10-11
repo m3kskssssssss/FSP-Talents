@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { InterviewPage } from "@/components/interviews/interview-page";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 
 export const metadata: Metadata = { title: "Собеседование" };
 export const dynamic = "force-dynamic";

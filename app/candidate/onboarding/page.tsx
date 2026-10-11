@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { toProfileValues } from "@/components/candidate/values";
-import { requireCandidate } from "@/server/http/guard";
+import { requireCandidate } from "@/server/http/page-guard";
 import { getMyProfile } from "@/server/services/candidate";
 import { Wizard } from "./wizard";
 

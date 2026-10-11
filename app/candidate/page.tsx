@@ -6,7 +6,7 @@ import { Blank, PageTitle } from "@/components/ui/blank";
 import { ButtonLink, buttonClass } from "@/components/ui/button";
 import { Notice } from "@/components/ui/field";
 import { categoryTitle, date, formatTitle, salaryRange } from "@/lib/format";
-import { requireCandidate } from "@/server/http/guard";
+import { requireCandidate } from "@/server/http/page-guard";
 import { getMyProfile } from "@/server/services/candidate";
 import { listForCandidate } from "@/server/services/invitations";
 

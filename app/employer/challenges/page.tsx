@@ -4,7 +4,7 @@ import { Blank, PageTitle } from "@/components/ui/blank";
 import { EmptyState } from "@/components/ui/empty";
 import { date, dateTime, gradeTitle, specTitle } from "@/lib/format";
 import { CHALLENGE_CONFIG } from "@/server/config";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 import { listEmployerChallenges, listSubmissions } from "@/server/services/challenges";
 import { ChallengeForm, CloseChallenge, GradeForm } from "./forms";
 

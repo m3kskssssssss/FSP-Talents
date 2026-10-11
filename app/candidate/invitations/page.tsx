@@ -5,7 +5,7 @@ import { PageTitle } from "@/components/ui/blank";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty";
 import { dateTime, salaryRange } from "@/lib/format";
-import { requireCandidate } from "@/server/http/guard";
+import { requireCandidate } from "@/server/http/page-guard";
 import { listForCandidate } from "@/server/services/invitations";
 
 export const metadata: Metadata = { title: "Приглашения" };

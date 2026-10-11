@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { and, count, eq, isNull } from "drizzle-orm";
-import { auth } from "@/server/auth";
 import { db } from "@/server/db";
 import { notifications } from "@/server/db/schema";
-import { candidateProfileId, employerId } from "@/server/http/guard";
+import { candidateProfileId, currentActor, employerId } from "@/server/http/guard";
 import { unreadChats } from "@/server/services/chats";
 import { buttonClass } from "../ui/button";
 import { Logo } from "../ui/logo";
@@ -45,12 +44,14 @@ const navByRole = {
 } as const;
 
 export async function Header() {
-  const session = await auth();
-  const role = session?.user?.role;
+  // Read from the DB, not the JWT: after a reseed the cookie may name a user
+  // that no longer exists, and such a visitor is simply signed out.
+  const actor = await currentActor();
+  const role = actor?.role;
   const nav = role ? navByRole[role] : [];
-  const uid = session?.user?.id;
   const unread = { notifications: 0, chats: 0 };
-  if (uid && role) {
+  if (actor && role) {
+    const uid = actor.userId;
     unread.notifications =
       (
         await db()
@@ -59,11 +60,13 @@ export async function Header() {
           .where(and(eq(notifications.userId, uid), isNull(notifications.readAt)))
       )[0]?.n ?? 0;
     if (role === "candidate")
-      unread.chats = await unreadChats({ role, profileId: await candidateProfileId(uid) }).catch(
-        () => 0,
-      );
+      unread.chats = await candidateProfileId(uid)
+        .then((profileId) => unreadChats({ role, profileId }))
+        .catch(() => 0);
     if (role === "employer")
-      unread.chats = await unreadChats({ role, employerId: await employerId(uid) }).catch(() => 0);
+      unread.chats = await employerId(uid)
+        .then((id) => unreadChats({ role, employerId: id }))
+        .catch(() => 0);
   }
   return (
     <header className="border-accent/15 bg-canvas sticky top-0 z-40 border-b">
@@ -81,7 +84,7 @@ export async function Header() {
         {nav.length > 0 && <NavLinks items={nav} />}
         <div className="ml-auto flex items-center gap-1.5">
           <ThemeToggle />
-          {session?.user ? (
+          {actor ? (
             <>
               {role && <HeaderPanels role={role} unread={unread} />}
               {nav.length > 0 ? (

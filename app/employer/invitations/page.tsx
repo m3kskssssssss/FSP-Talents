@@ -5,7 +5,7 @@ import { PageTitle } from "@/components/ui/blank";
 import { EmptyState } from "@/components/ui/empty";
 import { cn } from "@/components/ui/cn";
 import { dateTime, salaryRange } from "@/lib/format";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 import { STATUS_TITLES, type InvitationStatus } from "@/server/invitations/fsm";
 import { listForEmployer } from "@/server/services/invitations";
 import { chipState } from "@/components/ui/chip";

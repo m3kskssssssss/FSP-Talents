@@ -6,7 +6,7 @@ import { buttonClass } from "@/components/ui/button";
 import { Notice } from "@/components/ui/field";
 import { categoryTitle, dateTime, gradeTitle } from "@/lib/format";
 import { GRADES, TEST_CONFIG } from "@/server/config";
-import { requireCandidate } from "@/server/http/guard";
+import { requireCandidate } from "@/server/http/page-guard";
 import { getAttempt } from "@/server/services/testing";
 
 export const metadata: Metadata = { title: "Результат теста" };

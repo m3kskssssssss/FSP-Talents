@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageTitle } from "@/components/ui/blank";
 import { EmptyState } from "@/components/ui/empty";
 import { dateTime } from "@/lib/format";
-import { requireActor } from "@/server/http/guard";
+import { requireActor } from "@/server/http/page-guard";
 import { listNotifications, markAllRead } from "@/server/services/notifications";
 
 export const metadata: Metadata = { title: "Уведомления" };

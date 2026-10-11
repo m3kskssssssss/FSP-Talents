@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChatApp } from "@/components/chat/chat-app";
 import { PageTitle } from "@/components/ui/blank";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 import { uuidSchema } from "@/server/schemas/common";
 import { chatIdFor } from "@/server/services/chats";
 

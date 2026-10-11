@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CandidateCard } from "@/components/employer/candidate-card";
 import { PageTitle } from "@/components/ui/blank";
-import { requireEmployer } from "@/server/http/guard";
+import { requireEmployer } from "@/server/http/page-guard";
 import { listShortlist } from "@/server/services/matching";
 
 export const metadata: Metadata = { title: "Избранное" };

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Blank, PageTitle } from "@/components/ui/blank";
 import { Notice } from "@/components/ui/field";
 import { date, formatTitle, salaryRange } from "@/lib/format";
-import { requireCandidate } from "@/server/http/guard";
+import { requireCandidate } from "@/server/http/page-guard";
 import { chatIdFor } from "@/server/services/chats";
 import { getForCandidate } from "@/server/services/invitations";
 import { REPUTATION_TITLES } from "@/server/invitations/reputation";

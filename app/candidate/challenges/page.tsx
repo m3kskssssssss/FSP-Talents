@@ -4,7 +4,7 @@ import { Blank, PageTitle } from "@/components/ui/blank";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty";
 import { date, specTitle } from "@/lib/format";
-import { requireCandidate } from "@/server/http/guard";
+import { requireCandidate } from "@/server/http/page-guard";
 import { getMyProfile } from "@/server/services/candidate";
 import { candidateChallenges, offerNext } from "@/server/services/challenges";
 import { AnswerForm } from "./answer-form";
